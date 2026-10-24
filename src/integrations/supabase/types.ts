@@ -1506,6 +1506,10 @@ export type Database = {
       public_case_rows: { Args: { _ref?: string }; Returns: Json }
       public_report_snapshot: { Args: { _filters?: Json }; Returns: Json }
       public_transparency_metrics: { Args: { _days?: number }; Returns: Json }
+      review_directory_fetch: {
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
       review_issue_duplicate: {
         Args: {
           _candidate: string
