@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { listTeam, setRole, type TeamRole } from "@/lib/issues.functions";
 import { listTeams, upsertTeam } from "@/lib/teams.functions";
+import { createStaffAccount, setStaffSuspended, staffPasswordRule } from "@/lib/staff-accounts.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, categoryById, timeAgo } from "@/lib/civic";
 
@@ -24,6 +25,17 @@ type Member = Awaited<ReturnType<typeof listTeam>>[number];
 function Team() {
   const list = useServerFn(listTeam);
   const set = useServerFn(setRole);
+  const suspendFn = useServerFn(setStaffSuspended);
+  const [adding, setAdding] = useState(false);
+  async function toggleSuspend(u: Member) {
+    const reason = window.prompt(u.suspended ? "Reason for reactivating this account" : "Reason for suspending this account (their case history is kept)");
+    if (!reason || reason.trim().length < 3) return;
+    try {
+      const r = await suspendFn({ data: { userId: u.id, suspend: !u.suspended, reason } });
+      toast.success(u.suspended ? "Account reactivated" : `Account suspended${r.openCases ? ` — ${r.openCases} open case(s) need reassignment` : ""}`);
+      qc.invalidateQueries({ queryKey: ["team"] });
+    } catch (e) { toast.error((e as Error).message); }
+  }
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["team"], queryFn: () => list() });
   const [editing, setEditing] = useState<string | null>(null);
@@ -44,6 +56,8 @@ function Team() {
         <h1 className="text-3xl font-bold">Team Management</h1>
         <p className="text-muted-foreground">People who signed in at the staff page appear here. Signing up never grants access — you decide each role.</p>
       </div>
+      <div className="flex justify-end"><button onClick={() => setAdding(!adding)} className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">{adding ? "Close" : "Add staff account"}</button></div>
+      {adding && <CreateStaffForm onDone={() => { setAdding(false); qc.invalidateQueries({ queryKey: ["team"] }); }} />}
       <div className="grid gap-3 sm:grid-cols-3">
         {ROLES.map(r => <div key={r.id} className="rounded-xl border bg-card p-3 text-sm"><p className="font-semibold">{r.label}</p><p className="text-xs text-muted-foreground">{r.hint}</p></div>)}
       </div>
@@ -53,7 +67,7 @@ function Team() {
           <div key={u.id} className="rounded-2xl border bg-card p-4 shadow-soft">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <p className="truncate font-semibold">{u.profile?.display_name || u.email}</p>
+                <p className="truncate font-semibold">{u.profile?.display_name || u.email}{u.suspended && <span className="ml-2 rounded-full bg-destructive-soft px-2 py-0.5 text-xs text-destructive">Suspended</span>}</p>
                 <p className="text-xs text-muted-foreground">{u.email} · joined {timeAgo(u.createdAt)} · last sign-in {u.lastSignIn ? timeAgo(u.lastSignIn) : "never"}</p>
                 {u.profile && <p className="mt-1 text-xs">{u.profile.designation}{u.profile.department ? ` · ${u.profile.department}` : ""}{u.profile.categories.length ? ` · ${u.profile.categories.join(", ")}` : " · all categories"}</p>}
               </div>
@@ -64,6 +78,7 @@ function Team() {
                   </label>
                 ))}
                 <button onClick={() => setEditing(editing === u.id ? null : u.id)} className="rounded-full border px-3 py-1 text-xs font-semibold hover:bg-secondary">{editing === u.id ? "Close" : "Profile"}</button>
+                <button onClick={() => toggleSuspend(u)} className="rounded-full border px-3 py-1 text-xs font-semibold hover:bg-secondary">{u.suspended ? "Reactivate" : "Suspend"}</button>
               </div>
             </div>
             {editing === u.id && <ProfileForm member={u} onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["team"] }); }} />}
@@ -224,5 +239,39 @@ function ProfileForm({ member, onSaved }: { member: Member; onSaved: () => void 
       <label className="text-sm sm:col-span-2"><span className="text-muted-foreground">Ward identifiers (comma separated, empty = all)</span><input value={wards} onChange={e => setWards(e.target.value)} className={field} /></label>
       <div className="flex items-end justify-end"><button disabled={busy} onClick={save} className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">Save profile</button></div>
     </div>
+  );
+}
+
+function CreateStaffForm({ onDone }: { onDone: () => void }) {
+  const create = useServerFn(createStaffAccount);
+  const [f, setF] = useState({ email: "", fullName: "", designation: "", department: "", role: "field_worker" as "field_worker" | "supervisor" | "admin", wards: "", tempPassword: "" });
+  const [cats, setCats] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const field = "mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm";
+  const pwOk = staffPasswordRule(f.tempPassword);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pwOk) { toast.error("Temporary password needs 12+ characters with upper, lower case and a number."); return; }
+    setBusy(true);
+    try {
+      await create({ data: { ...f, categories: cats, wards: f.wards.split(",").map(w => w.trim()).filter(Boolean) } });
+      toast.success("Staff account created. Share the temporary password privately; they should change it after first sign-in.");
+      onDone();
+    } catch (err) { toast.error((err as Error).message); } finally { setBusy(false); }
+  }
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
+  return (
+    <form onSubmit={submit} className="grid gap-3 rounded-2xl border bg-card p-4 shadow-soft sm:grid-cols-3">
+      <h2 className="text-lg font-bold sm:col-span-3">New staff account</h2>
+      <label className="text-sm"><span className="text-muted-foreground">Full name</span><input required value={f.fullName} onChange={set("fullName")} className={field} /></label>
+      <label className="text-sm"><span className="text-muted-foreground">Work email</span><input required type="email" value={f.email} onChange={set("email")} className={field} /></label>
+      <label className="text-sm"><span className="text-muted-foreground">Role</span><select value={f.role} onChange={set("role")} className={field}><option value="field_worker">Field team</option><option value="supervisor">Supervisor</option><option value="admin">Administrator</option></select></label>
+      <label className="text-sm"><span className="text-muted-foreground">Designation</span><input required value={f.designation} onChange={set("designation")} className={field} /></label>
+      <label className="text-sm"><span className="text-muted-foreground">Department</span><input required value={f.department} onChange={set("department")} className={field} /></label>
+      <label className="text-sm"><span className="text-muted-foreground">Temporary password</span><input required type="password" autoComplete="new-password" value={f.tempPassword} onChange={set("tempPassword")} className={field} /><span className={`text-xs ${pwOk ? "text-primary" : "text-muted-foreground"}`}>12+ characters, upper & lower case, a number</span></label>
+      <fieldset className="sm:col-span-3"><legend className="text-sm text-muted-foreground">Categories (none = all)</legend><div className="mt-2 flex flex-wrap gap-2">{CATEGORIES.map(c => (<label key={c.id} className={`inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs ${cats.includes(c.id) ? "border-primary bg-primary-soft text-primary" : ""}`}><input type="checkbox" className="sr-only" checked={cats.includes(c.id)} onChange={e => setCats(e.target.checked ? [...cats, c.id] : cats.filter(x => x !== c.id))} />{c.emoji} {c.label}</label>))}</div></fieldset>
+      <label className="text-sm sm:col-span-2"><span className="text-muted-foreground">Ward identifiers (comma separated, empty = all)</span><input value={f.wards} onChange={set("wards")} className={field} /></label>
+      <div className="flex items-end justify-end"><button disabled={busy} className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy ? "Creating…" : "Create account"}</button></div>
+    </form>
   );
 }

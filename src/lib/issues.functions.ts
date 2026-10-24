@@ -198,6 +198,7 @@ export const listTeam = createServerFn({ method: "GET" })
       email: u.email ?? "",
       createdAt: u.created_at,
       lastSignIn: u.last_sign_in_at ?? null,
+      suspended: Boolean((u as { banned_until?: string | null }).banned_until && new Date((u as { banned_until?: string }).banned_until!).getTime() > Date.now()),
       roles: (roles.data ?? []).filter((r) => r.user_id === u.id).map((r) => r.role),
     }));
   });
