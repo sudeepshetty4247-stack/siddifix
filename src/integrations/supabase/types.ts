@@ -425,6 +425,7 @@ export type Database = {
         Args: { _action: string; _note: string; _ref: string; _token: string }
         Returns: string
       }
+      civic_case_metrics: { Args: never; Returns: Json }
       create_civic_report: {
         Args: { _report: Json; _token: string }
         Returns: Json
