@@ -142,7 +142,7 @@ export const submitIssue = createServerFn({ method: "POST" })
     });
     if (error) {
       await supabaseAdmin.storage.from('issue-photos').remove([path]);
-      console.error('Report transaction failed', error.code);
+      console.error('Report transaction failed', error.code, error.message);
       throw new Error("We couldn't save your report. Please try again.");
     }
     const saved = result as { ref: string; duplicate: boolean };
