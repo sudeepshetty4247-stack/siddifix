@@ -22,3 +22,5 @@
 - Anonymous submission persists the report, recovery secret and creation event through the service-only create_civic_report transaction; retries never return existing recovery credentials.
 - Home-screen installability uses a manifest and icons only; no app-shell service worker is registered, preserving fresh previews.
 - Case-local civic information reads the protected civic directory; the standalone citizen authority directory has been removed to keep reporting and case work integrated.
+- Duplicate review, assignment lifecycle, classification and reporter resolution decisions use atomic database operations with durable events; ordinary staff clients cannot directly update issue fields.
+- Staff analytics use full-dataset database aggregates, not the capped triage sample; the map keeps case selection and public history in-place.

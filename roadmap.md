@@ -15,8 +15,10 @@
 - [x] Manifest-only home-screen support (PWA skill); desktop/phone layout and anonymous submit/read-back verified; 6 tests pass
 
 ## Remaining release work
-- [ ] Audit mandatory duplicate review/merge, assignment lifecycle, queues, tracking, analytics, notifications and resolution evidence before implementation
-- [ ] Replace standalone citizen authority directory with integrated case responsibility details and internal actions
+- [x] Audit mandatory workflows completed; confirmed gaps recorded in approved plan
+- [x] Standalone authority module removed; official portal CTAs removed; map has in-place case information/history
+- [ ] New staff duplicate merge/reject/reverse, internal assignment/reassignment/accept/reject/escalation, atomic classification/reporter actions and full-dataset analytics implemented; signed-in operation verification BLOCKED on intended administrator account (zero accounts)
+- [ ] Remaining approved stages: resolution evidence, notification persistence/delivery, duplicate candidate queue/history refinements and end-to-end release checks; continue after staff workflow verification
 - [x] Current request: public Bengaluru authority directory, searchable service contacts, GBA chief commissioner and 1533 official contact, responsibility chain; CivicFix-only case totals retained; search/filter and phone layout verified
 - [ ] Address lookup integration: blocked on a suitable anonymous-citizen geocoding service configuration
 - [ ] Current official ward boundaries and representative sources: not obtained; no legal jurisdiction claim until verified/imported
