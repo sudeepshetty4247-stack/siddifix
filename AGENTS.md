@@ -24,3 +24,4 @@
 - Case-local civic information reads the protected civic directory; the standalone citizen authority directory has been removed to keep reporting and case work integrated.
 - Duplicate review, assignment lifecycle, classification and reporter resolution decisions use atomic database operations with durable events; ordinary staff clients cannot directly update issue fields.
 - Staff analytics use full-dataset database aggregates, not the capped triage sample; the map keeps case selection and public history in-place.
+- Bengaluru ward boundaries and representatives ship as static public/data/bengaluru-wards.json (OpenCity GBA 369 wards, lng/lat order) and resolve client-side in src/lib/wards.ts; officer names are role-level only because they aren't reliably published.
