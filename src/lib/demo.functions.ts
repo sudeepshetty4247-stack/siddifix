@@ -12,7 +12,20 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
 }
 function assertDemoEnabled() {
   if (process.env['DEMO_SEED_ENABLED'] !== 'true')
-    throw new Error('Demo seeding is disabled in this environment. It is only enabled in the isolated demo environment so synthetic data can never mix with genuine records.');
+    throw new Error('Demo seeding is disabled in this environment.');
+}
+
+/** Deterministic UUID from a string so resumed seed runs reuse the same teams. */
+function deterministicUuid(seed: string) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < seed.length; i++) {
+    const ch = seed.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  const hex = (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-a${hex.slice(1, 4)}-${hex.slice(4, 16)}`.slice(0, 36);
 }
 
 export const getMasterDataValidation = createServerFn({ method: 'GET' })
@@ -47,12 +60,30 @@ export const getDemoDatasetStatus = createServerFn({ method: 'GET' })
     };
   });
 
+export const previewDemoPurge = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { datasetId: string }) => z.object({ datasetId: z.string().trim().min(3).max(40) }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const r = await context.supabase.rpc('preview_demo_purge', { _dataset: data.datasetId });
+    if (r.error) throw new Error(r.error.message);
+    return r.data as Record<string, number | string | boolean>;
+  });
+
 const seedSchema = z.object({
-  count: z.number().int().min(50).max(5000).default(1500),
+  count: z.number().int().min(50).max(5000).default(2100),
   staffPerDepartment: z.number().int().min(2).max(25).default(10),
   datasetId: z.string().trim().regex(/^[a-z0-9-]{3,40}$/).default('demo-v1'),
+  offset: z.number().int().min(0).default(0),
+  limit: z.number().int().min(50).max(500).default(500),
+  photos: z.array(z.string().url()).max(50).default([]),
 });
 
+/**
+ * Resumable demo seeder. Teams and staff are ensured first (deterministic, never doubled);
+ * reports are inserted in slices [offset, offset+limit) so a long run survives timeouts —
+ * the admin page calls it repeatedly until done. Existing refs are skipped, so retries are safe.
+ */
 export const seedDemoDataset = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: z.input<typeof seedSchema>) => seedSchema.parse(input))
@@ -61,11 +92,6 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
     assertDemoEnabled();
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
 
-    // Idempotency: a dataset that already exists is never re-seeded or doubled.
-    const existing = await supabaseAdmin.from('issues').select('id', { count: 'exact', head: true }).eq('demo_dataset_id', data.datasetId);
-    if ((existing.count ?? 0) > 0) return { skipped: true as const, reason: `Dataset ${data.datasetId} already exists with ${existing.count} reports. Purge it first to regenerate.`, created: 0 };
-
-    // Prerequisites: real configured geography and routing must exist first.
     const [wardsR, routesR, targetsR] = await Promise.all([
       supabaseAdmin.from('civic_wards').select('identifier,name,corporation,coverage_id,boundary').eq('active', true),
       supabaseAdmin.from('civic_department_routes').select('category,receiving_office').eq('active', true),
@@ -79,34 +105,46 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
     if (!wards.length) throw new Error('No active wards with usable boundaries — configure geographic master data first.');
     if (!routes.length) throw new Error('No active category routing rules — configure routing first.');
 
-    // Demo teams: one per receiving office, covering its routed categories.
+    // Ensure demo teams (deterministic ids; existing ones are reused).
     const byOffice = new Map<string, string[]>();
     for (const r of routes) byOffice.set(r.receiving_office, [...(byOffice.get(r.receiving_office) ?? []), r.category]);
     const teams: DemoTeam[] = [];
     for (const [office, cats] of byOffice) {
-      const id = crypto.randomUUID();
-      const ins = await supabaseAdmin.from('civic_teams').insert({
-        id, name: `[DEMO] ${office}`.slice(0, 120), department: office, categories: cats, wards: [],
-        is_fallback: false, active: true, notes: `Synthetic demo team (${data.datasetId}). Not a real government team.`,
-        demo_dataset_id: data.datasetId,
-      });
-      if (ins.error) throw new Error(`Demo team creation failed: ${ins.error.message}`);
+      const id = deterministicUuid(`${data.datasetId}:team:${office}`);
+      const existing = await supabaseAdmin.from('civic_teams').select('id').eq('id', id).maybeSingle();
+      if (!existing.data) {
+        const ins = await supabaseAdmin.from('civic_teams').insert({
+          id, name: `[DEMO] ${office}`.slice(0, 120), department: office, categories: cats, wards: [],
+          is_fallback: false, active: true, notes: `Synthetic demo team (${data.datasetId}). Not a real government team.`,
+          demo_dataset_id: data.datasetId,
+        });
+        if (ins.error) throw new Error(`Demo team creation failed: ${ins.error.message}`);
+      }
       teams.push({ id, department: office, categories: cats });
     }
 
-    // Demo staff: synthetic auth accounts, provisioned through the same atomic RPC as real staff.
+    // Ensure demo staff (deterministic emails; existing profiles are reused).
     const staff: DemoStaff[] = [];
     const credentials: { email: string; password: string; department: string; role: string }[] = [];
+    const existingProfiles = await supabaseAdmin.from('staff_profiles').select('user_id,team_ids,department,categories,display_name').eq('demo_dataset_id', data.datasetId);
+    for (const p of existingProfiles.data ?? []) {
+      const teamId = (p.team_ids as string[] | null)?.[0];
+      if (teamId) staff.push({ id: p.user_id as string, team_id: teamId, department: p.department as string, categories: (p.categories as string[]) ?? [], name: (p.display_name as string) ?? 'Demo staff' });
+    }
     let staffSeq = 0;
     for (const team of teams) {
-      for (let n = 0; n < data.staffPerDepartment; n++) {
+      const have = staff.filter(s => s.team_id === team.id).length;
+      for (let n = have; n < data.staffPerDepartment; n++) {
         staffSeq++;
         const role = n === 0 ? 'supervisor' : 'field_worker';
-        const email = `demo-${data.datasetId}-${staffSeq}@${DEMO_EMAIL_DOMAIN}`;
+        const email = `demo-${data.datasetId}-${teams.indexOf(team) * 25 + n + 1}@${DEMO_EMAIL_DOMAIN}`;
         const password = `Demo!${crypto.randomUUID().replaceAll('-', '').slice(0, 16)}`;
-        const name = `Demo ${role === 'supervisor' ? 'Supervisor' : 'Officer'} ${staffSeq}`;
+        const name = `Demo ${role === 'supervisor' ? 'Supervisor' : 'Officer'} ${teams.indexOf(team) * 25 + n + 1}`;
         const created = await supabaseAdmin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name: name, demo: true } });
-        if (created.error || !created.data.user) { await supabaseAdmin.from('civic_teams').delete().eq('demo_dataset_id', data.datasetId); throw new Error(`Demo account creation failed: ${created.error?.message ?? 'unknown'}`); }
+        if (created.error || !created.data.user) {
+          if (created.error?.message?.includes('already been registered')) continue;
+          throw new Error(`Demo account creation failed: ${created.error?.message ?? 'unknown'}`);
+        }
         const provision = await supabaseAdmin.rpc('admin_provision_account', {
           _user: created.data.user.id, _role: role,
           _profile: { fullName: name, designation: role === 'supervisor' ? 'Demo Supervisor' : 'Demo Field Officer', department: team.department, categories: team.categories, wards: [], teamIds: [team.id], corporations: [] },
@@ -119,44 +157,77 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
       }
     }
 
-    const categories = CATEGORIES.filter(c => routes.some(r => r.category === c.id)).map(c => ({ id: c.id, subs: [...c.subs] }));
-    const dataset = buildDemoDataset({ datasetId: data.datasetId, count: data.count, wards, teams, staff, targets: targetsR.data ?? [], categories });
+    // One demo admin account so the presenter can show the Admin Control Centre.
+    let adminCredential: { email: string; password: string } | null = null;
+    if (data.offset === 0) {
+      const adminEmail = `demo-${data.datasetId}-admin@${DEMO_EMAIL_DOMAIN}`;
+      const existingAdmin = await supabaseAdmin.from('staff_profiles').select('user_id').eq('demo_dataset_id', data.datasetId).eq('department', 'Demo Administration').maybeSingle();
+      if (!existingAdmin.data) {
+        const password = `Demo!${crypto.randomUUID().replaceAll('-', '').slice(0, 16)}`;
+        const created = await supabaseAdmin.auth.admin.createUser({ email: adminEmail, password, email_confirm: true, user_metadata: { full_name: 'Demo Administrator', demo: true } });
+        if (!created.error && created.data.user) {
+          const provision = await supabaseAdmin.rpc('admin_provision_account', {
+            _user: created.data.user.id, _role: 'admin',
+            _profile: { fullName: 'Demo Administrator', designation: 'Demo Administrator', department: 'Demo Administration', categories: [], wards: [], teamIds: [], corporations: [] },
+            _actor: context.userId,
+          });
+          if (!provision.error) {
+            await supabaseAdmin.from('staff_profiles').update({ demo_dataset_id: data.datasetId }).eq('user_id', created.data.user.id);
+            adminCredential = { email: adminEmail, password };
+          } else {
+            await supabaseAdmin.auth.admin.deleteUser(created.data.user.id);
+          }
+        }
+      }
+    }
 
-    const batch = 250;
+    const categories = CATEGORIES.filter(c => routes.some(r => r.category === c.id)).map(c => ({ id: c.id, subs: [...c.subs] }));
+    const dataset = buildDemoDataset({ datasetId: data.datasetId, count: data.count, wards, teams, staff, targets: targetsR.data ?? [], categories, photos: data.photos });
+    const slice = dataset.issues.slice(data.offset, data.offset + data.limit);
+    const sliceIndexes = dataset.issues.map((_, i) => i).slice(data.offset, data.offset + data.limit);
+    const inSlice = new Set(sliceIndexes);
+
+    // Skip refs that already exist (retry safety).
+    const existingRefs = await supabaseAdmin.from('issues').select('ref_code').in('ref_code', slice.map(i => i.ref_code));
+    const have = new Set((existingRefs.data ?? []).map(r => r.ref_code as string));
+    const toInsert = slice.filter(i => !have.has(i.ref_code));
+    const insertedIds = new Map<string, string>();
+
     const rejected: string[] = [];
-    for (let i = 0; i < dataset.issues.length; i += batch) {
-      const ins = await supabaseAdmin.from('issues').insert(dataset.issues.slice(i, i + batch));
-      if (ins.error) rejected.push(`issues ${i}-${i + batch}: ${ins.error.message}`);
+    for (let i = 0; i < toInsert.length; i += 250) {
+      const ins = await supabaseAdmin.from('issues').insert(toInsert.slice(i, i + 250));
+      if (ins.error) rejected.push(`issues ${data.offset + i}: ${ins.error.message}`);
     }
-    const issueIds = dataset.issues.map(x => x.id);
-    const staffIds = staff.map(s => s.id);
-    for (let i = 0; i < dataset.events.length; i += batch) {
-      const rows = dataset.events.slice(i, i + batch).map(e => ({ issue_id: issueIds[e.issue_index], kind: e.kind, from_status: e.from_status, to_status: e.to_status, note: e.note, actor_label: e.actor_label, created_at: e.created_at, visibility: e.visibility }));
-      const ins = await supabaseAdmin.from('issue_events').insert(rows);
-      if (ins.error) rejected.push(`events ${i}: ${ins.error.message}`);
-    }
-    for (let i = 0; i < dataset.notifications.length; i += batch) {
-      const rows = dataset.notifications.slice(i, i + batch).map(n => ({ issue_id: issueIds[n.issue_index], recipient_user_id: staffIds[n.recipient_index] ?? null, audience: 'staff', channel: 'in_app', status: 'recorded', notification_type: n.notification_type, title: n.title, detail: n.detail, priority: n.priority, created_at: n.created_at }));
-      const ins = await supabaseAdmin.from('issue_notifications').insert(rows);
-      if (ins.error) rejected.push(`notifications ${i}: ${ins.error.message}`);
-    }
-    for (let i = 0; i < dataset.feedback.length; i += batch) {
-      const rows = dataset.feedback.slice(i, i + batch).map(f => ({ issue_id: issueIds[f.issue_index], rating: f.rating, resolution: f.resolution, response_time: f.response_time, comment: f.comment, status_at_submission: f.status_at_submission, submitted_at: f.submitted_at }));
-      const ins = await supabaseAdmin.from('issue_feedback').insert(rows);
-      if (ins.error) rejected.push(`feedback ${i}: ${ins.error.message}`);
-    }
-    for (let i = 0; i < dataset.secrets.length; i += batch) {
-      const rows = dataset.secrets.slice(i, i + batch).map(s => ({ issue_id: issueIds[s.issue_index], recovery_token: s.token, demo_dataset_id: data.datasetId }));
-      const ins = await supabaseAdmin.from('issue_secrets').insert(rows);
-      if (ins.error) rejected.push(`secrets ${i}: ${ins.error.message}`);
-    }
+    for (const i of toInsert) insertedIds.set(i.ref_code, i.id);
+    // Map generator indexes to persisted ids for related rows.
+    const idAt = (idx: number) => {
+      const issue = dataset.issues[idx]!;
+      return insertedIds.get(issue.ref_code) ?? null;
+    };
+    const batchInsert = async (table: string, rows: Record<string, unknown>[], label: string) => {
+      for (let i = 0; i < rows.length; i += 250) {
+        const ins = await supabaseAdmin.from(table).insert(rows.slice(i, i + 250));
+        if (ins.error) rejected.push(`${label} ${i}: ${ins.error.message}`);
+      }
+    };
+    await batchInsert('issue_events', dataset.events.filter(e => inSlice.has(e.issue_index) && idAt(e.issue_index)).map(e => ({ issue_id: idAt(e.issue_index), kind: e.kind, from_status: e.from_status, to_status: e.to_status, note: e.note, actor_label: e.actor_label, created_at: e.created_at, visibility: e.visibility })), 'events');
+    await batchInsert('issue_notifications', dataset.notifications.filter(n => inSlice.has(n.issue_index) && idAt(n.issue_index)).map(n => ({ issue_id: idAt(n.issue_index), recipient_user_id: staff[n.recipient_index]?.id ?? null, audience: 'staff', channel: 'in_app', status: 'recorded', notification_type: n.notification_type, title: n.title, detail: n.detail, priority: n.priority, created_at: n.created_at })), 'notifications');
+    await batchInsert('issue_feedback', dataset.feedback.filter(f => inSlice.has(f.issue_index) && idAt(f.issue_index)).map(f => ({ issue_id: idAt(f.issue_index), rating: f.rating, resolution: f.resolution, response_time: f.response_time, comment: f.comment, status_at_submission: f.status_at_submission, submitted_at: f.submitted_at })), 'feedback');
+    await batchInsert('issue_secrets', dataset.secrets.filter(s => inSlice.has(s.issue_index) && idAt(s.issue_index)).map(s => ({ issue_id: idAt(s.issue_index), recovery_token: s.token, demo_dataset_id: data.datasetId })), 'secrets');
+    await batchInsert('issue_photos', dataset.issues.map((iss, idx) => ({ iss, idx })).filter(x => inSlice.has(x.idx) && x.iss.photo_url && idAt(x.idx)).map(x => ({ issue_id: idAt(x.idx), original_path: x.iss.photo_url, display_path: x.iss.photo_url, source: 'demo', metadata: { demo: true, licence: 'See demo media credits' }, original_sha256: `demo-${x.iss.ref_code}` })), 'photos');
+
+    const nextOffset = data.offset + data.limit;
+    const done = nextOffset >= data.count;
+    // Presenter tracking links: first few demo refs with their tokens.
+    const samples = data.offset === 0
+      ? dataset.issues.slice(0, 5).map((iss, i) => ({ ref: iss.ref_code, token: dataset.secrets[i]!.token, status: iss.status }))
+      : undefined;
 
     return {
-      skipped: false as const, dataset: data.datasetId, created: dataset.issues.length - rejected.length,
+      dataset: data.datasetId, done, nextOffset: done ? null : nextOffset,
+      insertedThisCall: toInsert.length, skippedExisting: slice.length - toInsert.length,
       rejected, teams: teams.length, staff: staff.length,
-      events: dataset.events.length, notifications: dataset.notifications.length, feedback: dataset.feedback.length,
-      credentials,
-      note: 'Synthetic demonstration data only. Excluded from public metrics. Demo account passwords are shown once — store them securely and only in the demo environment.',
+      credentials: credentials.length ? credentials : undefined, adminCredential: adminCredential ?? undefined, samples,
     };
   });
 
@@ -167,7 +238,11 @@ export const purgeDemoDataset = createServerFn({ method: 'POST' })
     await assertAdmin(context);
     assertDemoEnabled();
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-    // Remove demo auth accounts (SQL cannot), then purge every tagged row atomically.
+    // Refuse when genuine records reference demo rows.
+    const preview = await context.supabase.rpc('preview_demo_purge', { _dataset: data.datasetId });
+    if (preview.error) throw new Error(preview.error.message);
+    if ((preview.data as { genuine_records_blocked?: number }).genuine_records_blocked! > 0)
+      throw new Error('Cleanup refused: genuine citizen records reference this demo dataset. Review those links first.');
     let removedUsers = 0;
     for (let page = 1; page <= 20; page++) {
       const list = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
