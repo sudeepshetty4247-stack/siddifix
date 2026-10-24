@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## CivicFix architecture
-- Citizen pages use `_citizen`; staff use `_authenticated/staff*`. Shared BackButton uses router history with home/workspace fallback. Read nested AGENTS.md.
+- Citizen pages use `_citizen`; staff use `_authenticated/staff*`. BackButton dismisses overlays and falls back after same-page history/redirects. Read nested AGENTS.md.
 - Citizens never write tables directly: report submit/confirm/dispute go through public server functions in `src/lib/issues.functions.ts` using the admin client, because anonymous users have no DB write grants.
 - Recovery tokens live in `issue_secrets` (no client grants) so public issue reads can never leak them.
 - Photos bucket is private (workspace blocks public buckets); submit stores a long-lived signed URL.
