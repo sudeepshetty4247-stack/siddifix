@@ -11,6 +11,8 @@ import { LazyMap } from "@/components/civic/LazyMap";
 import { useRoles } from "./staff";
 import { CivicInfo } from "@/components/civic/CivicInfo";
 import { getDirectory } from "@/lib/directory.functions";
+import { DuplicateReview } from '@/components/civic/DuplicateReview';
+import { AssignmentActions } from '@/components/civic/AssignmentActions';
 
 export const Route = createFileRoute("/_authenticated/staff/issues/$id")({
   head: () => ({ meta: [{ title: "Staff issue actions — CivicFix" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Staff issue actions — CivicFix" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -61,7 +63,7 @@ function StaffIssue() {
     qc.invalidateQueries({ queryKey: ["staff-queue"] });
     qc.invalidateQueries({ queryKey: ["staff-all"] });
   };
-  const actor = () => ({ actor_id: roles.data!.userId, actor_label: roles.data?.roles.includes("admin") ? "CivicFix administrator" : "CivicFix staff" });
+  const actor = () => ({ actor_id: roles.data?.userId ?? null, actor_label: roles.data?.roles.includes("admin") ? "CivicFix administrator" : "CivicFix staff" });
 
   async function logEvent(e: { kind: string; note?: string | null; from_status?: IssueStatus | null; to_status?: IssueStatus | null }) {
     const { error } = await supabase.from("issue_events").insert({ issue_id: id, ...actor(), ...e });
@@ -104,13 +106,14 @@ function StaffIssue() {
   }
 
   async function updateField(patch: { category?: string; severity?: (typeof SEVERITIES)[number]; department?: string }, label: string) {
-    const { error } = await supabase.from("issues").update(patch).eq("id", id);
+    if (!issue.data) return;
+    const { error } = await supabase.rpc('staff_edit_classification', { _id: id, _category: patch.category ?? issue.data.category, _severity: patch.severity ?? issue.data.severity, _note: label });
     if (error) { toast.error(error.message); return; }
-    await logEvent({ kind: patch.department ? "assigned" : "note", note: label }).catch(() => {});
     toast.success("Updated");
     refresh();
   }
 
+  if (issue.isError) return <div className="p-8" role="alert"><p>This case could not be loaded.</p><button onClick={() => issue.refetch()}>Retry</button></div>;
   if (issue.isLoading || !issue.data) return <div className="p-8"><div className="h-96 animate-pulse rounded-2xl bg-muted" /></div>;
   const i = issue.data;
   const options = TRANSITIONS[i.status as IssueStatus] ?? [];
@@ -152,6 +155,8 @@ function StaffIssue() {
             <h2 className="mb-5 font-semibold">Audit trail</h2>
             <Timeline events={events.data ?? []} />
           </div>
+          <DuplicateReview issue={i} />
+          <AssignmentActions id={i.id} authorityId={i.authority_id} state={i.assignment_state} />
         </div>
         <aside className="space-y-4">
           {i.photo_url && <img src={i.photo_url} alt="" className="w-full rounded-2xl border object-cover" />}
@@ -170,13 +175,7 @@ function StaffIssue() {
                 {SEVERITIES.map((s) => <option key={s} value={s}>{SEVERITY_META[s].label}</option>)}
               </select>
             </label>
-            <label className="block text-sm">
-              <span className="text-muted-foreground">Responsible authority / team</span>
-              <select value={i.department ?? ""} onChange={(e) => updateField({ department: e.target.value }, `Ownership handed to ${e.target.value}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
-                <option value="" disabled>Choose…</option>
-                {[...new Set([i.department ?? "Ownership review pending", ...(directory.data?.authorities.map(a => a.name) ?? [])])].map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </label>
+            <p className="text-sm text-muted-foreground">{i.department ?? 'Ownership review pending'} · {i.assignment_state}</p>
           </div>
           <div className="rounded-2xl border bg-card p-5 text-sm shadow-soft">
             {i.summary && <p>{i.summary}</p>}

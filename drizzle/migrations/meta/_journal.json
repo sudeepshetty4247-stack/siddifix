@@ -15,6 +15,27 @@
       "when": 1792825847858,
       "tag": "0001_civic_directory_and_atomic_workflows",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792827476416,
+      "tag": "0002_duplicate_review_and_atomic_citizen_actions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792827559574,
+      "tag": "0003_complete_staff_analytics",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792827603854,
+      "tag": "0004_internal_authority_assignment_lifecycle",
+      "breakpoints": true
     }
   ]
 }

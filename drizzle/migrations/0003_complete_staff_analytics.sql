@@ -1,0 +1,9 @@
+CREATE OR REPLACE FUNCTION public.civic_case_metrics() RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE result jsonb;
+BEGIN
+IF NOT public.is_staff(auth.uid()) THEN RAISE EXCEPTION 'Staff access required'; END IF;
+SELECT jsonb_build_object('total_reports',count(*),'canonical_issues',count(*) FILTER(WHERE duplicate_of IS NULL),'duplicate_rate',CASE WHEN count(*)=0 THEN 0 ELSE round(100.0*count(*) FILTER(WHERE duplicate_of IS NOT NULL)/count(*),2) END,'pending',count(*) FILTER(WHERE duplicate_of IS NULL AND status IN ('needs_classification','submitted','under_review','assigned','in_progress','reopened')),'resolved',count(*) FILTER(WHERE duplicate_of IS NULL AND status IN ('resolved','closed')),'resolution_rate',CASE WHEN count(*) FILTER(WHERE duplicate_of IS NULL)=0 THEN 0 ELSE round(100.0*count(*) FILTER(WHERE duplicate_of IS NULL AND status IN ('resolved','closed'))/count(*) FILTER(WHERE duplicate_of IS NULL),2) END,'overdue',count(*) FILTER(WHERE duplicate_of IS NULL AND status IN ('needs_classification','submitted','under_review','assigned','in_progress','reopened') AND sla_due_at<now()),'reopened',count(*) FILTER(WHERE duplicate_of IS NULL AND status='reopened'),'average_resolution_hours',avg(extract(epoch FROM resolved_at-created_at)/3600) FILTER(WHERE duplicate_of IS NULL AND status IN ('resolved','closed') AND resolved_at IS NOT NULL)) INTO result FROM public.issues;
+RETURN result || jsonb_build_object('status_distribution',(SELECT coalesce(jsonb_object_agg(status,n),'{}'::jsonb) FROM (SELECT status,count(*) n FROM public.issues WHERE duplicate_of IS NULL GROUP BY status) s));
+END $$;
+REVOKE ALL ON FUNCTION public.civic_case_metrics() FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.civic_case_metrics() TO authenticated;

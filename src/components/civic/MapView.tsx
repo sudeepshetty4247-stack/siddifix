@@ -43,6 +43,7 @@ export default function MapView({
   onPick,
   recenter,
   className,
+  onSelect,
 }: {
   center: { lat: number; lng: number };
   zoom?: number;
@@ -51,6 +52,7 @@ export default function MapView({
   onPick?: (lat: number, lng: number) => void;
   recenter?: { lat: number; lng: number; zoom?: number } | null;
   className?: string | undefined;
+  onSelect?: (id: string) => void;
 }) {
   return (
     <MapContainer center={[center.lat, center.lng]} zoom={zoom} scrollWheelZoom {...(className ? { className } : {})} style={{ height: "100%", width: "100%" }}>
@@ -69,13 +71,13 @@ export default function MapView({
         />
       )}
       {markers.map((m) => (
-        <Marker key={m.id} position={[m.lat, m.lng]} icon={dot(m.tone)}>
+        <Marker key={m.id} position={[m.lat, m.lng]} icon={dot(m.tone)} eventHandlers={onSelect ? {click: () => onSelect(m.id)} : {}}>
           {m.label && (
             <Popup>
               <div style={{ minWidth: 160 }}>
                 <div style={{ fontWeight: 600, marginBottom: 2 }}>{m.label}</div>
                 {m.sub && <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>{m.sub}</div>}
-                {m.href && <a href={m.href} style={{ fontSize: 12, fontWeight: 600, color: "var(--primary)" }}>View issue →</a>}
+                {m.href && !onSelect && <a href={m.href} style={{ fontSize: 12, fontWeight: 600, color: "var(--primary)" }}>View issue →</a>}
               </div>
             </Popup>
           )}

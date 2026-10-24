@@ -8,6 +8,9 @@ import { StatusBadge } from "@/components/civic/StatusBadge";
 import { ISSUE_COLUMNS, type IssueRow } from "@/components/civic/IssueCard";
 import { cn } from "@/lib/utils";
 import { useLocation } from "@/lib/location";
+import { CivicInfo } from '@/components/civic/CivicInfo';
+import { Button } from '@/components/ui/button';
+import { Timeline } from '@/components/civic/Timeline';
 
 export const Route = createFileRoute("/_citizen/map")({
   head: () => ({
@@ -27,6 +30,11 @@ function MapPage() {
   const { location } = useLocation();
   const [cat, setCat] = useState<string | null>(null);
   const [show, setShow] = useState<"open" | "resolved" | "all">("open");
+  const [selected,setSelected] = useState<string | null>(null);
+  const history = useQuery({ queryKey:['map-history',selected],enabled:!!selected,queryFn:async()=>{
+    if(!selected)return [];
+    const result=await supabase.from('issue_events').select('*').eq('issue_id',selected).order('created_at');if(result.error)throw result.error;return result.data ?? [];
+  }});
   const q = useQuery({
     queryKey: ["map-issues"],
     refetchInterval: 30000,
@@ -52,6 +60,7 @@ function MapPage() {
     sub: `${categoryById(i.category).label} · ${i.ref_code}`,
     href: `/issues/${i.ref_code}`,
   }));
+  const active=q.data?.find(i=>i.id===selected);
 
   return (
     <div className="grid min-h-[70vh] lg:h-[calc(100vh-5rem)] lg:grid-cols-[380px_1fr]">
@@ -77,21 +86,23 @@ function MapPage() {
           </div>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">
+          {active && <section className="border-b p-4"><Button variant="ghost" onClick={()=>setSelected(null)}>← Back to cases</Button><StatusBadge status={active.status}/><h2 className="mt-3 text-xl font-semibold">{active.title}</h2><p className="mt-2 font-mono text-xs text-muted-foreground">{active.ref_code}</p>{active.photo_url&&<img src={active.photo_url} alt={active.title} className="mt-4 w-full rounded-lg"/>}<p className="mt-3 text-sm">{active.summary}</p><CivicInfo lat={active.lat} lng={active.lng} category={active.category}/><h3 className="mb-4 font-semibold">Action history</h3>{history.isError?<Button variant="outline" onClick={()=>history.refetch()}>Retry history</Button>:<Timeline events={history.data ?? []}/>}</section>}
+          {q.isError && <div role="alert" className="p-4"><p>Cases could not be loaded.</p><Button variant="outline" onClick={()=>q.refetch()}>Retry</Button></div>}
           {list.length === 0 && !q.isLoading && <p className="p-6 text-center text-sm text-muted-foreground">No issues match these filters yet.</p>}
           {list.map((i) => (
-            <Link key={i.id} to="/issues/$ref" params={{ ref: i.ref_code }} className="flex gap-3 border-b p-3 transition hover:bg-secondary">
+            <Button variant="ghost" key={i.id} onClick={()=>setSelected(i.id)} className="flex h-auto w-full justify-start gap-3 whitespace-normal rounded-none border-b p-3 text-left transition hover:bg-secondary">
               {i.photo_url ? <img src={i.photo_url} alt="" className="h-16 w-16 shrink-0 rounded-lg object-cover" loading="lazy" /> : <div className="h-16 w-16 shrink-0 rounded-lg bg-muted" />}
               <div className="min-w-0 space-y-1">
                 <p className="truncate text-sm font-semibold">{i.title}</p>
                 <p className="truncate text-xs text-muted-foreground">{categoryById(i.category).label}</p>
                 <StatusBadge status={i.status} />
               </div>
-            </Link>
+            </Button>
           ))}
         </div>
       </aside>
       <div className="order-1 h-[50vh] lg:order-2 lg:h-auto">
-        <LazyMap center={location ?? BENGALURU} recenter={location} picked={location} zoom={12} markers={markers} />
+        <LazyMap center={location ?? BENGALURU} recenter={location} picked={location} zoom={12} markers={markers} onSelect={setSelected} />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, Inbox, Timer, ArrowRight } from "lucide-re
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, OPEN_STATUSES, isOverdue, timeAgo, categoryById } from "@/lib/civic";
 import { StatusBadge, SeverityTag } from "@/components/civic/StatusBadge";
+import { CaseMetrics } from '@/components/civic/CaseMetrics';
 
 export const Route = createFileRoute("/_authenticated/staff/")({
   head: () => ({ meta: [{ title: "Staff overview — CivicFix" }, { name: "description", content: "Review actual civic report counts and triage priorities." }, { property: "og:title", content: "Staff overview — CivicFix" }, { property: "og:description", content: "Review actual civic report counts and triage priorities." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -23,7 +24,7 @@ function Overview() {
   const open = all.filter((i) => OPEN_STATUSES.includes(i.status as never));
   const overdue = open.filter(isOverdue);
   const resolved = all.filter((i) => i.resolved_at);
-  const avgHrs = resolved.length ? Math.round(resolved.reduce((s, i) => s + (new Date(i.resolved_at!).getTime() - new Date(i.created_at).getTime()), 0) / resolved.length / 3600_000) : null;
+  const avgHrs = resolved.length ? Math.round(resolved.reduce((s, i) => s + (i.resolved_at ? new Date(i.resolved_at).getTime() - new Date(i.created_at).getTime() : 0), 0) / resolved.length / 3600_000) : null;
   const unclassified = open.filter((i) => i.status === "needs_classification" || i.status === "submitted");
   const byCat = CATEGORIES.map((c) => ({ ...c, n: open.filter((i) => i.category === c.id).length })).filter((c) => c.n > 0).sort((a, b) => b.n - a.n);
   const maxCat = Math.max(1, ...byCat.map((c) => c.n));
@@ -41,6 +42,8 @@ function Overview() {
         <h1 className="text-3xl font-bold">Overview</h1>
         <p className="text-muted-foreground">What needs attention today.</p>
       </div>
+      <CaseMetrics />
+      <p className="text-xs text-muted-foreground">Recent triage sample below is limited to the latest 1,000 reports; analytics above cover all persisted cases.</p>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((s) => (
           <div key={s.label} className="rounded-2xl border bg-card p-5 shadow-soft">

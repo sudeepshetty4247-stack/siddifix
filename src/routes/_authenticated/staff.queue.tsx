@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/staff/queue")({
 
 function Queue() {
   const navigate = useNavigate();
-  const [view, setView] = useState<"open" | "overdue" | "all">("open");
+  const [view, setView] = useState('open');
   const [cat, setCat] = useState("");
   const [status, setStatus] = useState("");
   const [sev, setSev] = useState("");
@@ -22,7 +22,7 @@ function Queue() {
   const q = useQuery({
     queryKey: ["staff-queue"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("issues").select("id, ref_code, title, category, severity, status, sla_due_at, created_at, landmark, department, support_count, photo_url").order("created_at", { ascending: false }).limit(1000);
+      const { data, error } = await supabase.from("issues").select("id, ref_code, title, category, severity, status, sla_due_at, created_at, landmark, department, support_count, photo_url,authority_id,assignment_state,escalated_at,duplicate_of").order("created_at", { ascending: false }).limit(1000);
       if (error) throw error;
       return data;
     },
@@ -30,6 +30,12 @@ function Queue() {
   const rows = (q.data ?? []).filter((i) => {
     if (view === "open" && !OPEN_STATUSES.includes(i.status as never)) return false;
     if (view === "overdue" && !isOverdue(i)) return false;
+    if (view === 'unassigned' && (i.authority_id || !OPEN_STATUSES.includes(i.status as never))) return false;
+    if (view === 'assigned' && !i.authority_id) return false;
+    if (view === 'rejected assignments' && i.assignment_state !== 'rejected') return false;
+    if (view === 'escalated' && !i.escalated_at) return false;
+    if (view === 'resolved' && !['resolved','closed'].includes(i.status)) return false;
+    if (view === 'linked reports' && !i.duplicate_of) return false;
     if (cat && i.category !== cat) return false;
     if (status && i.status !== status) return false;
     if (sev && i.severity !== sev) return false;
@@ -44,8 +50,8 @@ function Queue() {
           <h1 className="text-3xl font-bold">Issue Queue</h1>
           <p className="text-muted-foreground">{rows.length} issue{rows.length === 1 ? "" : "s"}</p>
         </div>
-        <div className="grid grid-cols-3 gap-1 rounded-xl bg-secondary p-1 text-sm">
-          {(["open", "overdue", "all"] as const).map((v) => (
+        <div className="flex flex-wrap gap-1 rounded-xl bg-secondary p-1 text-sm">
+          {(['open','unassigned','assigned','rejected assignments','overdue','escalated','resolved','linked reports','all']).map((v) => (
             <button key={v} onClick={() => setView(v)} className={cn("rounded-lg px-4 py-1.5 font-medium capitalize", view === v ? "bg-card shadow-soft" : "text-muted-foreground")}>{v}</button>
           ))}
         </div>
