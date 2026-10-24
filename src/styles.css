@@ -191,7 +191,7 @@
 @media print {
   @page { size: A4; margin: 14mm; }
   body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  header, footer, .report-controls, [data-brand-opening], button { display: none !important; }
+  aside, header, footer, .report-controls, [data-brand-opening], button { display: none !important; }
   .public-report { max-width: none; padding: 0; }
   table { min-width: 0 !important; font-size: 10px; }
   tr, section, img { break-inside: avoid; }
@@ -201,3 +201,8 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
+
+progress { appearance: none; background: var(--secondary); border: 0; border-radius: 4px; overflow: hidden; }
+progress::-webkit-progress-bar { background: var(--secondary); }
+progress::-webkit-progress-value { background: var(--primary); }
+progress::-moz-progress-bar { background: var(--primary); }
