@@ -6,16 +6,32 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { LazyMap } from './LazyMap';
 
-export function LocationSelector({ hideTrigger = false }: { hideTrigger?: boolean }) {
+export function LocationSelector() {
   const { location, select, open, setOpen, locating, detect, notice, recent } = useLocation();
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [label, setLabel] = useState('');
   const [coordinates, setCoordinates] = useState('');
   const [error, setError] = useState('');
+  const [checking, setChecking] = useState(false);
   function applyCoordinates() {
     const [lat, lng] = coordinates.split(',').map(Number);
     if (lat === undefined || lng === undefined || !Number.isFinite(lat) || !Number.isFinite(lng) || !isInIndia(lat, lng)) { setError('Enter an Indian location as latitude, longitude.'); return; }
     setPin({ lat, lng }); setError('');
+  }
+  async function confirmPin() {
+    if (!pin) return;
+    setChecking(true); setError('');
+    try {
+      const result = await supabase.rpc('ward_at_point', { _lat: pin.lat, _lng: pin.lng });
+      const wards = result.error ? [] : (result.data as unknown[]);
+      if (wards.length === 0) {
+        setError("We're not in your city yet — CivicFix currently serves Bengaluru, and we'd love to reach you soon. Till then, pick a point inside Bengaluru to explore.");
+        return;
+      }
+      select({ ...pin, label: label.trim() || `${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}`, method: 'manual' });
+    } finally {
+      setChecking(false);
+    }
   }
   return <>
     {!hideTrigger && <Button variant="ghost" onClick={() => setOpen(true)} className="h-auto min-w-0 justify-start gap-2 px-2 py-2 text-left" aria-label="Change location">
