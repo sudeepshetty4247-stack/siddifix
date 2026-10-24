@@ -14,6 +14,8 @@ import { getTracked, isTracked, removeTracked, saveTracked } from "@/lib/trackin
 import { CivicInfo } from "@/components/civic/CivicInfo";
 import { IssueEvidence } from '@/components/civic/IssueEvidence';
 import { Button } from '@/components/ui/button';
+import { publicCases, publicEvents } from '@/lib/public-cases';
+import { getReportPhoto } from '@/lib/report-media.functions';
 
 export const Route = createFileRoute("/_citizen/issues/$ref")({
   head: ({ params }) => ({
@@ -44,9 +46,7 @@ function IssuePage() {
     queryKey: ["issue", ref],
     refetchInterval: 30000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("issues").select("*").eq("ref_code", ref).maybeSingle();
-      if (error) throw error;
-      return data;
+      return (await publicCases(ref))[0] ?? null;
     },
   });
   const events = useQuery({
@@ -55,17 +55,14 @@ function IssuePage() {
     refetchInterval: 30000,
     queryFn: async () => {
       if (!issue.data?.id) return [];
-      const { data, error } = await supabase.from("issue_events").select("*").eq("issue_id", issue.data.id).order("created_at");
-      if (error) throw error;
-      return (data ?? []) as EventRow[];
+      return await publicEvents(issue.data.id);
     },
   });
   const canonical = useQuery({ queryKey: ['canonical-issue', issue.data?.duplicate_of], enabled: !!issue.data?.duplicate_of, queryFn: async () => {
     if (!issue.data?.duplicate_of) return null;
-    const result = await supabase.from('issues').select('id,ref_code,title,status').eq('id',issue.data.duplicate_of).maybeSingle();
-    if (result.error) throw result.error;
-    return result.data;
+    return (await publicCases()).find(row=>row.id===issue.data?.duplicate_of) ?? null;
   }});
+  const photo=useQuery({queryKey:['report-annotated-photo',issue.data?.id],enabled:!!issue.data?.id,queryFn:()=>{if(!issue.data?.id)return null;return getReportPhoto({data:{issueId:issue.data.id}});}});
 
   useEffect(() => {
     const hash = new URLSearchParams(window.location.hash.slice(1)).get("t");
@@ -73,7 +70,7 @@ function IssuePage() {
     setFollowing(isTracked(ref));
     if (t) {
       setToken(t);
-      verify({ data: { ref, token: t } }).then((r) => setTokenValid(r.valid));
+      verify({ data: { ref, token: t } }).then((r) => setTokenValid(r.valid)).catch(()=>setTokenValid(false));
     }
   }, [ref, verify]);
 
@@ -153,6 +150,7 @@ function IssuePage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-6">
           {i.photo_url && <img src={i.photo_url} alt={i.title} className="max-h-[520px] w-full rounded-3xl border object-cover shadow-soft" />}
+          {photo.data?.url&&<details className="border-y py-4"><summary className="cursor-pointer text-sm font-semibold">Annotated report photo</summary><img src={photo.data.url} alt="Separate annotated report evidence with report location and available capture metadata" className="mt-4 w-full rounded-lg" loading="lazy"/><p className="mt-2 text-xs text-muted-foreground">A separate copy. The untouched original stays private; report location is not proof of photo capture location.</p></details>}
           {i.safety_warning && <div className="flex gap-3 rounded-2xl bg-destructive-soft p-4 text-sm text-destructive"><ShieldAlert className="h-5 w-5 shrink-0" />{i.safety_warning}</div>}
           {(i.summary || i.description) && (
             <div className="rounded-2xl border bg-card p-6">

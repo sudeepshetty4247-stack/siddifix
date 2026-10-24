@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getTracked, removeTracked, type TrackedIssue } from "@/lib/tracking";
 import { StatusBadge } from "@/components/civic/StatusBadge";
 import { timeAgo } from "@/lib/civic";
+import { publicCases } from '@/lib/public-cases';
 
 export const Route = createFileRoute("/_citizen/track")({
   head: () => ({
@@ -32,9 +33,7 @@ function Track() {
     enabled: refs.length > 0,
     refetchInterval: 30000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("issues").select("ref_code, status, title, updated_at, photo_url").in("ref_code", refs);
-      if (error) throw error;
-      return data ?? [];
+      return (await Promise.all(refs.map(ref=>publicCases(ref)))).flat();
     },
   });
 

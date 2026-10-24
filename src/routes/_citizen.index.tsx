@@ -2,8 +2,8 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Camera, Map, MapPin, Search, ShieldCheck, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import { ISSUE_COLUMNS, IssueCard, type IssueRow } from '@/components/civic/IssueCard';
+import { publicCases } from '@/lib/public-cases';
+import { IssueCard } from '@/components/civic/IssueCard';
 import bengaluruPhoto from '@/assets/bengaluru-home.jpg';
 import { NearbyCaseSummary } from '@/components/civic/NearbyCaseSummary';
 export const Route = createFileRoute('/_citizen/')({
@@ -20,14 +20,12 @@ export const Route = createFileRoute('/_citizen/')({
 
 function CitizenHome() {
   const recent = useQuery({ queryKey: ['home-recent-issues'], queryFn: async () => {
-    const result = await supabase.from('issues').select(ISSUE_COLUMNS).order('created_at', { ascending: false }).limit(3);
-    if (result.error) throw result.error;
-    return result.data as IssueRow[];
+    return (await publicCases()).slice(0, 3);
   }, refetchInterval: 30000 });
   return <div>
     <NearbyCaseSummary />
     <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
-      <img src={bengaluruPhoto} alt="" width={1600} height={912} className="absolute inset-0 -z-20 h-full w-full object-cover object-center" fetchPriority="high" />
+      <img src={bengaluruPhoto} alt="Vidhana Soudha, Bengaluru" width={1600} height={912} className="absolute inset-0 -z-20 h-full w-full object-cover object-center" fetchPriority="high" />
       <div className="home-photo-shade absolute inset-0 -z-10" />
       <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 sm:py-16 lg:py-20">
         <p className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase"><MapPin className="h-4 w-4" />Bengaluru, Karnataka</p>

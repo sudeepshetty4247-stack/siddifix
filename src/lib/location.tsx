@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { suggestedReportLocation } from './report-location';
+import { reverseGeocode } from './geocoding.functions';
 export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual'; accuracy?: number };
 type LocationContextValue = { location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void; locating: boolean; detect: () => void; notice: string; recent: SelectedLocation[] };
 const LocationContext = createContext<LocationContextValue | null>(null);
@@ -44,6 +45,15 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     // A one-time browser permission request; denial leaves manual selection available.
     detect();
   }, []);
+  useEffect(()=>{
+    if(!location||!suggestedReportLocation(location)||location.label!=='Current location')return;
+    let cancelled=false;
+    reverseGeocode({data:{lat:location.lat,lng:location.lng}}).then(result=>{
+      const address=result.address;
+      if(!cancelled&&address)setLocation(previous=>previous&&previous.lat===location.lat&&previous.lng===location.lng?{...previous,label:address.split(',').slice(0,2).join(',').slice(0,120)}:previous);
+    }).catch(()=>{/* coordinates remain available */});
+    return()=>{cancelled=true;};
+  },[location?.lat,location?.lng,location?.label]);
   return <LocationContext.Provider value={{ location, select, open, setOpen, locating, detect, notice, recent }}>{children}</LocationContext.Provider>;
 }
 export function useLocation() { const value = useContext(LocationContext); if (!value) throw new Error('LocationProvider required'); return value; }

@@ -1,0 +1,3 @@
+CREATE OR REPLACE FUNCTION public.hash_reporter_token() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF NEW.recovery_token NOT LIKE '[hashed]%' THEN NEW.token_hash:=encode(sha256(convert_to(NEW.recovery_token,'UTF8')),'hex'); END IF; NEW.recovery_token:='[hashed]'||NEW.issue_id::text; RETURN NEW; END $$;
+CREATE UNIQUE INDEX issue_secrets_token_hash_unique ON public.issue_secrets(token_hash);
+COMMENT ON COLUMN public.issue_secrets.recovery_token IS 'DEPRECATED: contains only an issue-specific non-secret marker; reporter credentials are validated with token_hash.';

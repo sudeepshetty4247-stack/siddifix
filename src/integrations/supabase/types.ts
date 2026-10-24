@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      civic_ai_state: {
+        Row: {
+          id: string
+          paused: boolean
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          paused?: boolean
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          paused?: boolean
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       civic_authorities: {
         Row: {
           active: boolean
@@ -192,6 +213,87 @@ export type Database = {
           old_row?: Json | null
           record_id?: string
           table_name?: string
+        }
+        Relationships: []
+      }
+      civic_people: {
+        Row: {
+          active: boolean
+          category: string | null
+          checked_at: string
+          contact_email: string | null
+          contact_phone: string | null
+          corporation: string | null
+          designation: string
+          full_name: string
+          id: string
+          kind: string
+          photo_source_url: string | null
+          photo_url: string | null
+          source_url: string
+          updated_at: string
+          updated_by: string | null
+          verification_status: string
+          ward_identifier: string | null
+          zone: string | null
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          checked_at?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          corporation?: string | null
+          designation: string
+          full_name: string
+          id?: string
+          kind?: string
+          photo_source_url?: string | null
+          photo_url?: string | null
+          source_url: string
+          updated_at?: string
+          updated_by?: string | null
+          verification_status?: string
+          ward_identifier?: string | null
+          zone?: string | null
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          checked_at?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          corporation?: string | null
+          designation?: string
+          full_name?: string
+          id?: string
+          kind?: string
+          photo_source_url?: string | null
+          photo_url?: string | null
+          source_url?: string
+          updated_at?: string
+          updated_by?: string | null
+          verification_status?: string
+          ward_identifier?: string | null
+          zone?: string | null
+        }
+        Relationships: []
+      }
+      civic_request_limits: {
+        Row: {
+          hits: number
+          key: string
+          window_started_at: string
+        }
+        Insert: {
+          hits?: number
+          key: string
+          window_started_at?: string
+        }
+        Update: {
+          hits?: number
+          key?: string
+          window_started_at?: string
         }
         Relationships: []
       }
@@ -518,21 +620,97 @@ export type Database = {
           },
         ]
       }
+      issue_ownership_reviews: {
+        Row: {
+          created_at: string
+          issue_id: string
+          reason: string
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          issue_id: string
+          reason?: string
+          state?: string
+        }
+        Update: {
+          created_at?: string
+          issue_id?: string
+          reason?: string
+          state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_ownership_reviews_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: true
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      issue_photos: {
+        Row: {
+          annotated_path: string | null
+          created_at: string
+          display_path: string
+          id: string
+          issue_id: string
+          metadata: Json
+          original_path: string
+          original_sha256: string
+          source: string
+        }
+        Insert: {
+          annotated_path?: string | null
+          created_at?: string
+          display_path: string
+          id?: string
+          issue_id: string
+          metadata?: Json
+          original_path: string
+          original_sha256: string
+          source?: string
+        }
+        Update: {
+          annotated_path?: string | null
+          created_at?: string
+          display_path?: string
+          id?: string
+          issue_id?: string
+          metadata?: Json
+          original_path?: string
+          original_sha256?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_photos_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_secrets: {
         Row: {
           created_at: string
           issue_id: string
           recovery_token: string
+          token_hash: string | null
         }
         Insert: {
           created_at?: string
           issue_id: string
           recovery_token: string
+          token_hash?: string | null
         }
         Update: {
           created_at?: string
           issue_id?: string
           recovery_token?: string
+          token_hash?: string | null
         }
         Relationships: [
           {
@@ -702,6 +880,10 @@ export type Database = {
         Returns: string
       }
       civic_case_metrics: { Args: never; Returns: Json }
+      consume_civic_request: {
+        Args: { _key: string; _limit: number }
+        Returns: boolean
+      }
       create_civic_report: {
         Args: { _report: Json; _token: string }
         Returns: Json
@@ -735,6 +917,8 @@ export type Database = {
           title: string
         }[]
       }
+      public_case_events: { Args: { _id: string }; Returns: Json }
+      public_case_rows: { Args: { _ref?: string }; Returns: Json }
       review_issue_duplicate: {
         Args: {
           _candidate: string
@@ -765,6 +949,10 @@ export type Database = {
       staff_record_evidence: {
         Args: { _id: string; _kind: string; _note: string; _path: string }
         Returns: string
+      }
+      verify_reporter_token: {
+        Args: { _ref: string; _token: string }
+        Returns: boolean
       }
       ward_case_counts: {
         Args: never

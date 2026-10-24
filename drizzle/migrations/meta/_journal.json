@@ -71,6 +71,34 @@
       "when": 1792834971506,
       "tag": "0009_nearby_citizen_case_summary",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792836178919,
+      "tag": "0010_secure_report_media_and_public_projections",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792836286454,
+      "tag": "0011_atomic_photo_records_and_duplicate_candidates",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792836410493,
+      "tag": "0012_verified_operational_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792836856184,
+      "tag": "0013_unique_hashed_reporter_capabilities",
+      "breakpoints": true
     }
   ]
 }
