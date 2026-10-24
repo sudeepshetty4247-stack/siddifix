@@ -29,8 +29,8 @@ function CitizenHome() {
       <div className="home-photo-shade absolute inset-0 -z-10" />
       <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 sm:py-16 lg:py-20">
         <p className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase"><MapPin className="h-4 w-4" />Bengaluru, Karnataka</p>
-        <h1 className="text-4xl font-bold sm:text-5xl lg:text-6xl">CivicFix Bengaluru</h1>
-        <p className="mt-5 max-w-xl text-xl font-medium sm:text-2xl">Your city. Your voice.<br />A better neighbourhood starts here.</p>
+        <h1 className="text-4xl font-bold sm:text-5xl lg:text-6xl">Siddi</h1>
+        <p className="mt-5 max-w-xl text-xl font-medium sm:text-2xl">Your City. Your Voice.<br />A better neighbourhood starts here.</p>
         <p className="mt-4 max-w-md text-sm leading-relaxed opacity-90">A broken road. An overflowing bin. A streetlight gone dark. Report what matters, and follow every recorded action.</p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Button asChild size="lg" className="h-12 rounded-lg px-5"><Link to="/report"><Camera className="h-5 w-5" />Report a problem<ArrowRight className="h-4 w-4" /></Link></Button>

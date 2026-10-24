@@ -1,5 +1,9 @@
 # CivicFix roadmap
 
+## Current request — Siddi identity and opening screen
+- [ ] Rename app-facing CivicFix wording to Siddi; retain official Bengaluru location names and historical records.
+- [ ] Add centered supplied logo on black opening screen; compact name/slogan in navigation, update icons and verify.
+
 ## Current request — supplied logo and Back fix
 - [x] Applied supplied Siddi logo/slogan and complete-logo favicon/install icons; existing workflow copy remains unchanged.
 - [x] Fixed Back for location overlay and same-page/redirect history; staff Back now above content. Browser verified overlay → sign-in and direct sign-in → Home; logo decoded, no page errors, 128 tests passed and preview validation clean.
