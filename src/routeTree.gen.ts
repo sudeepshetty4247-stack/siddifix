@@ -26,6 +26,7 @@ import { Route as CitizenTrackRouteImport } from './routes/_citizen.track'
 import { Route as CitizenTransparencyRouteImport } from './routes/_citizen.transparency'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminAdministratorsRouteImport } from './routes/_authenticated/admin.administrators'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as AuthenticatedAdminDirectoryRouteImport } from './routes/_authenticated/admin.directory'
 import { Route as AuthenticatedAdminInsightsRouteImport } from './routes/_authenticated/admin.insights'
@@ -134,6 +135,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminAdministratorsRoute =
+  AuthenticatedAdminAdministratorsRouteImport.update({
+    id: '/administrators',
+    path: '/administrators',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -286,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/track': typeof CitizenTrackRoute
   '/transparency': typeof CitizenTransparencyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/admin/administrators': typeof AuthenticatedAdminAdministratorsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
   '/admin/insights': typeof AuthenticatedAdminInsightsRoute
@@ -325,6 +333,7 @@ export interface FileRoutesByTo {
   '/track': typeof CitizenTrackRoute
   '/transparency': typeof CitizenTransparencyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/admin/administrators': typeof AuthenticatedAdminAdministratorsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
   '/admin/insights': typeof AuthenticatedAdminInsightsRoute
@@ -369,6 +378,7 @@ export interface FileRoutesById {
   '/_citizen/transparency': typeof CitizenTransparencyRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/_citizen/': typeof CitizenIndexRoute
+  '/_authenticated/admin/administrators': typeof AuthenticatedAdminAdministratorsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/directory': typeof AuthenticatedAdminDirectoryRoute
   '/_authenticated/admin/insights': typeof AuthenticatedAdminInsightsRoute
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/track'
     | '/transparency'
     | '/api/assistant'
+    | '/admin/administrators'
     | '/admin/audit'
     | '/admin/directory'
     | '/admin/insights'
@@ -451,6 +462,7 @@ export interface FileRouteTypes {
     | '/track'
     | '/transparency'
     | '/api/assistant'
+    | '/admin/administrators'
     | '/admin/audit'
     | '/admin/directory'
     | '/admin/insights'
@@ -494,6 +506,7 @@ export interface FileRouteTypes {
     | '/_citizen/transparency'
     | '/api/assistant'
     | '/_citizen/'
+    | '/_authenticated/admin/administrators'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/directory'
     | '/_authenticated/admin/insights'
@@ -651,6 +664,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/administrators': {
+      id: '/_authenticated/admin/administrators'
+      path: '/administrators'
+      fullPath: '/admin/administrators'
+      preLoaderRoute: typeof AuthenticatedAdminAdministratorsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/audit': {
@@ -825,6 +845,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAdministratorsRoute: typeof AuthenticatedAdminAdministratorsRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminDirectoryRoute: typeof AuthenticatedAdminDirectoryRoute
   AuthenticatedAdminInsightsRoute: typeof AuthenticatedAdminInsightsRoute
@@ -839,6 +860,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAdministratorsRoute: AuthenticatedAdminAdministratorsRoute,
   AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
   AuthenticatedAdminDirectoryRoute: AuthenticatedAdminDirectoryRoute,
   AuthenticatedAdminInsightsRoute: AuthenticatedAdminInsightsRoute,
