@@ -63,6 +63,14 @@ function StaffIssue() {
     },
   });
 
+  const scope = useQuery({
+    queryKey: ["staff-can-work", id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("staff_can_work", { _user_id: (await supabase.auth.getUser()).data.user?.id ?? "", _issue: id });
+      return data === true;
+    },
+  });
+
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["staff-issue", id] });
     qc.invalidateQueries({ queryKey: ["staff-events", id] });
@@ -123,6 +131,7 @@ function StaffIssue() {
   const i = issue.data;
   const myRoles = (roles.data?.roles ?? []) as string[];
   const supervisor = myRoles.some(r => r === "admin" || r === "supervisor" || r === "staff");
+  const canWork = supervisor || scope.data === true;
   const options = (TRANSITIONS[i.status as IssueStatus] ?? []).filter(s => supervisor || FIELD_TARGETS.includes(s));
 
   return (
@@ -143,8 +152,14 @@ function StaffIssue() {
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         <div className="space-y-6">
-          <StaffCommitment issue={i} onDone={refresh} />
-          <div className="rounded-2xl border bg-card p-5 shadow-soft">
+          {scope.data === false && !supervisor && (
+            <div className="rounded-2xl border border-warning bg-card p-5 shadow-soft">
+              <h2 className="font-semibold">Outside your assigned scope</h2>
+              <p className="mt-1 text-sm text-muted-foreground">This case belongs to a category or ward not assigned to you. You can view it, but only the responsible team can act on it.</p>
+            </div>
+          )}
+          {canWork && <StaffCommitment issue={i} onDone={refresh} />}
+          {canWork && <div className="rounded-2xl border bg-card p-5 shadow-soft">
             <h2 className="font-semibold">Move the case forward</h2>
             {!options.length && <p className="mt-2 text-sm text-muted-foreground">{i.duplicate_of ? "This report is linked to a canonical issue — work on that one." : "No further step for your role here."}</p>}
             <div className="mt-4 flex flex-wrap gap-2">
@@ -159,14 +174,14 @@ function StaffIssue() {
               {!nextStatus && <button disabled={busy || note.trim().length < 2} onClick={postNote} className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold disabled:opacity-40"><Send className="h-4 w-4" /> Post update</button>}
               {nextStatus && <button disabled={busy} onClick={applyStatus} className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Confirm: {STATUS_META[nextStatus].label}</button>}
             </div>
-          </div>
+          </div>}
           <div className="rounded-2xl border bg-card p-5 shadow-soft">
             <h2 className="mb-5 font-semibold">Audit trail</h2>
             <Timeline events={events.data ?? []} />
           </div>
-          <DuplicateReview issue={i} />
-          <AssignmentActions id={i.id} authorityId={i.authority_id} state={i.assignment_state} />
-          <IssueEvidence issueId={i.id} staff />
+          {canWork && <DuplicateReview issue={i} />}
+          {canWork && <AssignmentActions id={i.id} authorityId={i.authority_id} state={i.assignment_state} />}
+          {canWork && <IssueEvidence issueId={i.id} staff />}
         </div>
         <aside className="space-y-4">
           {i.photo_url && <img src={i.photo_url} alt="" className="w-full rounded-2xl border object-cover" />}
@@ -175,13 +190,13 @@ function StaffIssue() {
             {i.ai_confidence !== null && <p className="text-xs text-muted-foreground">AI suggestion confidence: {Math.round((i.ai_confidence ?? 0) * 100)}%</p>}
             <label className="block text-sm">
               <span className="text-muted-foreground">Category</span>
-              <select value={i.category} onChange={(e) => updateField({ category: e.target.value }, `Reclassified as ${categoryById(e.target.value).label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
+              <select value={i.category} disabled={!canWork} onChange={(e) => updateField({ category: e.target.value }, `Reclassified as ${categoryById(e.target.value).label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
                 {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </label>
             <label className="block text-sm">
               <span className="text-muted-foreground">Severity</span>
-              <select value={i.severity} onChange={(e) => updateField({ severity: e.target.value as "low" }, `Severity set to ${SEVERITY_META[e.target.value as "low"].label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
+              <select value={i.severity} disabled={!canWork} onChange={(e) => updateField({ severity: e.target.value as "low" }, `Severity set to ${SEVERITY_META[e.target.value as "low"].label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
                 {SEVERITIES.map((s) => <option key={s} value={s}>{SEVERITY_META[s].label}</option>)}
               </select>
             </label>
