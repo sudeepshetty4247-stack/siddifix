@@ -74,11 +74,13 @@ export default function MapView({
   center,
   zoom = 13,
   markers = [],
+  counts = [],
   picked,
   onPick,
   recenter,
   className,
   onSelect,
+  onCountSelect,
   wards,
   selectedWard,
   onWardSelect,
@@ -86,11 +88,13 @@ export default function MapView({
   center: { lat: number; lng: number };
   zoom?: number;
   markers?: MapMarker[];
+  counts?: MapCount[];
   picked?: { lat: number; lng: number } | null;
   onPick?: (lat: number, lng: number) => void;
   recenter?: { lat: number; lng: number; zoom?: number } | null;
   className?: string | undefined;
   onSelect?: (id: string) => void;
+  onCountSelect?: (id: string) => void;
   wards?: Ward[];
   selectedWard?: string;
   onWardSelect?: (id: string, point: {lat: number; lng: number}) => void;
