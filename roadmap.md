@@ -1,5 +1,10 @@
 # CivicFix roadmap
 
+## Current request — staff testing and Back navigation
+- [x] Added shared Back controls to citizen, sign-in and staff interfaces; browser verified direct sign-in → Home fallback and Report → sign-in history return after location setup.
+- [x] Signed-in administrator verified loaded Overview, Queue, Routing Exceptions, Overdue, Notifications, Team Management, Audit/Health and existing case read-back. 128 tests pass; complete testing guide delivered. No fake live complaint or repair inserted.
+- [ ] Fresh write-through acceptance and field-worker negative flow: requires isolated test data or a genuine case and authorised actual work; physical-phone checks remain user-dependent.
+
 ## Authority portraits and photo QA — 24 October 2026
 - [x] Diagnose directory photo fields and elected-card rendering; initially all 781 profiles lacked photo URL/source. Elected profiles were also wrongly filtered by constituency versus city zone.
 - [x] Shared source-backed portrait display with fixed dimensions, loading state and initials fallback; scope case-page people reads to the relevant ward.

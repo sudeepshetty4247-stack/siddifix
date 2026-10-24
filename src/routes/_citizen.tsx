@@ -8,6 +8,7 @@ import { LocationProvider } from "@/lib/location";
 import { LocationGate } from "@/components/civic/LocationGate";
 import { LocationSelector } from "@/components/civic/LocationSelector";
 import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/civic/BackButton";
 
 
 export const Route = createFileRoute("/_citizen")({
@@ -38,6 +39,7 @@ function CitizenShell() {
       <header className="sticky top-0 z-[1000] border-b bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center gap-2 px-4 py-2 sm:gap-4 sm:px-6">
           <Logo />
+          <BackButton />
           <LocationSelector />
           <nav className="hidden items-center gap-1 lg:flex">
 
