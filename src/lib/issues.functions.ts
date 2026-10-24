@@ -147,6 +147,14 @@ export const submitIssue = createServerFn({ method: "POST" })
     }
     const saved = result as { ref: string; duplicate: boolean };
     if (saved.duplicate) await supabaseAdmin.storage.from('issue-photos').remove([path]);
+    if (!saved.duplicate) {
+      // Route the new case to the matching operational team (category + ward); failures leave it in the exception queue.
+      const created = await supabaseAdmin.from('issues').select('id').eq('ref_code', saved.ref).maybeSingle();
+      if (created.data?.id) {
+        const routed = await supabaseAdmin.rpc('route_issue_to_team', { _issue: created.data.id });
+        if (routed.error) console.error('Team routing failed', saved.ref, routed.error.message);
+      }
+    }
     return { ref: saved.ref, token: saved.duplicate ? null : token, duplicate: saved.duplicate };
   });
 
