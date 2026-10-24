@@ -183,7 +183,7 @@ function IssuePage() {
             <div className="flex items-center justify-between p-4 text-sm"><span className="text-muted-foreground">Severity</span><SeverityTag severity={i.severity} /></div>
             <div className="flex items-center justify-between p-4 text-sm"><span className="text-muted-foreground">Reported</span><span>{new Date(i.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span></div>
           </div>
-          <CivicInfo lat={i.lat} lng={i.lng} category={i.category} subcategory={i.subcategory} />
+          <CivicInfo lat={i.lat} lng={i.lng} category={i.category} subcategory={i.subcategory} snapshot={i.routing_snapshot} />
         </aside>
       </div>
     </div>
