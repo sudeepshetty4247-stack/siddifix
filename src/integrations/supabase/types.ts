@@ -1574,6 +1574,7 @@ export type Database = {
         }
         Returns: Json
       }
+      preview_demo_purge: { Args: { _dataset: string }; Returns: Json }
       process_deadline_reminders: { Args: never; Returns: number }
       public_case_events: { Args: { _id: string }; Returns: Json }
       public_case_rows: { Args: { _ref?: string }; Returns: Json }
