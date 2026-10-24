@@ -5,6 +5,7 @@ import { getDirectory } from "./directory.functions";
 import { resolveCivicRouting } from "./directory";
 import { CATEGORIES, SEVERITY_META, categoryById, isInIndia, isInBengaluru, type Severity } from "./civic";
 import { photoMetadataSchema } from './report-photo';
+import { TRACKING_TOKEN_RE, CASE_REF_RE } from './tracking-token';
 
 const MAX_IMAGE_CHARS = 7_500_000; // ~5.5MB binary
 const dataUrlRe = /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$/;
@@ -162,7 +163,7 @@ export const submitIssue = createServerFn({ method: "POST" })
 export const citizenAction = createServerFn({ method: "POST" })
   .inputValidator((input: { ref: string; token: string; action: "reopen" | "confirm"; note?: string }) =>
     z
-      .object({ ref: z.string().max(20), token: z.string().length(48), action: z.enum(["reopen", "confirm"]), note: z.string().max(500).optional() })
+      .object({ ref: z.string().regex(CASE_REF_RE), token: z.string().regex(TRACKING_TOKEN_RE), action: z.enum(["reopen", "confirm"]), note: z.string().max(500).optional() })
       .parse(input),
   )
   .handler(async ({ data }) => {
@@ -174,7 +175,7 @@ export const citizenAction = createServerFn({ method: "POST" })
   });
 
 export const verifyToken = createServerFn({ method: "POST" })
-  .inputValidator((input: { ref: string; token: string }) => z.object({ ref: z.string().max(20), token: z.string().regex(/^[a-f0-9]{48}$/) }).parse(input))
+  .inputValidator((input: { ref: string; token: string }) => z.object({ ref: z.string().regex(CASE_REF_RE), token: z.string().regex(TRACKING_TOKEN_RE) }).parse(input))
   .handler(async ({ data }) => {
     const {consumeRequest}=await import('./civic-security.server');await consumeRequest('tracking-verify',30);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

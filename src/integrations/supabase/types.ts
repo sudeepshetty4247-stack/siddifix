@@ -1109,6 +1109,10 @@ export type Database = {
         Returns: undefined
       }
       staff_actor_label: { Args: { _user_id: string }; Returns: string }
+      staff_add_note: {
+        Args: { _issue: string; _note: string }
+        Returns: undefined
+      }
       staff_assign_team: {
         Args: { _issue: string; _reason: string; _team: string }
         Returns: undefined
