@@ -4,7 +4,7 @@ export function authorityInitials(name: string) {
   return name.replace(/^(Dr\.|Shri|Smt\.)\s*/i, '').split(/[\s.]+/).filter(word => word.length > 1).slice(0, 2).map(word => word[0]?.toUpperCase()).join('');
 }
 
-export function AuthorityPortrait({ name, role, url, source }: { name: string; role: string; url?: string | null; source?: string | null }) {
+export function AuthorityPortrait({ name, role, url, source }: { name: string; role: string; url?: string | null | undefined; source?: string | null | undefined }) {
   const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   // A profile verification alone does not establish a portrait's provenance.

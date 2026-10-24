@@ -11,7 +11,7 @@ const MLA_SOURCE = 'https://results.eci.gov.in/ResultAcGenMay2023/partywiseresul
 
 type PortraitProfile = { kind: string; full_name: string; photo_url: string | null; photo_source_url: string | null };
 
-function Elected({ role, name, party, area, source, portrait }: { role: string; name: string; party?: string | null; area?: string | null; source: string; portrait?: PortraitProfile }) {
+function Elected({ role, name, party, area, source, portrait }: { role: string; name: string; party?: string | null; area?: string | null; source: string; portrait?: PortraitProfile | undefined }) {
   return <article className="flex items-center gap-3 rounded-xl border bg-card p-3">
     <AuthorityPortrait name={name} role={role} url={portrait?.photo_url} source={portrait?.photo_source_url} />
     <div className="min-w-0">
