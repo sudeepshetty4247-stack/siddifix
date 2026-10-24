@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Building2, ExternalLink, Phone, ShieldCheck } from 'lucide-react';
+import { Building2, Phone, ShieldCheck } from 'lucide-react';
 import { getDirectory } from '@/lib/directory.functions';
 import { resolveCivicRouting } from '@/lib/directory';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,9 @@ export function CivicInfo({ lat, lng, category, subcategory }: { lat: number; ln
     {routing.candidates.length === 0 && <p className="text-sm text-muted-foreground">No verified service route for this category and area yet.</p>}
     {routing.candidates.map(a => <article key={a.id} className="space-y-2 border-l-2 border-primary pl-3">
       <h3 className="text-sm font-semibold">{a.name}</h3><p className="text-xs text-muted-foreground">{a.notes}</p>
-      <div className="flex flex-wrap gap-2">{a.reporting_url && <Button asChild size="sm" variant="outline"><a href={a.reporting_url} target="_blank" rel="noopener noreferrer">Official route<ExternalLink className="h-3 w-3" /></a></Button>}{a.phone && <Button asChild size="sm" variant="ghost"><a href={`tel:${a.phone}`}><Phone className="h-3 w-3" />{a.phone}</a></Button>}</div>
+      <div className="flex flex-wrap gap-2">{a.phone && <Button asChild size="sm" variant="ghost"><a href={`tel:${a.phone}`}><Phone className="h-3 w-3" />{a.phone}</a></Button>}</div>
       <a href={a.source_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[11px] text-primary"><ShieldCheck className="h-3 w-3" />Source checked {a.verified_at} · view source</a>
     </article>)}
-    <p className="text-xs text-muted-foreground">Opening an official route does not send your CivicFix report. No external submission is recorded.</p>
+    <p className="text-xs text-muted-foreground">Review and action history stay in CivicFix. Listed organisations have not accepted this case unless an acceptance is recorded.</p>
   </section>;
 }

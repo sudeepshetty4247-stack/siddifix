@@ -137,21 +137,9 @@ export const citizenAction = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const issue = await supabaseAdmin.from("issues").select("id, status, issue_secrets(recovery_token)").eq("ref_code", data.ref).maybeSingle();
-    const sec = issue.data?.issue_secrets as unknown as { recovery_token: string } | null;
-    if (!issue.data || sec?.recovery_token !== data.token) throw new Error("This tracking link is not valid.");
-    if (issue.data.status !== "resolved") throw new Error("This action is only available after an issue is marked resolved.");
-    const to = data.action === "reopen" ? "reopened" : "closed";
-    await supabaseAdmin.from("issues").update({ status: to }).eq("id", issue.data.id);
-    await supabaseAdmin.from("issue_events").insert({
-      issue_id: issue.data.id,
-      kind: data.action === "reopen" ? "disputed" : "citizen_confirmed",
-      from_status: "resolved",
-      to_status: to,
-      actor_label: "Original reporter",
-      note: data.note || (data.action === "reopen" ? "Reporter says the problem is not fixed" : "Reporter confirmed the fix"),
-    });
-    return { status: to };
+    const result = await supabaseAdmin.rpc('citizen_change_issue', { _ref: data.ref, _token: data.token, _action: data.action, _note: data.note ?? '' });
+    if (result.error) throw new Error(result.error.message);
+    return { status: result.data };
   });
 
 export const verifyToken = createServerFn({ method: "POST" })

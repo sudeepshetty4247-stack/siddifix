@@ -11,6 +11,7 @@ import { LazyMap } from "@/components/civic/LazyMap";
 import { useRoles } from "./staff";
 import { CivicInfo } from "@/components/civic/CivicInfo";
 import { getDirectory } from "@/lib/directory.functions";
+import { DuplicateReview } from '@/components/civic/DuplicateReview';
 
 export const Route = createFileRoute("/_authenticated/staff/issues/$id")({
   head: () => ({ meta: [{ title: "Staff issue actions — CivicFix" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Staff issue actions — CivicFix" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -61,7 +62,7 @@ function StaffIssue() {
     qc.invalidateQueries({ queryKey: ["staff-queue"] });
     qc.invalidateQueries({ queryKey: ["staff-all"] });
   };
-  const actor = () => ({ actor_id: roles.data!.userId, actor_label: roles.data?.roles.includes("admin") ? "CivicFix administrator" : "CivicFix staff" });
+  const actor = () => ({ actor_id: roles.data?.userId, actor_label: roles.data?.roles.includes("admin") ? "CivicFix administrator" : "CivicFix staff" });
 
   async function logEvent(e: { kind: string; note?: string | null; from_status?: IssueStatus | null; to_status?: IssueStatus | null }) {
     const { error } = await supabase.from("issue_events").insert({ issue_id: id, ...actor(), ...e });
@@ -111,6 +112,7 @@ function StaffIssue() {
     refresh();
   }
 
+  if (issue.isError) return <div className="p-8" role="alert"><p>This case could not be loaded.</p><button onClick={() => issue.refetch()}>Retry</button></div>;
   if (issue.isLoading || !issue.data) return <div className="p-8"><div className="h-96 animate-pulse rounded-2xl bg-muted" /></div>;
   const i = issue.data;
   const options = TRANSITIONS[i.status as IssueStatus] ?? [];
@@ -152,6 +154,7 @@ function StaffIssue() {
             <h2 className="mb-5 font-semibold">Audit trail</h2>
             <Timeline events={events.data ?? []} />
           </div>
+          <DuplicateReview issue={i} />
         </div>
         <aside className="space-y-4">
           {i.photo_url && <img src={i.photo_url} alt="" className="w-full rounded-2xl border object-cover" />}
