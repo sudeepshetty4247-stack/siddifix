@@ -14,6 +14,177 @@ export type Database = {
   }
   public: {
     Tables: {
+      civic_authorities: {
+        Row: {
+          active: boolean
+          coverage_id: string | null
+          id: string
+          kind: string
+          name: string
+          notes: string
+          phone: string | null
+          reporting_url: string | null
+          source_url: string
+          verified_at: string
+          website_url: string
+        }
+        Insert: {
+          active?: boolean
+          coverage_id?: string | null
+          id?: string
+          kind?: string
+          name: string
+          notes?: string
+          phone?: string | null
+          reporting_url?: string | null
+          source_url: string
+          verified_at: string
+          website_url: string
+        }
+        Update: {
+          active?: boolean
+          coverage_id?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          notes?: string
+          phone?: string | null
+          reporting_url?: string | null
+          source_url?: string
+          verified_at?: string
+          website_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "civic_authorities_coverage_id_fkey"
+            columns: ["coverage_id"]
+            isOneToOne: false
+            referencedRelation: "civic_coverage"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      civic_coverage: {
+        Row: {
+          bounds: Json
+          enabled: boolean
+          id: string
+          name: string
+          notice: string
+          source_url: string | null
+          state: string
+          verified_at: string | null
+        }
+        Insert: {
+          bounds: Json
+          enabled?: boolean
+          id: string
+          name: string
+          notice: string
+          source_url?: string | null
+          state?: string
+          verified_at?: string | null
+        }
+        Update: {
+          bounds?: Json
+          enabled?: boolean
+          id?: string
+          name?: string
+          notice?: string
+          source_url?: string | null
+          state?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
+      civic_service_rules: {
+        Row: {
+          authority_id: string
+          category: string
+          confidence: string
+          id: string
+          notes: string
+          source_url: string
+          subcategory: string | null
+        }
+        Insert: {
+          authority_id: string
+          category: string
+          confidence?: string
+          id?: string
+          notes?: string
+          source_url: string
+          subcategory?: string | null
+        }
+        Update: {
+          authority_id?: string
+          category?: string
+          confidence?: string
+          id?: string
+          notes?: string
+          source_url?: string
+          subcategory?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "civic_service_rules_authority_id_fkey"
+            columns: ["authority_id"]
+            isOneToOne: false
+            referencedRelation: "civic_authorities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      civic_wards: {
+        Row: {
+          active: boolean
+          boundary: Json
+          corporation: string
+          coverage_id: string
+          id: string
+          identifier: string
+          name: string
+          representative: string | null
+          representative_source_url: string | null
+          source_url: string
+          verified_at: string
+        }
+        Insert: {
+          active?: boolean
+          boundary: Json
+          corporation: string
+          coverage_id: string
+          id?: string
+          identifier: string
+          name: string
+          representative?: string | null
+          representative_source_url?: string | null
+          source_url: string
+          verified_at: string
+        }
+        Update: {
+          active?: boolean
+          boundary?: Json
+          corporation?: string
+          coverage_id?: string
+          id?: string
+          identifier?: string
+          name?: string
+          representative?: string | null
+          representative_source_url?: string | null
+          source_url?: string
+          verified_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "civic_wards_coverage_id_fkey"
+            columns: ["coverage_id"]
+            isOneToOne: false
+            referencedRelation: "civic_coverage"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_events: {
         Row: {
           actor_id: string | null
@@ -101,6 +272,7 @@ export type Database = {
           photo_url: string | null
           ref_code: string
           resolved_at: string | null
+          routing_snapshot: Json | null
           safety_warning: string | null
           severity: Database["public"]["Enums"]["issue_severity"]
           sla_due_at: string | null
@@ -127,6 +299,7 @@ export type Database = {
           photo_url?: string | null
           ref_code: string
           resolved_at?: string | null
+          routing_snapshot?: Json | null
           safety_warning?: string | null
           severity?: Database["public"]["Enums"]["issue_severity"]
           sla_due_at?: string | null
@@ -153,6 +326,7 @@ export type Database = {
           photo_url?: string | null
           ref_code?: string
           resolved_at?: string | null
+          routing_snapshot?: Json | null
           safety_warning?: string | null
           severity?: Database["public"]["Enums"]["issue_severity"]
           sla_due_at?: string | null
@@ -199,6 +373,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_civic_report: {
+        Args: { _report: Json; _token: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -223,6 +401,15 @@ export type Database = {
           status: Database["public"]["Enums"]["issue_status"]
           title: string
         }[]
+      }
+      staff_change_issue: {
+        Args: {
+          _expected: Database["public"]["Enums"]["issue_status"]
+          _id: string
+          _next: Database["public"]["Enums"]["issue_status"]
+          _note: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

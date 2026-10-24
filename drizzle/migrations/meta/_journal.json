@@ -8,6 +8,13 @@
       "when": 1792823955158,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792825847858,
+      "tag": "0001_civic_directory_and_atomic_workflows",
+      "breakpoints": true
     }
   ]
 }
