@@ -18,6 +18,7 @@ import { Route as CitizenExploreRouteImport } from './routes/_citizen.explore'
 import { Route as CitizenMapRouteImport } from './routes/_citizen.map'
 import { Route as CitizenReportRouteImport } from './routes/_citizen.report'
 import { Route as CitizenTrackRouteImport } from './routes/_citizen.track'
+import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
 import { Route as AuthenticatedStaffAuditRouteImport } from './routes/_authenticated/staff.audit'
 import { Route as AuthenticatedStaffDirectoryRouteImport } from './routes/_authenticated/staff.directory'
@@ -73,6 +74,11 @@ const CitizenTrackRoute = CitizenTrackRouteImport.update({
   id: '/track',
   path: '/track',
   getParentRoute: () => CitizenRoute,
+} as any)
+const ApiAssistantRoute = ApiAssistantRouteImport.update({
+  id: '/api/assistant',
+  path: '/api/assistant',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedStaffIndexRoute = AuthenticatedStaffIndexRouteImport.update({
   id: '/',
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/map': typeof CitizenMapRoute
   '/report': typeof CitizenReportRoute
   '/track': typeof CitizenTrackRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/map': typeof CitizenMapRoute
   '/report': typeof CitizenReportRoute
   '/track': typeof CitizenTrackRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/_citizen/map': typeof CitizenMapRoute
   '/_citizen/report': typeof CitizenReportRoute
   '/_citizen/track': typeof CitizenTrackRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/_citizen/': typeof CitizenIndexRoute
   '/_authenticated/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/_authenticated/staff/directory': typeof AuthenticatedStaffDirectoryRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/report'
     | '/track'
+    | '/api/assistant'
     | '/staff/audit'
     | '/staff/directory'
     | '/staff/map'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/report'
     | '/track'
+    | '/api/assistant'
     | '/staff/audit'
     | '/staff/directory'
     | '/staff/map'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/_citizen/map'
     | '/_citizen/report'
     | '/_citizen/track'
+    | '/api/assistant'
     | '/_citizen/'
     | '/_authenticated/staff/audit'
     | '/_authenticated/staff/directory'
@@ -277,6 +289,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   CitizenRoute: typeof CitizenRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiAssistantRoute: typeof ApiAssistantRoute
   ApiPublicJobsEscalateOverdueRoute: typeof ApiPublicJobsEscalateOverdueRoute
 }
 
@@ -344,6 +357,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/track'
       preLoaderRoute: typeof CitizenTrackRouteImport
       parentRoute: typeof CitizenRoute
+    }
+    '/api/assistant': {
+      id: '/api/assistant'
+      path: '/api/assistant'
+      fullPath: '/api/assistant'
+      preLoaderRoute: typeof ApiAssistantRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/staff/': {
       id: '/_authenticated/staff/'
@@ -497,6 +517,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   CitizenRoute: CitizenRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiAssistantRoute: ApiAssistantRoute,
   ApiPublicJobsEscalateOverdueRoute: ApiPublicJobsEscalateOverdueRoute,
 }
 export const routeTree = rootRouteImport
