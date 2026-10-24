@@ -8,7 +8,7 @@ import { downloadText, resolutionRate, transparencyCsv, type Counts, type Repres
 import { categoryById } from '@/lib/civic';
 
 type Period = 0 | 7 | 30 | 90 | 365;
-const options = (days: Period) => queryOptions({ queryKey: ['public-transparency', days], queryFn: () => getTransparency({ data: { days } }), refetchInterval: 30000 });
+const options = (days: Period) => queryOptions({ queryKey: ['public-transparency', days], queryFn: () => getTransparency({ data: { days } }), staleTime: 30000, refetchInterval: 30000 });
 export const Route = createFileRoute('/_citizen/transparency')({
   head: () => ({ meta: [
     { title: 'Public transparency report — Siddi' }, { name: 'description', content: 'Real Siddi case totals, resolution progress and ward, corporation, MLA and MP constituency summaries with downloadable reports.' },
