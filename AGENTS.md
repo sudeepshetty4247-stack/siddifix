@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## CivicFix architecture
-- Citizens use `_citizen`; protected administration uses `_authenticated/admin*`, operations `_authenticated/staff*`. BackButton dismisses overlays and handles same-page/redirect fallback. Read nested AGENTS.md before changes there.
+- Citizens use `_citizen`; protected administration uses `_authenticated/admin*`, operations `_authenticated/staff*`. BackButton dismisses overlays and handles same-page/redirect fallback.
 - Citizen submit/confirm/dispute use public `issues.functions.ts` server functions with privileged writes; anonymous users never write tables. Safe case/event projections, hashed reporter capabilities and persistent request limits protect public access.
 - `issue_secrets` holds recovery tokens with no client grants. Service-only `create_civic_report` atomically persists report, secret and creation event; retries never return existing credentials.
 - Photos remain private. Submission stores a long-lived signed URL; validated, hashed originals persist atomically in `issue_photos`, separate from display/annotated copies and corrected coordinates.
@@ -21,7 +21,7 @@
 - Staff roles: field_worker, supervisor (legacy staff counts as supervisor), admin. Database predicates enforce active department/category/team/ward/corporation scope on every case read/action, including acknowledgement, ETA and status.
 - PortalShell verifies active server-authorized access before mounting children; operational staff cannot enter administration. Super Admin uses protected `admin_permissions`, provisioned only for the registered one-time owner email; admin creation requires explicit delegation. Signup never grants roles.
 - Account invitations and role/profile/audit setup are atomic. Suspension persists before provider-ban synchronization, blocking existing-session actions. Atomic scope edits and eligible handler assignment are guarded; suspension releases handlers with case-history events.
-- Staff metrics use full-dataset database aggregates, not capped triage lists. Transparency aggregates canonical cases by submission ward, never personal elected-member scores.
+- Staff metrics use full-dataset database aggregates. Transparency aggregates canonical cases by ward, never personal member scores. Public aggregates exclude demo_dataset_id-tagged synthetic rows; demo seed/purge only runs with DEMO_SEED_ENABLED=true.
 - Home retains photo-led actions/recent real reports; CitizenMap owns geographic browsing. Case-local authority information reads the protected directory; no standalone citizen authority directory.
 - Leaflet loads client-side through LazyMap; use tile.openstreetmap.org (Carto needs a key). Citizen bounds derive from live ward polygons; optional map props leave report/staff maps unrestricted for honest out-of-coverage handling.
 - LocationProvider stores citizen preferences locally without continuous background tracking. Civic Map/report camera watch live position only while open: blue dot, accuracy circle, own-ward highlight/card. Fixes over 100 m remain approximate, never auto-confirmed; automatic attempts never open dialogs.

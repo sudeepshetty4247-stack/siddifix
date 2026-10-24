@@ -464,6 +464,7 @@ export type Database = {
           contact_label: string | null
           contact_phone: string | null
           created_at: string
+          demo_dataset_id: string | null
           department: string
           id: string
           is_fallback: boolean
@@ -480,6 +481,7 @@ export type Database = {
           contact_label?: string | null
           contact_phone?: string | null
           created_at?: string
+          demo_dataset_id?: string | null
           department: string
           id?: string
           is_fallback?: boolean
@@ -496,6 +498,7 @@ export type Database = {
           contact_label?: string | null
           contact_phone?: string | null
           created_at?: string
+          demo_dataset_id?: string | null
           department?: string
           id?: string
           is_fallback?: boolean
@@ -994,18 +997,21 @@ export type Database = {
       issue_secrets: {
         Row: {
           created_at: string
+          demo_dataset_id: string | null
           issue_id: string
           recovery_token: string
           token_hash: string | null
         }
         Insert: {
           created_at?: string
+          demo_dataset_id?: string | null
           issue_id: string
           recovery_token: string
           token_hash?: string | null
         }
         Update: {
           created_at?: string
+          demo_dataset_id?: string | null
           issue_id?: string
           recovery_token?: string
           token_hash?: string | null
@@ -1033,6 +1039,7 @@ export type Database = {
           authority_id: string | null
           category: string
           created_at: string
+          demo_dataset_id: string | null
           department: string | null
           description: string | null
           duplicate_candidate_id: string | null
@@ -1073,6 +1080,7 @@ export type Database = {
           authority_id?: string | null
           category?: string
           created_at?: string
+          demo_dataset_id?: string | null
           department?: string | null
           description?: string | null
           duplicate_candidate_id?: string | null
@@ -1113,6 +1121,7 @@ export type Database = {
           authority_id?: string | null
           category?: string
           created_at?: string
+          demo_dataset_id?: string | null
           department?: string | null
           description?: string | null
           duplicate_candidate_id?: string | null
@@ -1269,6 +1278,7 @@ export type Database = {
           categories: string[]
           corporations: string[]
           created_by: string | null
+          demo_dataset_id: string | null
           department: string
           designation: string
           display_name: string
@@ -1283,6 +1293,7 @@ export type Database = {
           categories?: string[]
           corporations?: string[]
           created_by?: string | null
+          demo_dataset_id?: string | null
           department?: string
           designation?: string
           display_name?: string
@@ -1297,6 +1308,7 @@ export type Database = {
           categories?: string[]
           corporations?: string[]
           created_by?: string | null
+          demo_dataset_id?: string | null
           department?: string
           designation?: string
           display_name?: string
@@ -1455,6 +1467,7 @@ export type Database = {
         }
         Returns: string
       }
+      admin_validate_master_data: { Args: never; Returns: Json }
       assign_civic_issue: {
         Args: {
           _action: string
@@ -1566,6 +1579,7 @@ export type Database = {
       public_case_rows: { Args: { _ref?: string }; Returns: Json }
       public_report_snapshot: { Args: { _filters?: Json }; Returns: Json }
       public_transparency_metrics: { Args: { _days?: number }; Returns: Json }
+      purge_demo_dataset: { Args: { _dataset: string }; Returns: Json }
       review_directory_fetch: {
         Args: { _approve: boolean; _id: string }
         Returns: undefined
