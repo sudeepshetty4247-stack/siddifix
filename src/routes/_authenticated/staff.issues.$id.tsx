@@ -14,19 +14,24 @@ import { getDirectory } from "@/lib/directory.functions";
 import { DuplicateReview } from '@/components/civic/DuplicateReview';
 import { AssignmentActions } from '@/components/civic/AssignmentActions';
 import { IssueEvidence } from '@/components/civic/IssueEvidence';
+import { StaffCommitment } from '@/components/civic/StaffCommitment';
+import { FIELD_TARGETS } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/staff/issues/$id")({
   head: () => ({ meta: [{ title: "Staff issue actions — CivicFix" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Staff issue actions — CivicFix" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: StaffIssue,
 });
 
-// Allowed lifecycle transitions (Civic Continuity: no silent jumps).
+// Mirrors the database transition rules; the server re-checks every change.
 const TRANSITIONS: Record<IssueStatus, IssueStatus[]> = {
   needs_classification: ["under_review", "rejected"],
   submitted: ["under_review", "assigned", "rejected"],
   under_review: ["assigned", "rejected"],
   assigned: ["in_progress", "under_review", "rejected"],
-  in_progress: ["resolved", "assigned"],
+  accepted: ["inspection_scheduled", "in_progress", "assigned"],
+  inspection_scheduled: ["in_progress", "assigned"],
+  in_progress: ["awaiting_verification", "resolved", "assigned"],
+  awaiting_verification: ["resolved", "in_progress"],
   resolved: ["closed", "reopened"],
   rejected: ["reopened"],
   reopened: ["under_review", "assigned", "in_progress"],
@@ -73,7 +78,7 @@ function StaffIssue() {
 
   async function applyStatus() {
     if (!nextStatus || !issue.data) return;
-    const requiresNote = nextStatus === "rejected" || nextStatus === "resolved";
+    const requiresNote = nextStatus === "rejected" || nextStatus === "resolved" || nextStatus === "awaiting_verification";
     if (requiresNote && note.trim().length < 5) { toast.error(nextStatus === "rejected" ? "Please give a reason for rejecting." : "Please describe what was done to resolve it."); return; }
     setBusy(true);
     try {
@@ -117,7 +122,9 @@ function StaffIssue() {
   if (issue.isError) return <div className="p-8" role="alert"><p>This case could not be loaded.</p><button onClick={() => issue.refetch()}>Retry</button></div>;
   if (issue.isLoading || !issue.data) return <div className="p-8"><div className="h-96 animate-pulse rounded-2xl bg-muted" /></div>;
   const i = issue.data;
-  const options = TRANSITIONS[i.status as IssueStatus] ?? [];
+  const myRoles = (roles.data?.roles ?? []) as string[];
+  const supervisor = myRoles.some(r => r === "admin" || r === "supervisor" || r === "staff");
+  const options = (TRANSITIONS[i.status as IssueStatus] ?? []).filter(s => supervisor || FIELD_TARGETS.includes(s));
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-8">
@@ -137,8 +144,10 @@ function StaffIssue() {
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         <div className="space-y-6">
+          <StaffCommitment issue={i} onDone={refresh} />
           <div className="rounded-2xl border bg-card p-5 shadow-soft">
-            <h2 className="font-semibold">Take action</h2>
+            <h2 className="font-semibold">Move the case forward</h2>
+            {!options.length && <p className="mt-2 text-sm text-muted-foreground">{i.duplicate_of ? "This report is linked to a canonical issue — work on that one." : "No further step for your role here."}</p>}
             <div className="mt-4 flex flex-wrap gap-2">
               {options.map((s) => (
                 <button key={s} onClick={() => setNextStatus(nextStatus === s ? "" : s)} className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${nextStatus === s ? "border-primary bg-primary text-primary-foreground" : "hover:bg-secondary"}`}>
@@ -146,7 +155,7 @@ function StaffIssue() {
                 </button>
               ))}
             </div>
-            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={1000} placeholder={nextStatus === "rejected" ? "Reason for rejection (visible to the public)" : nextStatus === "resolved" ? "What was done? (visible to the public)" : "Add a public update or note…"} className="mt-4 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={1000} placeholder={nextStatus === "rejected" ? "Reason for rejection (visible to the public)" : nextStatus === "resolved" || nextStatus === "awaiting_verification" ? "What was done? (visible to the public) — add a completion photo below first" : "Add a public update or note…"} className="mt-4 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
             <div className="mt-3 flex justify-end gap-2">
               {!nextStatus && <button disabled={busy || note.trim().length < 2} onClick={postNote} className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold disabled:opacity-40"><Send className="h-4 w-4" /> Post update</button>}
               {nextStatus && <button disabled={busy} onClick={applyStatus} className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Confirm: {STATUS_META[nextStatus].label}</button>}
