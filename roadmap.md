@@ -1,6 +1,7 @@
 # CivicFix roadmap
 
 ## Current priority — simplify and complete the real product
+- [ ] Latest complete correction brief: audit existing behavior, simplify camera/gallery/location/submit, retain originals plus annotated copies, restore map-first Home, improve operational profiles and close staff/security gaps before acceptance verification.
 - [x] Home and Civic Map show full-dataset nearby canonical active/resolved/overdue/critical totals within 2 km, refreshing every 15 seconds. Kudlu-area GPS/browser read verified with real zero counts, no demo inserts; 43 tests passed. Positive-data aggregate flow remains unverified while reports are empty.
 - [x] Civic Map uses reliable GPS/manual coordinates and actual ward-click points, no interior sample substitution; browser checks passed for GPS, manual confirmation, Mysuru outside coverage, denied-permission callback and weak GPS. 41 tests passed.
 - [ ] Officer/elected separation delivered; names/photos/contacts blocked by missing current official roster and constituency mapping. All 369 ward rows have zero MLA/MP/member names; reference numbers and portraits remain unverified, not copied into live data.
