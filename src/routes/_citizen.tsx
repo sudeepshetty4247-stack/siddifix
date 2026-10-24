@@ -22,7 +22,13 @@ const NAV: { to: "/" | "/report" | "/map" | "/explore" | "/track"; key: TKey }[]
 ];
 
 function CitizenLayout() {
-  return <LocationProvider><CitizenShell /></LocationProvider>;
+  return (
+    <LocationProvider>
+      <CitizenShell />
+      <LocationGate />
+      <LocationSelector hideTrigger />
+    </LocationProvider>
+  );
 }
 
 function CitizenShell() {
