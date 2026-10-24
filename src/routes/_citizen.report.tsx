@@ -291,7 +291,7 @@ function ReportPage() {
               <div className="rounded-xl border border-primary/30 bg-primary-soft p-4 text-sm">
                 <p className="font-medium">{analysis.clarification_question}</p>
                 <p className="mt-1 text-muted-foreground">Add a short description below, or submit as "Needs classification" and staff will review it.</p>
-                <Button onClick={() => runAnalysis(image, description)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"><RefreshCw className="h-3.5 w-3.5" /> Re-analyse with my description</Button>
+                <Button variant="ghost" onClick={() => runAnalysis(image, description)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"><RefreshCw className="h-3.5 w-3.5" /> Re-analyse with my description</Button>
               </div>
             )}
             {aiState === "running" && <Button variant="outline" onClick={() => { analysisRun.current += 1; setAiState("fallback"); setAiNotice("Manual details selected. Staff will review the classification."); setNeedsClass(true); setAnalysis({category:"other",subcategory:"Other",title:"",summary:description,severity:"medium",urgency:"Standard",confidence:0,missing_info:null,safety_warning:null,clarification_question:null,is_civic_issue:true}); }}>Enter details manually</Button>}
@@ -303,7 +303,7 @@ function ReportPage() {
                 <Field label="Category">
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {CATEGORIES.map((c) => (
-                      <Button key={c.id} type="button" onClick={() => setAnalysis({ ...analysis, category: c.id, subcategory: c.subs[0] })} className={cn("flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition", analysis.category === c.id ? "border-primary bg-primary-soft font-semibold text-primary" : "hover:bg-secondary")}>
+                      <Button variant="outline" key={c.id} type="button" onClick={() => setAnalysis({ ...analysis, category: c.id, subcategory: c.subs[0] })} className={cn("flex h-auto justify-start gap-2 whitespace-normal rounded-lg border px-3 py-2.5 text-left text-sm transition", analysis.category === c.id ? "border-primary bg-primary-soft font-semibold text-primary" : "hover:bg-secondary")}>
                         <span>{c.emoji}</span><span className="whitespace-normal">{c.label}</span>
                       </Button>
                     ))}
@@ -318,7 +318,7 @@ function ReportPage() {
                   <Field label="How serious is it?">
                     <div className="grid grid-cols-4 gap-1 rounded-xl bg-secondary p-1">
                       {SEVERITIES.map((s) => (
-                        <Button key={s} type="button" onClick={() => setAnalysis({ ...analysis, severity: s })} className={cn("rounded-lg py-2 text-xs font-semibold transition", analysis.severity === s ? (s === "critical" ? "bg-destructive text-destructive-foreground" : "bg-card shadow-soft") : "text-muted-foreground")}>
+                        <Button variant="ghost" key={s} type="button" onClick={() => setAnalysis({ ...analysis, severity: s })} className={cn("rounded-lg px-1 py-2 text-xs font-semibold transition", analysis.severity === s ? (s === "critical" ? "bg-destructive text-destructive-foreground" : "bg-card shadow-soft") : "text-muted-foreground")}>
                           {SEVERITY_META[s].label}
                         </Button>
                       ))}
@@ -380,7 +380,7 @@ function ReportPage() {
         )}
 
         <div className="mt-8 flex items-center justify-between border-t pt-6">
-          <Button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} className="inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold text-muted-foreground transition hover:bg-secondary disabled:invisible">
+          <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} className="inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold text-muted-foreground transition hover:bg-secondary disabled:invisible">
             <ArrowLeft className="h-4 w-4" /> Back
           </Button>
           {step < 3 ? (
@@ -443,7 +443,7 @@ function DescriptionInput({ value, onChange }: { value: string; onChange: (v: st
       <div className="flex items-center justify-between">
         <label htmlFor="desc" className="text-sm font-medium">Anything to add? <span className="font-normal text-muted-foreground">(optional)</span></label>
         {supported && (
-          <Button type="button" onClick={toggle} className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold", listening ? "bg-destructive text-destructive-foreground" : "bg-secondary")}>
+          <Button variant="ghost" type="button" onClick={toggle} className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold", listening ? "bg-destructive text-destructive-foreground" : "bg-secondary")}>
             {listening ? <><MicOff className="h-3.5 w-3.5" /> Stop</> : <><Mic className="h-3.5 w-3.5" /> Speak</>}
           </Button>
         )}
