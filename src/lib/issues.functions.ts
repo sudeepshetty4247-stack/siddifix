@@ -143,6 +143,7 @@ export const submitIssue = createServerFn({ method: "POST" })
       // Route the new case to the matching operational team (category + ward); failures leave it in the exception queue.
       const created = await supabaseAdmin.from('issues').select('id').eq('ref_code', saved.ref).maybeSingle();
       if (created.data?.id) {
+        await supabaseAdmin.from('issues').update({ ack_due_at: targets.ackDueAt, target_snapshot: JSON.parse(JSON.stringify(targets.snapshot)) }).eq('id', created.data.id);
         const routed = await supabaseAdmin.rpc('route_issue_to_team', { _issue: created.data.id });
         if (routed.error) console.error('Team routing failed', saved.ref, routed.error.message);
       }
