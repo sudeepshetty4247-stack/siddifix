@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Search, RefreshCw } from "lucide-react";
@@ -22,6 +22,7 @@ const VIEWS = ["open", "unassigned", "assigned", "rejected assignments", "overdu
 
 function Queue() {
   const navigate = useNavigate();
+  const cache = useQueryClient();
   const metric = Route.useSearch().metric;
   const access = useRoles();
   const listTeamsFn = useServerFn(listTeams);
@@ -42,6 +43,17 @@ function Queue() {
   const [from,setFrom]=useState('');
   const [until,setUntil]=useState('');
   useEffect(()=>setPage(0),[cat,status,sev,team,ward,ack,search,view,department,corporation,from,until]);
+
+  useEffect(() => {
+    const saved=cache.getQueryData<{view:typeof view;sort:typeof sort;cat:string;status:string;sev:string;team:string;ward:string;ack:string;search:string;page:number;department:string;corporation:string;from:string;until:string}>(["queue-return", "admin", access.data?.userId, metric]);
+    if(!saved)return;
+    setView(saved.view);setSort(saved.sort);setCat(saved.cat);setStatus(saved.status);setSev(saved.sev);setTeam(saved.team);setWard(saved.ward);setAck(saved.ack);setSearch(saved.search);setDepartment(saved.department);setCorporation(saved.corporation);setFrom(saved.from);setUntil(saved.until);
+    setTimeout(()=>setPage(saved.page),0);
+  },[access.data?.userId]);
+  function openCase(id:string) {
+    cache.setQueryData(["queue-return","admin",access.data?.userId,metric],{view,sort,cat,status,sev,team,ward,ack,search,page,department,corporation,from,until});
+    void navigate({to:"/admin/issues/$id",params:{id}});
+  }
 
   // Every filter is applied in the database; field workers only ever receive
   // rows inside their category/ward scope from the backend itself.
@@ -81,7 +93,7 @@ function Queue() {
         </div>
         <div className="flex flex-wrap gap-1 rounded-xl bg-secondary p-1 text-sm">
           {VIEWS.map((v) => (
-            <button key={v} onClick={() => {setView(v);void navigate({to:"/admin/reports",search:{metric:undefined}});}} className={cn("rounded-lg px-4 py-1.5 font-medium capitalize", view === v ? "bg-card shadow-soft" : "text-muted-foreground")}>{v}</button>
+            <Button type="button" variant="ghost" size="sm" key={v} onClick={() => {setView(v);void navigate({to:"/admin/reports",search:{metric:undefined}});}} className={cn("rounded-lg px-4 py-1.5 font-medium capitalize", view === v ? "bg-card shadow-soft" : "text-muted-foreground")}>{v}</Button>
           ))}
         </div>
       </div>
@@ -115,7 +127,7 @@ function Queue() {
               </thead>
               <tbody className="divide-y">
                 {rows.map((i) => (
-                  <tr key={i.id} onClick={() => navigate({ to: "/admin/issues/$id", params: { id: i.id } })} tabIndex={0} role="link" aria-label={`Open ${i.ref_code}`} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.click();}} className="cursor-pointer hover:bg-secondary/60">
+                  <tr key={i.id} onClick={() => openCase(i.id)} tabIndex={0} role="link" aria-label={`Open ${i.ref_code}`} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.click();}} className="cursor-pointer hover:bg-secondary/60">
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         {i.photo_url ? <img src={i.photo_url} alt="" className="h-10 w-10 rounded-lg object-cover" loading="lazy" /> : <div className="h-10 w-10 rounded-lg bg-muted" />}
