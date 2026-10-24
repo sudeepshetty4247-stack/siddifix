@@ -21,6 +21,8 @@ import { Route as CitizenTrackRouteImport } from './routes/_citizen.track'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
 import { Route as AuthenticatedStaffDirectoryRouteImport } from './routes/_authenticated/staff.directory'
 import { Route as AuthenticatedStaffMapRouteImport } from './routes/_authenticated/staff.map'
+import { Route as AuthenticatedStaffNotificationsRouteImport } from './routes/_authenticated/staff.notifications'
+import { Route as AuthenticatedStaffOverdueRouteImport } from './routes/_authenticated/staff.overdue'
 import { Route as AuthenticatedStaffQueueRouteImport } from './routes/_authenticated/staff.queue'
 import { Route as AuthenticatedStaffRoutingRouteImport } from './routes/_authenticated/staff.routing'
 import { Route as AuthenticatedStaffTeamRouteImport } from './routes/_authenticated/staff.team'
@@ -86,6 +88,18 @@ const AuthenticatedStaffMapRoute = AuthenticatedStaffMapRouteImport.update({
   path: '/map',
   getParentRoute: () => AuthenticatedStaffRoute,
 } as any)
+const AuthenticatedStaffNotificationsRoute =
+  AuthenticatedStaffNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedStaffRoute,
+  } as any)
+const AuthenticatedStaffOverdueRoute =
+  AuthenticatedStaffOverdueRouteImport.update({
+    id: '/overdue',
+    path: '/overdue',
+    getParentRoute: () => AuthenticatedStaffRoute,
+  } as any)
 const AuthenticatedStaffQueueRoute = AuthenticatedStaffQueueRouteImport.update({
   id: '/queue',
   path: '/queue',
@@ -124,6 +138,8 @@ export interface FileRoutesByFullPath {
   '/track': typeof CitizenTrackRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
+  '/staff/notifications': typeof AuthenticatedStaffNotificationsRoute
+  '/staff/overdue': typeof AuthenticatedStaffOverdueRoute
   '/staff/queue': typeof AuthenticatedStaffQueueRoute
   '/staff/routing': typeof AuthenticatedStaffRoutingRoute
   '/staff/team': typeof AuthenticatedStaffTeamRoute
@@ -140,6 +156,8 @@ export interface FileRoutesByTo {
   '/track': typeof CitizenTrackRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
+  '/staff/notifications': typeof AuthenticatedStaffNotificationsRoute
+  '/staff/overdue': typeof AuthenticatedStaffOverdueRoute
   '/staff/queue': typeof AuthenticatedStaffQueueRoute
   '/staff/routing': typeof AuthenticatedStaffRoutingRoute
   '/staff/team': typeof AuthenticatedStaffTeamRoute
@@ -160,6 +178,8 @@ export interface FileRoutesById {
   '/_citizen/': typeof CitizenIndexRoute
   '/_authenticated/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/_authenticated/staff/map': typeof AuthenticatedStaffMapRoute
+  '/_authenticated/staff/notifications': typeof AuthenticatedStaffNotificationsRoute
+  '/_authenticated/staff/overdue': typeof AuthenticatedStaffOverdueRoute
   '/_authenticated/staff/queue': typeof AuthenticatedStaffQueueRoute
   '/_authenticated/staff/routing': typeof AuthenticatedStaffRoutingRoute
   '/_authenticated/staff/team': typeof AuthenticatedStaffTeamRoute
@@ -179,6 +199,8 @@ export interface FileRouteTypes {
     | '/track'
     | '/staff/directory'
     | '/staff/map'
+    | '/staff/notifications'
+    | '/staff/overdue'
     | '/staff/queue'
     | '/staff/routing'
     | '/staff/team'
@@ -195,6 +217,8 @@ export interface FileRouteTypes {
     | '/track'
     | '/staff/directory'
     | '/staff/map'
+    | '/staff/notifications'
+    | '/staff/overdue'
     | '/staff/queue'
     | '/staff/routing'
     | '/staff/team'
@@ -214,6 +238,8 @@ export interface FileRouteTypes {
     | '/_citizen/'
     | '/_authenticated/staff/directory'
     | '/_authenticated/staff/map'
+    | '/_authenticated/staff/notifications'
+    | '/_authenticated/staff/overdue'
     | '/_authenticated/staff/queue'
     | '/_authenticated/staff/routing'
     | '/_authenticated/staff/team'
@@ -314,6 +340,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffMapRouteImport
       parentRoute: typeof AuthenticatedStaffRoute
     }
+    '/_authenticated/staff/notifications': {
+      id: '/_authenticated/staff/notifications'
+      path: '/notifications'
+      fullPath: '/staff/notifications'
+      preLoaderRoute: typeof AuthenticatedStaffNotificationsRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
+    '/_authenticated/staff/overdue': {
+      id: '/_authenticated/staff/overdue'
+      path: '/overdue'
+      fullPath: '/staff/overdue'
+      preLoaderRoute: typeof AuthenticatedStaffOverdueRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
     '/_authenticated/staff/queue': {
       id: '/_authenticated/staff/queue'
       path: '/queue'
@@ -355,6 +395,8 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffDirectoryRoute: typeof AuthenticatedStaffDirectoryRoute
   AuthenticatedStaffMapRoute: typeof AuthenticatedStaffMapRoute
+  AuthenticatedStaffNotificationsRoute: typeof AuthenticatedStaffNotificationsRoute
+  AuthenticatedStaffOverdueRoute: typeof AuthenticatedStaffOverdueRoute
   AuthenticatedStaffQueueRoute: typeof AuthenticatedStaffQueueRoute
   AuthenticatedStaffRoutingRoute: typeof AuthenticatedStaffRoutingRoute
   AuthenticatedStaffTeamRoute: typeof AuthenticatedStaffTeamRoute
@@ -365,6 +407,8 @@ interface AuthenticatedStaffRouteChildren {
 const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
   AuthenticatedStaffDirectoryRoute: AuthenticatedStaffDirectoryRoute,
   AuthenticatedStaffMapRoute: AuthenticatedStaffMapRoute,
+  AuthenticatedStaffNotificationsRoute: AuthenticatedStaffNotificationsRoute,
+  AuthenticatedStaffOverdueRoute: AuthenticatedStaffOverdueRoute,
   AuthenticatedStaffQueueRoute: AuthenticatedStaffQueueRoute,
   AuthenticatedStaffRoutingRoute: AuthenticatedStaffRoutingRoute,
   AuthenticatedStaffTeamRoute: AuthenticatedStaffTeamRoute,
