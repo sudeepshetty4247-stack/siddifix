@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MapPin, ChevronDown, LocateFixed, Loader2 } from 'lucide-react';
 import { useLocation } from '@/lib/location';
 import { BENGALURU, isInIndia } from '@/lib/civic';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { LazyMap } from './LazyMap';
@@ -34,7 +35,7 @@ export function LocationSelector() {
     }
   }
   return <>
-    {!hideTrigger && <Button variant="ghost" onClick={() => setOpen(true)} className="h-auto min-w-0 justify-start gap-2 px-2 py-2 text-left" aria-label="Change location">
+    {<Button variant="ghost" onClick={() => setOpen(true)} className="h-auto min-w-0 justify-start gap-2 px-2 py-2 text-left" aria-label="Change location">
       <MapPin className="h-5 w-5 shrink-0 text-primary" />
       <span className="min-w-0"><span className="flex items-center gap-1"><span className="max-w-[180px] truncate text-sm font-semibold">{location?.label === 'Current location' ? 'Selected location' : location?.label || 'Choose your location'}</span><ChevronDown className="h-3 w-3 shrink-0" /></span><span className="block text-[11px] font-normal text-muted-foreground">{location ? location.method === 'device' ? `GPS estimate ±${Math.round(location.accuracy??0)} m · Tap to change` : 'Tap to change' : 'Issues and services around you'}</span></span>
     </Button>}
@@ -50,7 +51,7 @@ export function LocationSelector() {
         <div className="flex gap-2"><input aria-label="Latitude, longitude" value={coordinates} onChange={e => setCoordinates(e.target.value)} placeholder="12.9716, 77.5946" className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 text-sm" /><Button variant="outline" onClick={applyCoordinates}>Set pin</Button></div>
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         {pin && <p className="text-xs text-muted-foreground">Report area: {pin.lat.toFixed(5)}, {pin.lng.toFixed(5)} · manually selected</p>}
-        <Button disabled={!pin || !isInIndia(pin.lat, pin.lng)} onClick={() => { if (pin) select({ ...pin, label: label.trim() || `${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}`, method: 'manual' }); }}>Confirm location</Button>
+        <Button disabled={!pin || !isInIndia(pin.lat, pin.lng) || checking} onClick={confirmPin}>{checking ? <Loader2 className="h-4 w-4 animate-spin" /> : null}Confirm location</Button>
         {recent.length > 0 && <div className="border-t pt-3"><p className="mb-2 text-xs font-semibold text-muted-foreground">RECENT LOCATIONS</p>{recent.map(l => <Button key={`${l.lat}-${l.lng}`} variant="ghost" className="w-full justify-start truncate" onClick={() => select(l)}><MapPin className="h-4 w-4" />{l.label}</Button>)}</div>}
       </DialogContent>
     </Dialog>
