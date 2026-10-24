@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## CivicFix architecture
-- Citizen pages use `_citizen`; staff use `_authenticated/staff*`. BackButton dismisses overlays and falls back after same-page history/redirects. Read nested AGENTS.md.
+- Citizen pages use `_citizen`; separate protected administration uses `_authenticated/admin*` and government operations use `_authenticated/staff*`. BackButton dismisses overlays and falls back after same-page history/redirects. Read nested AGENTS.md.
 - Citizens never write tables directly: report submit/confirm/dispute go through public server functions in `src/lib/issues.functions.ts` using the admin client, because anonymous users have no DB write grants.
 - Recovery tokens live in `issue_secrets` (no client grants) so public issue reads can never leak them.
 - Photos bucket is private (workspace blocks public buckets); submit stores a long-lived signed URL.
@@ -43,3 +43,7 @@
 - Acknowledgements store message, inspection time and ETA on the issue with an audited event; citizen tracking reads them through public_case_rows, and issue_notifications records only what actually happened (in-app posted, external channel not_configured).
 - Transparency uses aggregate-only canonical cases joined to submission wards, never capped lists or elected-member scores.
 - Visit-only assistant streams validated text history with public aggregates; no private access or writes. Access pauses persist separately from classification.
+
+- PortalShell verifies active server-authorized access before mounting portal children; admin routes use a separate shell and operational staff cannot enter it. Database scope predicates are authoritative for every case-associated read and mutation.
+- Super Admin is a protected admin_permissions designation provisioned only for the registered one-time owner email; admin creation requires explicit delegation, and no signup trigger grants roles.
+- Account setup uses provider invitations and an atomic role/profile/audit RPC; suspension persists in staff_profiles before provider ban synchronization to block existing-session actions.

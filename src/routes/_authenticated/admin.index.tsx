@@ -1,0 +1,3 @@
+import { createFileRoute } from '@tanstack/react-router';
+import { OperationsDashboard } from '@/components/portals/OperationsDashboard';
+export const Route=createFileRoute('/_authenticated/admin/')({head:()=>({meta:[{title:'Admin Control Centre — Siddi'},{name:'description',content:'Persisted reports, staff workload and operational health.'},{property:'og:title',content:'Admin Control Centre — Siddi'},{property:'og:description',content:'Authorized application management and civic operations.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'},{name:'robots',content:'noindex'}]}),component:()=> <OperationsDashboard admin/>});

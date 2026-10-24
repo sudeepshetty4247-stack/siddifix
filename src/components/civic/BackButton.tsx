@@ -2,7 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 
-export function BackButton({ fallback = '/', beforeBack }: { fallback?: '/' | '/staff'; beforeBack?: () => void }) {
+export function BackButton({ fallback = '/', beforeBack }: { fallback?: '/' | '/staff' | '/admin'; beforeBack?: () => void }) {
   const router = useRouter();
   const pathname = useRouterState({ select: (st) => st.location.pathname });
   if (pathname === '/') return null;
