@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## CivicFix architecture
-- Citizens use `_citizen`; protected administration uses `_authenticated/admin*`, operations `_authenticated/staff*`. BackButton dismisses overlays and handles same-page/redirect fallback. Read nested AGENTS.md before changes there.
+- Citizens use `_citizen`; protected administration uses `_authenticated/admin*`, operations `_authenticated/staff*`. BackButton dismisses overlays and handles same-page/redirect fallback.
 - Citizen submit/confirm/dispute use public `issues.functions.ts` server functions with privileged writes; anonymous users never write tables. Safe case/event projections, hashed reporter capabilities and persistent request limits protect public access.
 - `issue_secrets` holds recovery tokens with no client grants. Service-only `create_civic_report` atomically persists report, secret and creation event; retries never return existing credentials.
 - Photos remain private. Submission stores a long-lived signed URL; validated, hashed originals persist atomically in `issue_photos`, separate from display/annotated copies and corrected coordinates.
