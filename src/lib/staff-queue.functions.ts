@@ -20,6 +20,7 @@ const queueSchema = z.object({
   from: z.string().default(""),
   until: z.string().default(""),
   metric: z.string().default(""),
+  sort:z.enum(["newest","oldest","deadline","severity"]).default("deadline"),
 });
 
 export const staffQueue = createServerFn({ method: "POST" })
@@ -28,7 +29,10 @@ export const staffQueue = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: staff } = await context.supabase.rpc("is_staff", { _user_id: context.userId });
     if (!staff) throw new Error("Staff access required");
-    let query = context.supabase.from('issues').select('id,ref_code,title,category,severity,status,sla_due_at,eta_at,acknowledged_at,escalated_at,created_at,landmark,department,support_count,photo_url,authority_id,assignment_state,duplicate_of,duplicate_candidate_id,team_id,routing_snapshot', {count:'exact'}).order('created_at',{ascending:false});
+    let query = context.supabase.from('issues').select('id,ref_code,title,category,severity,status,sla_due_at,eta_at,acknowledged_at,escalated_at,created_at,landmark,department,support_count,photo_url,authority_id,assignment_state,duplicate_of,duplicate_candidate_id,team_id,routing_snapshot,ack_due_at,assigned_to,description,lat,lng', {count:'exact'});
+    if(data.sort==='deadline')query=query.order('ack_due_at',{ascending:true,nullsFirst:false}).order('sla_due_at',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true});
+    else if(data.sort==='severity')query=query.order('severity',{ascending:false}).order('created_at',{ascending:true});
+    else query=query.order('created_at',{ascending:data.sort==='oldest'});
     if(data.category) query=query.eq('category',data.category);
     if(data.status) query=query.eq('status',data.status as import('@/lib/civic').IssueStatus);
     if(data.severity) query=query.eq('severity',data.severity as import('@/lib/civic').Severity);
@@ -49,10 +53,12 @@ export const staffQueue = createServerFn({ method: "POST" })
     if(data.view==='linked reports') query=query.not('duplicate_of','is',null);
     if(data.view==='duplicate candidates') query=query.not('duplicate_candidate_id','is',null);
     if(data.view==='escalated') query=query.not('escalated_at','is',null);
-    if(data.view==='overdue'||data.overdue) query=query.or(`sla_due_at.lt.${new Date().toISOString()},eta_at.lt.${new Date().toISOString()}`);
+    if(data.view==='overdue'||data.overdue) query=query.or(`eta_at.lt.${new Date().toISOString()},and(eta_at.is.null,sla_due_at.lt.${new Date().toISOString()})`);
+    if(data.metric==='new_reports')query=query.in('status',['submitted','needs_classification']);
+    if(data.metric==='resolved_today')query=query.in('status',['resolved','closed']).gte('resolved_at',new Date(new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'})+'T00:00:00+05:30').toISOString());
     if(data.metric==='routing_exceptions') query=query.eq('assignment_state','routing_exception');
     if(data.metric==='assigned_to_me') query=query.eq('assigned_to',context.userId);
-    if(data.metric!=='total_reports'&&data.metric!=='assigned_to_me') query=query.is('duplicate_of',null);
+    if(data.metric!=='total_reports'&&data.metric!=='assigned_to_me'&&data.view!=='linked reports') query=query.is('duplicate_of',null);
     if(data.metric==='citizen_confirmed') {
       const events=await context.supabase.from('issue_events').select('issue_id').eq('kind','citizen_confirmed');
       if(events.error)throw new Error('Confirmation records unavailable.');

@@ -87,6 +87,7 @@ export function timeAgo(iso: string) {
   return "just now";
 }
 
-export function isOverdue(issue: { sla_due_at: string | null; status: string }) {
-  return !!issue.sla_due_at && OPEN_STATUSES.includes(issue.status as IssueStatus) && new Date(issue.sla_due_at).getTime() < Date.now();
+export function isOverdue(issue: { sla_due_at: string | null; eta_at?: string | null; status: string }) {
+  const due=issue.eta_at??issue.sla_due_at;
+  return !!due && OPEN_STATUSES.includes(issue.status as IssueStatus) && new Date(due).getTime() < Date.now();
 }

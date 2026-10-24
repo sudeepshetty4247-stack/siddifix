@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/reports")({
-  head: () => ({ meta: [{ title: "Staff issue queue — Siddi" }, { name: "description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:title", content: "Staff issue queue — Siddi" }, { property: "og:description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin report queue — Siddi" }, { name: "description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:title", content: "Admin report queue — Siddi" }, { property: "og:description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   validateSearch: (s: Record<string, unknown>): { metric?: string | undefined } => ({ metric: typeof s["metric"] === "string" ? s["metric"] : undefined }),
   component: Queue,
 });
@@ -27,7 +27,8 @@ function Queue() {
   const listTeamsFn = useServerFn(listTeams);
   const directoryFn = useServerFn(getDirectory);
   const runQueue = useServerFn(staffQueue);
-  const [view, setView] = useState<(typeof VIEWS)[number]>(metric === "total_reports" || metric === "citizen_confirmed" ? "all" : metric === "resolved" ? "resolved" : metric === "overdue" ? "overdue" : metric === "duplicate_reviews" ? "duplicate candidates" : metric === "unassigned" ? "unassigned" : "open");
+  const [view, setView] = useState<(typeof VIEWS)[number]>(metric === "total_reports" || metric === "citizen_confirmed" || metric === "resolved_today" ? "all" : metric === "resolved" ? "resolved" : metric === "overdue" ? "overdue" : metric === "duplicate_reviews" ? "duplicate candidates" : metric === "unassigned" ? "unassigned" : "open");
+  const [sort,setSort]=useState<"newest"|"oldest"|"deadline"|"severity">("deadline");
   const [cat, setCat] = useState("");
   const [status, setStatus] = useState(metric === "in_progress" ? "in_progress" : metric === "awaiting_review" ? "awaiting_verification" : metric === "reopened" ? "reopened" : "");
   const [sev, setSev] = useState("");
@@ -45,7 +46,7 @@ function Queue() {
   // Every filter is applied in the database; field workers only ever receive
   // rows inside their category/ward scope from the backend itself.
   const q = useQuery({
-    queryKey: ["staff-queue", cat, status, sev, team, ward, ack, search, view, page, department, corporation, from, until],
+    queryKey: ["staff-queue",metric,sort, cat, status, sev, team, ward, ack, search, view, page, department, corporation, from, until],
     queryFn: () =>
       runQueue({
         data: {
@@ -57,7 +58,7 @@ function Queue() {
           ack: (ack || null) as "acknowledged" | "unacknowledged" | null,
           overdue: view === "overdue" ? true : null,
           search: search || null,
-          page, view, department, corporation, from, until, metric:metric??"",
+          page, view, department, corporation, from, until, sort, metric:metric??"",
         },
       }),
     refetchInterval: 15_000,
@@ -67,6 +68,7 @@ function Queue() {
   const directory = useQuery({ queryKey: ["directory"], queryFn: () => directoryFn(), staleTime: 300_000 });
   const wards = (directory.data?.wards ?? []).filter((w) => w.active && (access.data?.roles.includes("admin") || !access.data?.profile?.wards.length || access.data.profile.wards.includes(w.identifier))).map((w) => ({ id: w.identifier, label: `${w.name} (${w.ward_number ?? "—"})` }));
 
+  useEffect(()=>{if(!access.data?.roles.includes('admin')&&access.data?.profile?.categories.length===1)setCat(access.data.profile.categories[0]??'');},[access.data?.profile?.categories.join(',')]);
   const rows = q.data?.rows ?? [];
 
   const sel = "h-10 rounded-lg border bg-card px-3 text-sm";
@@ -79,7 +81,7 @@ function Queue() {
         </div>
         <div className="flex flex-wrap gap-1 rounded-xl bg-secondary p-1 text-sm">
           {VIEWS.map((v) => (
-            <button key={v} onClick={() => setView(v)} className={cn("rounded-lg px-4 py-1.5 font-medium capitalize", view === v ? "bg-card shadow-soft" : "text-muted-foreground")}>{v}</button>
+            <button key={v} onClick={() => {setView(v);void navigate({search:{}});}} className={cn("rounded-lg px-4 py-1.5 font-medium capitalize", view === v ? "bg-card shadow-soft" : "text-muted-foreground")}>{v}</button>
           ))}
         </div>
       </div>
@@ -88,7 +90,8 @@ function Queue() {
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search title, reference, landmark" className="h-10 w-full rounded-lg border bg-card pl-9 pr-3 text-sm" />
         </div>
-        <select className={sel} value={cat} onChange={(e) => setCat(e.target.value)}><option value="">Authorized categories</option>{CATEGORIES.filter(c => access.data?.roles.includes("admin") || access.data?.profile?.categories.includes(c.id)).map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
+        <select aria-label="Queue sort" className={sel} value={sort} onChange={e=>setSort(e.target.value as typeof sort)}><option value="deadline">Deadline first</option><option value="severity">Severity first</option><option value="oldest">Oldest first</option><option value="newest">Newest first</option></select>
+        <select aria-label="Category filter" className={sel} value={cat} onChange={(e) => setCat(e.target.value)}><option value="">Authorized categories</option>{CATEGORIES.filter(c => access.data?.roles.includes("admin") || access.data?.profile?.categories.includes(c.id)).map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
         <select className={sel} value={status} onChange={(e) => setStatus(e.target.value)}><option value="">Any status</option>{STATUSES.map((s) => <option key={s} value={s}>{STATUS_META[s].label}</option>)}</select>
         <select className={sel} value={sev} onChange={(e) => setSev(e.target.value)}><option value="">Any severity</option>{SEVERITIES.map((s) => <option key={s} value={s}>{SEVERITY_META[s].label}</option>)}</select>
         <select className={sel} value={team} onChange={(e) => setTeam(e.target.value)}><option value="">Any team</option>{(teams.data ?? []).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select>
@@ -108,26 +111,26 @@ function Queue() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
-                <tr><th className="p-3">Issue</th><th className="p-3">Category</th><th className="p-3">Ward</th><th className="p-3">Team</th><th className="p-3">Severity</th><th className="p-3">Status</th><th className="p-3">Due</th><th className="p-3">Reported</th></tr>
+                <tr><th className="p-3">Issue</th><th className="p-3">Category</th><th className="p-3">Ward</th><th className="p-3">Team</th><th className="p-3">Severity</th><th className="p-3">Status</th><th className="p-3">Acknowledgement / resolution</th><th className="p-3">Reported</th></tr>
               </thead>
               <tbody className="divide-y">
                 {rows.map((i) => (
-                  <tr key={i.id} onClick={() => navigate({ to: "/admin/issues/$id", params: { id: i.id } })} className="cursor-pointer hover:bg-secondary/60">
+                  <tr key={i.id} onClick={() => navigate({ to: "/admin/issues/$id", params: { id: i.id } })} tabIndex={0} role="link" aria-label={`Open ${i.ref_code}`} onKeyDown={e=>{if(e.key==="Enter")e.currentTarget.click();}} className="cursor-pointer hover:bg-secondary/60">
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         {i.photo_url ? <img src={i.photo_url} alt="" className="h-10 w-10 rounded-lg object-cover" loading="lazy" /> : <div className="h-10 w-10 rounded-lg bg-muted" />}
                         <div className="min-w-0">
-                          <p className="max-w-xs truncate font-medium">{i.title}</p>
-                          <p className="font-mono text-xs text-muted-foreground">{i.ref_code}{i.support_count > 0 && ` · +${i.support_count} linked`}</p>
+                          <p className="max-w-xs truncate font-medium">{i.title}</p><p className="max-w-xs truncate text-xs text-muted-foreground">{i.landmark??`${i.lat}, ${i.lng}`}</p><p className="max-w-xs truncate text-xs text-muted-foreground">{i.description}</p>
+                          <p className="font-mono text-xs text-muted-foreground">{i.ref_code}{i.duplicate_of&&" · Linked report"}{i.duplicate_candidate_id&&" · Duplicate review"}{i.support_count > 0 && ` · +${i.support_count} linked`}</p>
                         </div>
                       </div>
                     </td>
                     <td className="p-3 whitespace-nowrap">{categoryById(i.category).emoji} {categoryById(i.category).label.split(" ")[0]}</td>
                     <td className="max-w-32 truncate p-3 text-muted-foreground">{i.ward_name ?? "—"}</td>
-                    <td className="max-w-32 truncate p-3 text-muted-foreground">{i.team_name ?? "—"}</td>
+                    <td className="max-w-32 truncate p-3 text-muted-foreground">{i.team_name ?? "Unassigned"}<p className="text-xs">{i.department}</p><p className="text-xs">{i.assigned_to?"Handler assigned":"No handler"}</p></td>
                     <td className="p-3"><SeverityTag severity={i.severity} /></td>
                     <td className="p-3"><StatusBadge status={i.status} /></td>
-                    <td className={cn("p-3 whitespace-nowrap", isOverdue(i) && "font-semibold text-destructive")}>{i.sla_due_at ? new Date(i.sla_due_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "—"}</td>
+                    <td className={cn("p-3 whitespace-nowrap", isOverdue(i) && "font-semibold text-destructive")}><p className="text-xs text-muted-foreground">Ack: {i.acknowledged_at?"Acknowledged":i.ack_due_at?new Date(i.ack_due_at).toLocaleString("en-IN"):"Not configured"}</p>{(i.eta_at??i.sla_due_at) ? new Date(i.eta_at??i.sla_due_at??"").toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "—"}</td>
                     <td className="p-3 whitespace-nowrap text-muted-foreground">{timeAgo(i.created_at)}</td>
                   </tr>
                 ))}
