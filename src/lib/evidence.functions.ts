@@ -9,6 +9,8 @@ export const recordEvidence = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     const staff = await context.supabase.rpc('is_staff', { _user_id: context.userId });
     if (staff.error || !staff.data) throw new Error('Staff access required.');
+    const scope = await context.supabase.rpc('staff_can_work', { _user_id: context.userId, _issue: data.issueId });
+    if (!scope.data) throw new Error('This case is outside your authorized scope.');
     const { bytes, mime, extension } = decodeEvidenceImage(data.imageDataUrl);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const path = `staff-evidence/${data.issueId}/${crypto.randomUUID()}.${extension}`;

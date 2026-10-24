@@ -12,7 +12,10 @@ export const listTeams = createServerFn({ method: "GET" })
       .select("*")
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const admin=await context.supabase.rpc('has_role',{_user_id:context.userId,_role:'admin'});
+    if(admin.data)return data??[];
+    const p=await context.supabase.from('staff_profiles').select('department,team_ids').eq('user_id',context.userId).maybeSingle();
+    return (data??[]).filter(t=>t.active&&t.department===p.data?.department&&(!p.data.team_ids.length||p.data.team_ids.includes(t.id)));
   });
 
 const teamSchema = z.object({
@@ -53,7 +56,7 @@ export const upsertTeam = createServerFn({ method: "POST" })
 export const listRoutingExceptions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: staff } = await context.supabase.rpc("is_staff", { _user_id: context.userId });
+    const { data: staff } = await context.supabase.rpc("is_supervisor", { _user_id: context.userId });
     if (!staff) throw new Error("Staff access required");
     const { data, error } = await context.supabase
       .from("issues")

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, RefreshCw } from "lucide-react";
 import { CATEGORIES, OPEN_STATUSES, STATUSES, STATUS_META, categoryById, isOverdue, timeAgo, SEVERITIES, SEVERITY_META } from "@/lib/civic";
 import { StatusBadge, SeverityTag } from "@/components/civic/StatusBadge";
@@ -9,11 +9,12 @@ import { staffQueue } from "@/lib/staff-queue.functions";
 import { listTeams } from "@/lib/teams.functions";
 import { getDirectory } from "@/lib/directory.functions";
 import { useRoles } from "./staff";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/reports")({
   head: () => ({ meta: [{ title: "Staff issue queue — Siddi" }, { name: "description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:title", content: "Staff issue queue — Siddi" }, { property: "og:description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
-  validateSearch: (s: Record<string, unknown>): { metric?: string } => ({ metric: typeof s["metric"] === "string" ? s["metric"] : undefined }),
+  validateSearch: (s: Record<string, unknown>): { metric?: string | undefined } => ({ metric: typeof s["metric"] === "string" ? s["metric"] : undefined }),
   component: Queue,
 });
 
@@ -34,11 +35,17 @@ function Queue() {
   const [ward, setWard] = useState("");
   const [ack, setAck] = useState(metric === "awaiting_ack" ? "unacknowledged" : "");
   const [search, setSearch] = useState("");
+  const [page,setPage]=useState(0);
+  const [department,setDepartment]=useState('');
+  const [corporation,setCorporation]=useState('');
+  const [from,setFrom]=useState('');
+  const [until,setUntil]=useState('');
+  useEffect(()=>setPage(0),[cat,status,sev,team,ward,ack,search,view,department,corporation,from,until]);
 
   // Every filter is applied in the database; field workers only ever receive
   // rows inside their category/ward scope from the backend itself.
   const q = useQuery({
-    queryKey: ["staff-queue", cat, status, sev, team, ward, ack, search, view === "overdue"],
+    queryKey: ["staff-queue", cat, status, sev, team, ward, ack, search, view, page, department, corporation, from, until],
     queryFn: () =>
       runQueue({
         data: {
@@ -50,6 +57,7 @@ function Queue() {
           ack: (ack || null) as "acknowledged" | "unacknowledged" | null,
           overdue: view === "overdue" ? true : null,
           search: search || null,
+          page, view, department, corporation, from, until, metric:metric??"",
         },
       }),
     refetchInterval: 15_000,
@@ -57,19 +65,9 @@ function Queue() {
 
   const teams = useQuery({ queryKey: ["staff-teams"], queryFn: () => listTeamsFn(), staleTime: 60_000 });
   const directory = useQuery({ queryKey: ["directory"], queryFn: () => directoryFn(), staleTime: 300_000 });
-  const wards = (directory.data?.wards ?? []).filter((w) => w.active).map((w) => ({ id: w.identifier, label: `${w.name} (${w.ward_number ?? "—"})` }));
+  const wards = (directory.data?.wards ?? []).filter((w) => w.active && (access.data?.roles.includes("admin") || !access.data?.profile?.wards.length || access.data.profile.wards.includes(w.identifier))).map((w) => ({ id: w.identifier, label: `${w.name} (${w.ward_number ?? "—"})` }));
 
-  const rows = (q.data ?? []).filter((i) => {
-    if (view === "duplicate candidates" && !i.duplicate_candidate_id) return false;
-    if (view === "open" && !OPEN_STATUSES.includes(i.status as never)) return false;
-    if (view === "unassigned" && (i.team_id || !OPEN_STATUSES.includes(i.status as never))) return false;
-    if (view === "assigned" && !i.authority_id && !i.team_id) return false;
-    if (view === "rejected assignments" && i.assignment_state !== "rejected") return false;
-    if (view === "escalated" && !i.escalated_at) return false;
-    if (view === "resolved" && !["resolved", "closed"].includes(i.status)) return false;
-    if (view === "linked reports" && !i.duplicate_of) return false;
-    return true;
-  });
+  const rows = q.data?.rows ?? [];
 
   const sel = "h-10 rounded-lg border bg-card px-3 text-sm";
   return (
@@ -77,7 +75,7 @@ function Queue() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Issue Queue</h1>
-          <p className="text-muted-foreground">{q.isLoading ? "Loading…" : `${rows.length} issue${rows.length === 1 ? "" : "s"} in your scope`}</p>
+          <p className="text-muted-foreground">{q.isLoading ? "Loading…" : `${q.data?.total??0} issues in your authorized view`}</p>
         </div>
         <div className="flex flex-wrap gap-1 rounded-xl bg-secondary p-1 text-sm">
           {VIEWS.map((v) => (
@@ -98,6 +96,7 @@ function Queue() {
         <select className={sel} value={ack} onChange={(e) => setAck(e.target.value)}><option value="">Ack: any</option><option value="acknowledged">Acknowledged</option><option value="unacknowledged">Not acknowledged</option></select>
       </div>
 
+      {access.data?.roles.includes('admin') && <div className="flex flex-wrap gap-2"><select aria-label="Department filter" className={sel} value={department} onChange={e=>setDepartment(e.target.value)}><option value="">Any department</option>{[...new Set((teams.data??[]).map(t=>t.department))].map(d=><option key={d}>{d}</option>)}</select><select aria-label="Corporation filter" className={sel} value={corporation} onChange={e=>setCorporation(e.target.value)}><option value="">Any corporation</option>{[...new Set((directory.data?.wards??[]).map(w=>w.corporation))].map(c=><option key={c}>{c}</option>)}</select><label className="text-xs">From<input type="date" value={from} onChange={e=>setFrom(e.target.value)} className={sel}/></label><label className="text-xs">Until<input type="date" value={until} onChange={e=>setUntil(e.target.value)} className={sel}/></label></div>}
       {q.isError ? (
         <div className="rounded-2xl border bg-card p-10 text-center shadow-soft">
           <p className="font-semibold">The queue couldn't be loaded.</p>
@@ -135,6 +134,7 @@ function Queue() {
               </tbody>
             </table>
           </div>
+          <div className="flex items-center justify-between gap-3 border-t p-3"><Button variant="outline" size="sm" disabled={page===0} onClick={()=>setPage(page-1)}>Previous</Button><span className="text-xs text-muted-foreground">Page {page+1}</span><Button variant="outline" size="sm" disabled={(page+1)*50>=(q.data?.total??0)} onClick={()=>setPage(page+1)}>Next</Button></div>
           {q.isLoading && <p className="p-10 text-center text-sm text-muted-foreground">Loading issues…</p>}
           {!q.isLoading && rows.length === 0 && <p className="p-10 text-center text-sm text-muted-foreground">No issues in this view within your scope.</p>}
         </div>

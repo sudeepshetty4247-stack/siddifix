@@ -13,6 +13,13 @@ const queueSchema = z.object({
   ack: z.enum(["acknowledged", "unacknowledged"]).nullable(),
   overdue: z.boolean().nullable(),
   search: z.string().max(120).nullable(),
+  page: z.number().int().min(0).default(0),
+  view: z.string().max(40).default("all"),
+  department: z.string().max(160).default(""),
+  corporation: z.string().max(160).default(""),
+  from: z.string().default(""),
+  until: z.string().default(""),
+  metric: z.string().default(""),
 });
 
 export const staffQueue = createServerFn({ method: "POST" })
@@ -21,19 +28,35 @@ export const staffQueue = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: staff } = await context.supabase.rpc("is_staff", { _user_id: context.userId });
     if (!staff) throw new Error("Staff access required");
-    const result = await context.supabase.rpc("staff_queue_issues", {
-      _limit: 500,
-      ...(data.category ? { _category: data.category } : {}),
-      ...(data.status ? { _status: data.status } : {}),
-      ...(data.severity ? { _severity: data.severity } : {}),
-      ...(data.ward ? { _ward: data.ward } : {}),
-      ...(data.team ? { _team: data.team } : {}),
-      ...(data.ack ? { _ack: data.ack } : {}),
-      ...(data.overdue != null ? { _overdue: data.overdue } : {}),
-      ...(data.search?.trim() ? { _search: data.search.trim() } : {}),
-    });
-    if (result.error) throw new Error(result.error.message);
-    return result.data ?? [];
+    let query = context.supabase.from('issues').select('id,ref_code,title,category,severity,status,sla_due_at,eta_at,acknowledged_at,escalated_at,created_at,landmark,department,support_count,photo_url,authority_id,assignment_state,duplicate_of,duplicate_candidate_id,team_id,routing_snapshot,civic_teams(name)', {count:'exact'}).order('created_at',{ascending:false});
+    if(data.category) query=query.eq('category',data.category);
+    if(data.status) query=query.eq('status',data.status as import('@/lib/civic').IssueStatus);
+    if(data.severity) query=query.eq('severity',data.severity as import('@/lib/civic').Severity);
+    if(data.ward) query=query.eq('routing_snapshot->ward->>identifier',data.ward);
+    if(data.team) query=query.eq('team_id',data.team);
+    if(data.department) query=query.eq('department',data.department);
+    if(data.corporation) query=query.eq('routing_snapshot->ward->>corporation',data.corporation);
+    if(data.from) query=query.gte('created_at',data.from);
+    if(data.until) query=query.lte('created_at',data.until+'T23:59:59Z');
+    if(data.search) { const term=data.search.replace(/[(),%]/g,' ').trim(); query=query.or(`title.ilike.%${term}%,ref_code.ilike.%${term}%,landmark.ilike.%${term}%`); }
+    if(data.ack==='unacknowledged') query=query.is('acknowledged_at',null);
+    if(data.ack==='acknowledged') query=query.not('acknowledged_at','is',null);
+    if(['open','unassigned','overdue','escalated'].includes(data.view)) query=query.not('status','in','(resolved,closed,rejected)');
+    if(data.view==='unassigned') query=query.is('team_id',null);
+    if(data.view==='assigned') query=query.not('team_id','is',null);
+    if(data.view==='rejected assignments') query=query.eq('assignment_state','rejected');
+    if(data.view==='resolved') query=query.in('status',['resolved','closed']);
+    if(data.view==='linked reports') query=query.not('duplicate_of','is',null);
+    if(data.view==='duplicate candidates') query=query.not('duplicate_candidate_id','is',null);
+    if(data.view==='escalated') query=query.not('escalated_at','is',null);
+    if(data.view==='overdue'||data.overdue) query=query.or(`sla_due_at.lt.${new Date().toISOString()},eta_at.lt.${new Date().toISOString()}`);
+    if(data.metric==='routing_exceptions') query=query.eq('assignment_state','routing_exception');
+    if(data.metric==='assigned_to_me') query=query.eq('assigned_to',context.userId);
+    if(data.metric==='citizen_confirmed') query=query.eq('status','closed');
+    const result=await query.range(data.page*50,data.page*50+49);
+    if(result.error) throw new Error('Queue could not be loaded.');
+    return { rows:(result.data??[]).map(i=>({...i,team_name:i.civic_teams?.name??null,ward_name:(i.routing_snapshot as {ward?:{name?:string}}|null)?.ward?.name??null})), total:result.count??0 };
+
   });
 
 // ---------- Admin audit log (merged, read-only, admin-only) ----------
