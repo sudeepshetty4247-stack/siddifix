@@ -35,7 +35,7 @@ const TRANSITIONS: Record<IssueStatus, IssueStatus[]> = {
   inspection_scheduled: ["in_progress", "assigned"],
   in_progress: ["awaiting_verification", "resolved", "assigned"],
   awaiting_verification: ["resolved", "in_progress"],
-  resolved: ["closed", "reopened"],
+  resolved: ["reopened"],
   rejected: ["reopened"],
   reopened: ["under_review", "assigned", "in_progress"],
   closed: ["reopened"],
@@ -136,7 +136,7 @@ function StaffIssue() {
   const myRoles = (roles.data?.roles ?? []) as string[];
   const supervisor = myRoles.some(r => r === "admin" || r === "supervisor" || r === "staff");
   const canWork = scope.data === true;
-  const options = (TRANSITIONS[i.status as IssueStatus] ?? []).filter(s => supervisor || FIELD_TARGETS.includes(s));
+  const options = i.duplicate_of?[]:(TRANSITIONS[i.status as IssueStatus] ?? []).filter(s => supervisor || FIELD_TARGETS.includes(s));
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-8">

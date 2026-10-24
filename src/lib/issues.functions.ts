@@ -126,7 +126,7 @@ export const submitIssue = createServerFn({ method: "POST" })
         ai_confidence: data.aiConfidence ?? null, safety_warning: data.safetyWarning ?? null,
         lat: data.lat, lng: data.lng, landmark: data.landmark ?? null, photo_url: signed.data.signedUrl,
         department: 'Ownership review pending', duplicate_of: data.duplicateOf ?? null,
-        sla_due_at: targets.resolveDueAt,
+        sla_due_at: targets.resolveDueAt, ack_due_at:targets.ackDueAt, target_snapshot:JSON.parse(JSON.stringify(targets.snapshot)),
         routing_snapshot: JSON.parse(JSON.stringify(routing)),
         original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
         photo_source:data.photoMetadata?.source??'gallery',photo_metadata:data.photoMetadata ? JSON.parse(JSON.stringify(data.photoMetadata)) : null,
@@ -139,15 +139,6 @@ export const submitIssue = createServerFn({ method: "POST" })
     }
     const saved = result as { ref: string; duplicate: boolean };
     if (saved.duplicate) await supabaseAdmin.storage.from('issue-photos').remove([path]);
-    if (!saved.duplicate) {
-      // Route the new case to the matching operational team (category + ward); failures leave it in the exception queue.
-      const created = await supabaseAdmin.from('issues').select('id').eq('ref_code', saved.ref).maybeSingle();
-      if (created.data?.id) {
-        await supabaseAdmin.from('issues').update({ ack_due_at: targets.ackDueAt, target_snapshot: JSON.parse(JSON.stringify(targets.snapshot)) }).eq('id', created.data.id);
-        const routed = await supabaseAdmin.rpc('route_issue_to_team', { _issue: created.data.id });
-        if (routed.error) console.error('Team routing failed', saved.ref, routed.error.message);
-      }
-    }
     return { ref: saved.ref, token: saved.duplicate ? null : token, duplicate: saved.duplicate };
   });
 
