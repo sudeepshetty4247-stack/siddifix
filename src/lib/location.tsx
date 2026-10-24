@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { suggestedReportLocation } from './report-location';
 import { reverseGeocode } from './geocoding.functions';
+import { supabase } from '@/integrations/supabase/client';
 export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual'; accuracy?: number };
 type LocationContextValue = { location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void; locating: boolean; detect: (quiet?: boolean) => void; notice: string; recent: SelectedLocation[] };
 const LocationContext = createContext<LocationContextValue | null>(null);
@@ -35,6 +36,10 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       // Keep even a rough fix so neighbourhood counts and the map can use it; report submission still requires a confirmed point.
       select(candidate);
       if (!suggestedReportLocation(candidate)) setNotice(`Device location is approximate (±${Math.round(p.coords.accuracy)} m). Confirm the exact point on the map when you report.`);
+      // Friendly note when the device is outside Bengaluru's published wards.
+      void Promise.resolve(supabase.rpc('ward_at_point', { _lat: candidate.lat, _lng: candidate.lng })).then(r => {
+        if (!r.error && Array.isArray(r.data) && r.data.length === 0) setNotice("Looks like you're outside Bengaluru — we're not in your city yet, but we'd love to reach you soon. You can still explore Bengaluru on the map.");
+      }).catch(() => { /* coverage note is optional */ });
     }, error => { setLocating(false); setNotice(error.code === 1 ? 'Location permission was denied. Choose a location manually, or allow location access in your browser.' : error.code === 3 ? 'Device location timed out. Try again or choose a map pin.' : 'Device location is unavailable. Choose a map pin instead.'); ask(); }, { timeout: 15000, maximumAge: 0, enableHighAccuracy: true });
   }
   useEffect(() => {

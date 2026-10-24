@@ -78,7 +78,7 @@ export function LocationGate() {
             <div>
               <h1 className="text-xl font-bold">{location.label === 'Current location' ? 'Your location' : location.label}</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {ward ? `${ward.name} · Ward ${ward.ward_number}${ward.zone ? ` · ${ward.zone}` : ''}` : wardQuery.isPending ? 'Checking your ward…' : wardQuery.isError ? 'Ward lookup is unavailable right now' : wards.length > 1 ? 'Your point touches a shared ward boundary — staff confirm the ward when you report' : point ? 'Outside the published ward boundaries' : 'Approximate location — refine it from the map anytime'}
+                {ward ? `${ward.name} · Ward ${ward.ward_number}${ward.zone ? ` · ${ward.zone}` : ''}` : wardQuery.isPending ? 'Checking your ward…' : wardQuery.isError ? 'Ward lookup is unavailable right now' : wards.length > 1 ? 'Your point touches a shared ward boundary — staff confirm the ward when you report' : point ? "We're not in your city yet — CivicFix currently serves Bengaluru, and we'd love to reach you soon" : 'Approximate location — refine it from the map anytime'}
               </p>
             </div>
           </div>
