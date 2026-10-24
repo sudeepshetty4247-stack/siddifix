@@ -38,8 +38,8 @@ function CitizenShell() {
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-[1000] border-b bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center gap-2 px-4 py-2 sm:gap-4 sm:px-6">
-          <Logo />
           <BackButton />
+          <Logo />
           <LocationSelector />
           <nav className="hidden items-center gap-1 lg:flex">
 
