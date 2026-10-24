@@ -54,13 +54,6 @@ function AuthPage() {
     }
   }
 
-  async function google() {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
-    if (r.error) { toast.error(r.error.message ?? "Google sign-in failed"); return; }
-    if (r.redirected) return;
-    navigate({ to: "/staff", replace: true });
-  }
-
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="hidden flex-col justify-between bg-ink p-12 text-ink-foreground lg:flex">
@@ -77,14 +70,9 @@ function AuthPage() {
           <BackButton />
           <div className="lg:hidden"><Logo /></div>
           <div>
-            <h2 className="text-2xl font-bold">{mode === "in" ? "Staff sign in" : "Create staff account"}</h2>
+            <h2 className="text-2xl font-bold">Staff sign in</h2>
             <p className="mt-1 text-sm text-muted-foreground">Citizens don't need an account — <Link to="/report" className="font-medium text-primary">report an issue here</Link>.</p><p className="mt-2 text-xs text-muted-foreground">Accounts require separately granted workspace access. Creating an account never makes you an administrator.</p>
           </div>
-          <button onClick={google} className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border bg-card text-sm font-semibold hover:bg-secondary">
-            <svg className="h-4 w-4" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81Z" /></svg>
-            Continue with Google
-          </button>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground"><div className="h-px flex-1 bg-border" />or<div className="h-px flex-1 bg-border" /></div>
           <form onSubmit={submit} className="space-y-3">
             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Work email" className="h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
             <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (min 8 characters)" className="h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
@@ -92,10 +80,7 @@ function AuthPage() {
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}{mode === "in" ? "Sign in" : "Create account"}
             </button>
           </form>
-          <p className="text-center text-sm text-muted-foreground">
-            {mode === "in" ? "New team member?" : "Already have an account?"}{" "}
-            <button onClick={() => setMode(mode === "in" ? "up" : "in")} className="font-semibold text-primary">{mode === "in" ? "Create an account" : "Sign in"}</button>
-          </p>
+          <p className="text-center text-xs text-muted-foreground">No account? Ask your Siddi administrator for staff access.</p>
         </div>
       </div>
     </div>

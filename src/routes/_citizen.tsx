@@ -5,7 +5,6 @@ import { Logo } from "@/components/civic/Logo";
 import { useI18n, LANGS, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { LocationProvider } from "@/lib/location";
-import { LocationGate } from "@/components/civic/LocationGate";
 import { LocationSelector } from "@/components/civic/LocationSelector";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/civic/BackButton";
@@ -30,7 +29,6 @@ function CitizenLayout() {
   return (
     <LocationProvider>
       <CitizenShell />
-      <LocationGate />
       <CoverageNotice />
       <AskSiddiLauncher />
     </LocationProvider>
