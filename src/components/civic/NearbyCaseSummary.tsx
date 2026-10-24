@@ -11,8 +11,10 @@ import { Button } from '@/components/ui/button';
 
 const summarySchema = z.object({total:z.number(),active:z.number(),resolved:z.number(),overdue:z.number(),critical:z.number(),radius_m:z.number()});
 export function NearbyCaseSummary() {
-  const { location, setOpen, locating } = useLocation();
-  const point = suggestedReportLocation(location);
+  const { location, setOpen, locating, detect } = useLocation();
+  // Browsing counts use the best known point, even a rough GPS fix; the 100 m rule only gates report submission.
+  const point = location ? { lat: location.lat, lng: location.lng } : null;
+  const approximate = location?.method === 'device' && (location.accuracy ?? 0) > MAX_SUGGESTED_ACCURACY_METRES;
   const directory = useQuery({queryKey:['civic-directory'],queryFn:()=>getDirectory(),staleTime:300000});
   const ward = point && directory.data ? resolveCivicRouting(directory.data,point.lat,point.lng).ward : null;
   const counts = useQuery({queryKey:['nearby-case-summary',point?.lat,point?.lng],enabled:!!point,refetchInterval:15000,queryFn:async()=>{
