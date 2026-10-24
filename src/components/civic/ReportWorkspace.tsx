@@ -17,7 +17,7 @@ export function ReportWorkspace() {
   const r=q.data;
   async function prepare(kind:'pdf'|'xlsx') {
     if(!r||exporting)return;setExporting(kind);setError('');setReady(null);
-    const snapshot=structuredClone(r);const id=`SIDDI-${crypto.randomUUID().slice(0,8).toUpperCase()}`;
+    const snapshot=structuredClone(r);const id=`SIDDHI-${crypto.randomUUID().slice(0,8).toUpperCase()}`;
     try {
       const {buildReportPdf,buildReportWorkbook}=await import('@/lib/report-export');
       let blob:Blob;
@@ -29,7 +29,7 @@ export function ReportWorkspace() {
   }
   const change=(key:keyof ReportFilters,value:string)=>{setDraft(f=>({...f,[key]:value}));setReady(null);};
   return <section className="border-y py-8" aria-label="Civic intelligence workspace">
-    <div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="text-2xl font-bold">Civic intelligence reports</h2><p className="mt-2 text-sm text-muted-foreground">Siddi recorded service-area snapshot</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={!r||!!exporting||q.isFetching} onClick={()=>prepare('pdf')}><FileText className="h-4 w-4"/>{exporting==='pdf'?'Preparing PDF…':'Prepare PDF'}</Button><Button disabled={!r||!!exporting||q.isFetching} onClick={()=>prepare('xlsx')}><Download className="h-4 w-4"/>{exporting==='xlsx'?'Preparing Excel…':'Prepare Excel'}</Button></div></div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><h2 className="text-2xl font-bold">Civic intelligence reports</h2><p className="mt-2 text-sm text-muted-foreground">Siddhi recorded service-area snapshot</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" disabled={!r||!!exporting||q.isFetching} onClick={()=>prepare('pdf')}><FileText className="h-4 w-4"/>{exporting==='pdf'?'Preparing PDF…':'Prepare PDF'}</Button><Button disabled={!r||!!exporting||q.isFetching} onClick={()=>prepare('xlsx')}><Download className="h-4 w-4"/>{exporting==='xlsx'?'Preparing Excel…':'Prepare Excel'}</Button></div></div>
     <form className="my-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" onSubmit={e=>{e.preventDefault();setFilters({...draft});setReady(null);}}>
       {(['start','end'] as const).map(key=><label key={key} className="text-xs font-medium">{key==='start'?'From (IST)':'Through (IST)'}<input type="date" aria-label={key==='start'?'Report start date':'Report end date'} className="mt-1 h-10 w-full rounded-md border bg-card px-3" value={draft[key]?.slice(0,10)??''} onChange={e=>{const next={...draft};if(!e.target.value)delete next[key];else next[key]=`${e.target.value}T${key==='end'?'23:59:59.999':'00:00:00.000'}+05:30`;setDraft(next);setReady(null);}}/></label>)}
       {([

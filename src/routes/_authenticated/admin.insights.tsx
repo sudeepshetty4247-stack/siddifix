@@ -10,9 +10,9 @@ import { caseMetrics, DUPLICATE_RULES, findDuplicateSuggestions, findRecurringPa
 
 export const Route = createFileRoute("/_authenticated/admin/insights")({
   head: () => ({ meta: [
-    { title: "Duplicates & recurring issues — Siddi" },
+    { title: "Duplicates & recurring issues — Siddhi" },
     { name: "description", content: "Explainable duplicate suggestions and recurring-problem locations for staff review." },
-    { property: "og:title", content: "Duplicates & recurring issues — Siddi" },
+    { property: "og:title", content: "Duplicates & recurring issues — Siddhi" },
     { property: "og:description", content: "Explainable duplicate suggestions and recurring-problem locations for staff review." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" },
   ] }),

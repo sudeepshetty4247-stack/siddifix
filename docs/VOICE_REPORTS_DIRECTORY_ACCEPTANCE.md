@@ -1,11 +1,11 @@
-# Siddi — voice, reports and officer directory acceptance
+# Siddhi — voice, reports and officer directory acceptance
 
 **Verified 24 October 2026 UTC. Result: delivered improvements with outstanding acceptance items; not an all-modules production certification.**
 
-## 1. Existing Ask Siddi
+## 1. Existing Ask Siddhi
 - Reused the existing `/assistant` and persistent citizen entry. Added editable browser speech transcripts, English/Kannada/Hindi engine selection, listening, speaking, pause/resume, interruption, cleanup on leaving the page, offline/error handling, explicit send and duplicate-send protection.
 - Added real Report, Track and Public Statistics navigation. Private tracking capabilities remain outside the assistant. No case-changing tools or permission bypasses were introduced.
-- Every question now retrieves `public_report_snapshot` with canonical scope, the same database aggregate used by the report workspace. The verified live answer was **1 canonical record**, matching independent database counts, PDF and Excel. The answer disclosed its extraction timestamp and Siddi-only scope.
+- Every question now retrieves `public_report_snapshot` with canonical scope, the same database aggregate used by the report workspace. The verified live answer was **1 canonical record**, matching independent database counts, PDF and Excel. The answer disclosed its extraction timestamp and Siddhi-only scope.
 - Removed model reasoning from user-facing streams. Conversations remain visit-only.
 - Automated speech tests exercised unsupported APIs, permission denial, editable Kannada transcript callbacks, playback cancellation and pause/resume. These are isolated engine simulations, **not physical microphone or Kannada recognition accuracy tests**.
 - Chromium desktop and 390px mobile text interaction verified; final browser run reported no runtime errors or horizontal overflow. Physical Android/iOS microphones, installed Kannada voices and Safari/Firefox remain untested.

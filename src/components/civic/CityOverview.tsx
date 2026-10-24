@@ -16,7 +16,7 @@ export function CityOverview() {
     { label: 'Unique issues', value: s.total, hint: 'Duplicates count once' },
     { label: 'Active', value: s.active, hint: 'Open right now', tone: 'text-primary' },
     { label: 'Resolved', value: s.resolved, hint: 'Resolved or closed', tone: 'text-success' },
-    { label: 'Overdue', value: s.overdue, hint: 'Past Siddi target', tone: 'text-warning-foreground' },
+    { label: 'Overdue', value: s.overdue, hint: 'Past Siddhi target', tone: 'text-warning-foreground' },
     { label: 'Acknowledged', value: s.acknowledged, hint: 'Staff responded' },
     { label: 'Escalated', value: s.escalated, hint: 'Supervisor follow-up' },
   ] : [];
@@ -34,7 +34,7 @@ export function CityOverview() {
         </div>
         {q.isPending ? <p role="status" className="mt-5 text-sm text-muted-foreground">Loading city totals…</p>
           : q.isError ? <p role="alert" className="mt-5 text-sm">City totals couldn't be loaded. <button className="underline" onClick={() => q.refetch()}>Try again</button></p>
-          : s && s.total === 0 ? <div className="mt-5 rounded-xl border border-dashed p-5 text-sm text-muted-foreground">No Siddi reports recorded {days ? `in the last ${days} days` : 'yet'}. Numbers appear here as soon as real citizens report — we never show sample data.</div>
+          : s && s.total === 0 ? <div className="mt-5 rounded-xl border border-dashed p-5 text-sm text-muted-foreground">No Siddhi reports recorded {days ? `in the last ${days} days` : 'yet'}. Numbers appear here as soon as real citizens report — we never show sample data.</div>
           : <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-3 lg:grid-cols-6">
               {items.map(i => <div key={i.label} className="bg-card px-4 py-3"><dt className="text-xs text-muted-foreground">{i.label}</dt><dd className={cn('mt-0.5 text-2xl font-bold tabular-nums', i.tone)}>{i.value}</dd><p className="text-[11px] text-muted-foreground">{i.hint}</p></div>)}
             </dl>}

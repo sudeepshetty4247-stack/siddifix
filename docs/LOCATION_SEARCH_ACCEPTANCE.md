@@ -1,4 +1,4 @@
-# Siddi location search acceptance
+# Siddhi location search acceptance
 
 ## Root cause and provider
 Both the header picker and incident report searched only after submit. Nominatim searches were restricted to a Bengaluru bounding box. Public Nominatim explicitly prohibits autocomplete, so it remains on-demand reverse geocoding only.
@@ -10,7 +10,7 @@ Shared AddressEntry offers automatic real suggestions, keyboard/click selection,
 
 Shared incidentCoverage evaluates enabled configured coverage and active ward geometry; ambiguous overlaps remain unknown and cannot submit. Both the location validation endpoint and report submission use it. Submission validates before display-image upload, rechecks coverage, and persists original/normalized address and source/validation details in the existing routing snapshot alongside actual coordinates. Existing private tracking, idempotency and atomic routing are retained. No schema migration was needed.
 
-Outside selections show the Siddi explorer/Option B message; Change address preserves text and returns focus. Report changes retain photo and description. No unsupported report is created or routed.
+Outside selections show the Siddhi explorer/Option B message; Change address preserves text and returns focus. Report changes retain photo and description. No unsupported report is created or routed.
 
 ## Changed surfaces
 Geocoding search, shared address parser/entry, shared incident coverage and validation endpoint, header location picker/provider, report form/input/submission, outside-area illustration, location/coverage tests and documentation. Report incident address drafts are separate from header location drafts.

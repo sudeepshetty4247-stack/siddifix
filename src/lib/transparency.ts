@@ -14,9 +14,9 @@ export function csvCell(value: unknown) {
 }
 export function transparencyCsv(r: TransparencyReport) {
   const rows: unknown[][] = [
-    ['Siddi — Your City. Your Voice.', 'Public transparency report'],
+    ['Siddhi — Your City. Your Voice.', 'Public transparency report'],
     ['Generated at', r.generated_at], ['Reporting period', r.days ? `Last ${r.days} days` : 'All time'],
-    ['Basis', 'Siddi canonical cases only. Constituency totals are not government or elected-member performance scores.'],
+    ['Basis', 'Siddhi canonical cases only. Constituency totals are not government or elected-member performance scores.'],
     ['Dimension', 'Area / constituency', 'Representative', 'Total', 'Active', 'Resolved', 'Overdue', 'Resolution %', 'Source', 'Checked at'],
     ['City', 'Bengaluru', '', r.summary.total, r.summary.active, r.summary.resolved, r.summary.overdue, resolutionRate(r.summary) ?? 'Not enough data'],
     ...r.groups.map(g => [g.dimension, g.label, '', g.total, g.active, g.resolved, g.overdue, resolutionRate(g) ?? 'Not enough data']),

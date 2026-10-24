@@ -82,7 +82,7 @@ export function LocationGate() {
             <div>
               <h1 className="text-xl font-bold">{location.label === 'Current location' ? 'Your location' : location.label}</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {ward ? `${ward.name} · Ward ${ward.ward_number}${ward.zone ? ` · ${ward.zone}` : ''}` : wardQuery.isPending ? 'Checking your ward…' : wardQuery.isError ? 'Ward lookup is unavailable right now' : wards.length > 1 ? 'Your point touches a shared ward boundary — staff confirm the ward when you report' : point ? "We're not in your city yet — Siddi currently serves Bengaluru, and we'd love to reach you soon" : 'Approximate location — refine it from the map anytime'}
+                {ward ? `${ward.name} · Ward ${ward.ward_number}${ward.zone ? ` · ${ward.zone}` : ''}` : wardQuery.isPending ? 'Checking your ward…' : wardQuery.isError ? 'Ward lookup is unavailable right now' : wards.length > 1 ? 'Your point touches a shared ward boundary — staff confirm the ward when you report' : point ? "We're not in your city yet — Siddhi currently serves Bengaluru, and we'd love to reach you soon" : 'Approximate location — refine it from the map anytime'}
               </p>
             </div>
           </div>
@@ -92,7 +92,7 @@ export function LocationGate() {
               <div><dt className="text-xs text-muted-foreground">Resolved nearby</dt><dd className="mt-1 text-2xl font-bold tabular-nums text-success">{counts.isPending ? '…' : counts.data?.resolved ?? '—'}</dd></div>
             </dl>
           )}
-          <p className="mt-3 text-xs text-muted-foreground">Siddi reports within 2 km of your point. No cases yet means yours can be the first.</p>
+          <p className="mt-3 text-xs text-muted-foreground">Siddhi reports within 2 km of your point. No cases yet means yours can be the first.</p>
           <Button className="mt-6 w-full" size="lg" onClick={() => setDismissed(true)}>Continue <ArrowRight className="h-4 w-4" /></Button>
         </div>
       </div>
@@ -124,7 +124,7 @@ export function LocationGate() {
         <Button className="mt-4 w-full" size="lg" variant="outline" disabled={!pin || !isInIndia(pin.lat, pin.lng)} onClick={() => { if (pin) select({ ...pin, label: label.trim() || `${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}`, method: 'manual' }); }}>
           Confirm this location
         </Button>
-        {pin && !isInIndia(pin.lat, pin.lng) && <p role="alert" className="mt-2 text-sm text-destructive">Siddi currently serves Bengaluru, India. Pick a point inside the city.</p>}
+        {pin && !isInIndia(pin.lat, pin.lng) && <p role="alert" className="mt-2 text-sm text-destructive">Siddhi currently serves Bengaluru, India. Pick a point inside the city.</p>}
       </div>
     </div>
   );

@@ -11,9 +11,9 @@ import { publicCases } from '@/lib/public-cases';
 export const Route = createFileRoute("/_citizen/track")({
   head: () => ({
     meta: [
-      { title: "My Tracking — Siddi" },
+      { title: "My Tracking — Siddhi" },
       { name: "description", content: "Follow the reports you submitted or care about. No account needed." },
-      { property: "og:title", content: "My Tracking — Siddi" },
+      { property: "og:title", content: "My Tracking — Siddhi" },
       { property: "og:description", content: "Track civic reports by reference code." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

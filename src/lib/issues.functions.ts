@@ -65,7 +65,7 @@ export const submitIssue = createServerFn({ method: "POST" })
     const {consumeRequest}=await import('./civic-security.server');await consumeRequest('submit',10);
     if (!isInIndia(data.lat, data.lng)) throw new Error("CivicFix currently accepts locations within India only.");
     const incidentCheck=incidentCoverage(await getDirectory(),data.lat,data.lng);
-    if(incidentCheck.status!=='supported')throw new Error(incidentCheck.status==='unknown'?"We couldn't verify this location yet. Confirm a point inside a single supported ward.":"Siddi currently accepts reports only inside its configured Bengaluru service area. Change the incident location.");
+    if(incidentCheck.status!=='supported')throw new Error(incidentCheck.status==='unknown'?"We couldn't verify this location yet. Confirm a point inside a single supported ward.":"Siddhi currently accepts reports only inside its configured Bengaluru service area. Change the incident location.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Idempotency: repeated taps / retries return the original report.
@@ -111,7 +111,7 @@ export const submitIssue = createServerFn({ method: "POST" })
     const coverage = coverageFromWardMatches(routing.ward ? 1 : routing.reviewReason?.startsWith('This pin touches') ? 2 : 0);
     if (!routing.coverage || !canAcceptReport(coverage)) {
       await supabaseAdmin.storage.from('issue-photos').remove([path]);
-      throw new Error("This location is outside Siddi's current service area. Siddi accepts reports inside Bengaluru's wards only.");
+      throw new Error("This location is outside Siddhi's current service area. Siddhi accepts reports inside Bengaluru's wards only.");
     }
     const targetRows = await supabaseAdmin.from('service_targets').select('category,severity,ack_hours,resolve_hours,version,active').eq('active', true);
     const { computeTargets } = await import('./service-targets');

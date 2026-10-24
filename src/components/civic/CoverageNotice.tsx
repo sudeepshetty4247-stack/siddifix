@@ -22,7 +22,7 @@ export function CoverageNotice() {
         <Logo />
         <span className="mt-6 inline-flex items-center gap-2 rounded-full bg-warning/15 px-3 py-1 text-xs font-semibold"><Rocket className="h-3.5 w-3.5" />Service unavailable here — coming soon</span>
         <h1 id="coverage-title" className="mt-3 text-2xl font-bold leading-tight sm:text-3xl">Your city deserves better. We're on our way.</h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Siddi isn't live in {place} yet. Every great street starts with one voice — and yours will be heard here soon. For now, Siddi works in <strong className="text-foreground">Bengaluru</strong>.</p>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Siddhi isn't live in {place} yet. Every great street starts with one voice — and yours will be heard here soon. For now, Siddhi works in <strong className="text-foreground">Bengaluru</strong>.</p>
         <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="h-3.5 w-3.5" />Change your place to a Bengaluru location to report and track issues.</p>
         <div className="mt-6 grid gap-2">
           <Button size="lg" onClick={() => { dismiss(); setOpen(true); }}><Compass className="h-5 w-5" />Change place</Button>

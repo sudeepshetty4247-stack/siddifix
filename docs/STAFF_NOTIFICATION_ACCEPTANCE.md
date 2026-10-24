@@ -1,4 +1,4 @@
-# Siddi staff workflow and notification acceptance
+# Siddhi staff workflow and notification acceptance
 
 ## Delivered
 - Recipient-owned persisted notification centre and header bell, read/unread/archive/restore and bulk mark-read, accurate badge totals, search/type/priority/state filters and paginated results.

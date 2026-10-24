@@ -6,11 +6,11 @@ export type ReportFilters = z.infer<typeof reportFilters>;
 export const EMPTY_FILTERS: ReportFilters = { category: '', status: '', severity: '', corporation: '', ward: '', resolution: '', records: 'canonical' };
 export type ReportSnapshot = TransparencyReport & { filters: ReportFilters; scope: string; matrix: { category: string; status: string; count: number }[]; recurrence_available: boolean; summary: TransparencyReport['summary'] & { awaiting_acknowledgement: number; in_progress: number; awaiting_verification: number; citizen_confirmed: number; reopened: number; unassigned: number; routing_exceptions: number; linked_duplicates: number; average_response_hours: number | null; response_samples: number; resolution_samples: number } };
 export const METHODOLOGY = [
-  'Source: persisted Siddi reports. This is not a census of every civic incident in Bengaluru.',
+  'Source: persisted Siddhi reports. This is not a census of every civic incident in Bengaluru.',
   'Canonical excludes staff-linked duplicate records. All includes actual linked submissions; linked includes only linked duplicates. History events never count as reports.',
   'Active excludes resolved, closed and rejected. Resolved includes resolved and closed. Resolution rate = resolved / filtered records; undefined when denominator is zero.',
   'Citizen-confirmed counts only closed cases with a recorded citizen_confirmed event. Staff resolution alone is not citizen confirmation.',
-  'Overdue uses recorded ETA, otherwise Siddi target. Internal targets do not establish government promises.',
+  'Overdue uses recorded ETA, otherwise Siddhi target. Internal targets do not establish government promises.',
   'Time charts group creation dates in Asia/Kolkata. Resolved trend counts currently resolved records in each submission cohort, not resolution events on that day.',
   'Durations use valid acknowledgement/resolution timestamps minus submission. Missing values are excluded, not zero; sample counts are disclosed.',
   'Recurring classification is not persisted in this aggregate feed; no recurrence figures are invented. Department details and private report rows are not public exports.',

@@ -23,9 +23,9 @@ import { downloadText } from '@/lib/transparency';
 export const Route = createFileRoute("/_citizen/issues/$ref")({
   head: ({ params }) => ({
     meta: [
-      { title: `Issue ${params.ref} — Siddi` },
+      { title: `Issue ${params.ref} — Siddhi` },
       { name: "description", content: `Public status, location and full action history for civic issue ${params.ref}.` },
-      { property: "og:title", content: `Civic issue ${params.ref} — Siddi` },
+      { property: "og:title", content: `Civic issue ${params.ref} — Siddhi` },
       { property: "og:description", content: "Follow this infrastructure issue from report to resolution." },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },
@@ -143,7 +143,7 @@ function IssuePage() {
         <div className="flex gap-1.5">
           <Button size="sm" variant="ghost" onClick={toggleFollow}>{following ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}<span className="hidden sm:inline">{following ? 'Unfollow' : 'Follow'}</span></Button>
           <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/issues/${ref}`); toast.success("Public link copied"); }}><Copy className="h-4 w-4" /><span className="hidden sm:inline">Share</span></Button>
-          <Button size="sm" variant="ghost" disabled={!events.data || events.isError} onClick={() => downloadText(caseReport(i, events.data ?? []), `Siddi-${i.ref_code}.md`, 'text/markdown;charset=utf-8')}><Download className="h-4 w-4" /><span className="hidden sm:inline">Report</span></Button>
+          <Button size="sm" variant="ghost" disabled={!events.data || events.isError} onClick={() => downloadText(caseReport(i, events.data ?? []), `Siddhi-${i.ref_code}.md`, 'text/markdown;charset=utf-8')}><Download className="h-4 w-4" /><span className="hidden sm:inline">Report</span></Button>
           <Button size="sm" variant="ghost" onClick={() => window.print()} className="hidden sm:inline-flex">PDF</Button>
         </div>
       </div>
@@ -181,7 +181,7 @@ function IssuePage() {
               </dl>
               <div className="divide-y rounded-2xl border">
                 <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-success/10 text-success"><MapPin className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Ward details</p><p className="truncate text-sm font-semibold">{ward?.name ? `Ward ${ward.ward_number} – ${ward.name}` : 'Ward under staff review'}</p>{ward?.zone && <p className="text-[11px] text-muted-foreground">{ward.zone} zone</p>}</div></div>
-                <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary"><Users className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Assigned team</p><p className="truncate text-sm font-semibold">{i.department ?? 'Ownership review pending'}</p><p className="text-[11px] text-muted-foreground">Internal Siddi record — not an official referral</p></div></div>
+                <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary"><Users className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Assigned team</p><p className="truncate text-sm font-semibold">{i.department ?? 'Ownership review pending'}</p><p className="text-[11px] text-muted-foreground">Internal Siddhi record — not an official referral</p></div></div>
               </div>
             </div>
           </article>
@@ -218,7 +218,7 @@ function IssuePage() {
           <div className="divide-y rounded-2xl border bg-card">
             <Row icon={<MapPin className="h-4 w-4" />} label="Location">{i.landmark || `${i.lat.toFixed(5)}, ${i.lng.toFixed(5)}`}</Row>
             <Row icon={<Building2 className="h-4 w-4" />} label="Recorded ownership">{i.department ?? "Ownership review pending"}<span className="block text-xs text-muted-foreground">Internal record — not an official referral</span></Row>
-            <Row icon={<CalendarClock className="h-4 w-4" />} label="Siddi review target">
+            <Row icon={<CalendarClock className="h-4 w-4" />} label="Siddhi review target">
               {i.sla_due_at ? new Date(i.sla_due_at).toLocaleDateString("en-IN", { dateStyle: "medium" }) : "—"}
               <span className="block text-xs text-muted-foreground">{SEVERITY_META[i.severity as Severity].label} internal target — not a government commitment</span>
             </Row>

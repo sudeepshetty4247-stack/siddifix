@@ -9,7 +9,7 @@ import { useRoles } from "./staff";
 import type { Severity } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/admin/targets")({
-  head: () => ({ meta: [{ title: "Service targets — Siddi" }, { name: "description", content: "Configure internal acknowledgement and resolution targets by category and severity." }, { property: "og:title", content: "Service targets — Siddi" }, { property: "og:description", content: "Internal Siddi service targets by category and severity." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Service targets — Siddhi" }, { name: "description", content: "Configure internal acknowledgement and resolution targets by category and severity." }, { property: "og:title", content: "Service targets — Siddhi" }, { property: "og:description", content: "Internal Siddhi service targets by category and severity." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: TargetsPage,
 });
 
@@ -31,7 +31,7 @@ function TargetsPage() {
   async function save(row: Row) {
     const k = `${row.category}:${row.severity}`; const e = edit[k]; if (!e) return;
     setSaving(k);
-    const r = await supabase.rpc("admin_upsert_service_target", { _category: row.category, _severity: row.severity, _ack_hours: Number(e.ack), _resolve_hours: Number(e.res), _active: e.active, _notes: "Internal Siddi target; not an official government commitment." });
+    const r = await supabase.rpc("admin_upsert_service_target", { _category: row.category, _severity: row.severity, _ack_hours: Number(e.ack), _resolve_hours: Number(e.res), _active: e.active, _notes: "Internal Siddhi target; not an official government commitment." });
     if(!r.error){const reminder=await supabase.rpc("admin_set_reminder_hours",{_category:row.category,_severity:row.severity,_hours:Number(e.reminder)});if(reminder.error){setSaving(null);toast.error("Targets saved, reminder was not saved: "+reminder.error.message);return;}}
     setSaving(null);
     if (r.error) { toast.error(r.error.message); return; }
@@ -46,7 +46,7 @@ function TargetsPage() {
     <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-bold"><Timer className="h-6 w-6 text-primary" />Service targets</h1>
-        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">Each new report gets an acknowledgement deadline and a resolution target from the matching rule (calendar hours from submission). The rule version is stored on the case, so later edits never rewrite old cases. These are internal Siddi follow-up targets — not official government deadlines. An hourly background job escalates cases that miss them.</p>
+        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">Each new report gets an acknowledgement deadline and a resolution target from the matching rule (calendar hours from submission). The rule version is stored on the case, so later edits never rewrite old cases. These are internal Siddhi follow-up targets — not official government deadlines. An hourly background job escalates cases that miss them.</p>
         {!isAdmin && <p className="mt-3 flex items-center gap-2 text-sm text-warning-foreground"><ShieldAlert className="h-4 w-4" />Read-only — only administrators can change targets.</p>}
       </div>
       <div className="overflow-x-auto rounded-xl border bg-card">

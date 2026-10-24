@@ -1,4 +1,4 @@
-# Siddi separate portals — acceptance report
+# Siddhi separate portals — acceptance report
 
 ## Delivered
 - Citizen reporting and private tracking remain public, without staff accounts.
