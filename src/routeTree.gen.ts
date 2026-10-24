@@ -29,6 +29,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminAdministratorsRouteImport } from './routes/_authenticated/admin.administrators'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as AuthenticatedAdminDirectoryRouteImport } from './routes/_authenticated/admin.directory'
+import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin.feedback'
 import { Route as AuthenticatedAdminInsightsRouteImport } from './routes/_authenticated/admin.insights'
 import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin.notifications'
 import { Route as AuthenticatedAdminOverdueRouteImport } from './routes/_authenticated/admin.overdue'
@@ -152,6 +153,12 @@ const AuthenticatedAdminDirectoryRoute =
   AuthenticatedAdminDirectoryRouteImport.update({
     id: '/directory',
     path: '/directory',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminFeedbackRoute =
+  AuthenticatedAdminFeedbackRouteImport.update({
+    id: '/feedback',
+    path: '/feedback',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminInsightsRoute =
@@ -310,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/admin/administrators': typeof AuthenticatedAdminAdministratorsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
+  '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/insights': typeof AuthenticatedAdminInsightsRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/overdue': typeof AuthenticatedAdminOverdueRoute
@@ -352,6 +360,7 @@ export interface FileRoutesByTo {
   '/admin/administrators': typeof AuthenticatedAdminAdministratorsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
+  '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/insights': typeof AuthenticatedAdminInsightsRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/overdue': typeof AuthenticatedAdminOverdueRoute
@@ -399,6 +408,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/administrators': typeof AuthenticatedAdminAdministratorsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/directory': typeof AuthenticatedAdminDirectoryRoute
+  '/_authenticated/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/_authenticated/admin/insights': typeof AuthenticatedAdminInsightsRoute
   '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/_authenticated/admin/overdue': typeof AuthenticatedAdminOverdueRoute
@@ -445,6 +455,7 @@ export interface FileRouteTypes {
     | '/admin/administrators'
     | '/admin/audit'
     | '/admin/directory'
+    | '/admin/feedback'
     | '/admin/insights'
     | '/admin/notifications'
     | '/admin/overdue'
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/admin/administrators'
     | '/admin/audit'
     | '/admin/directory'
+    | '/admin/feedback'
     | '/admin/insights'
     | '/admin/notifications'
     | '/admin/overdue'
@@ -533,6 +545,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/administrators'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/directory'
+    | '/_authenticated/admin/feedback'
     | '/_authenticated/admin/insights'
     | '/_authenticated/admin/notifications'
     | '/_authenticated/admin/overdue'
@@ -714,6 +727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDirectoryRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/feedback': {
+      id: '/_authenticated/admin/feedback'
+      path: '/feedback'
+      fullPath: '/admin/feedback'
+      preLoaderRoute: typeof AuthenticatedAdminFeedbackRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/insights': {
       id: '/_authenticated/admin/insights'
       path: '/insights'
@@ -889,6 +909,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAdministratorsRoute: typeof AuthenticatedAdminAdministratorsRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminDirectoryRoute: typeof AuthenticatedAdminDirectoryRoute
+  AuthenticatedAdminFeedbackRoute: typeof AuthenticatedAdminFeedbackRoute
   AuthenticatedAdminInsightsRoute: typeof AuthenticatedAdminInsightsRoute
   AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
   AuthenticatedAdminOverdueRoute: typeof AuthenticatedAdminOverdueRoute
@@ -905,6 +926,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAdministratorsRoute: AuthenticatedAdminAdministratorsRoute,
   AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
   AuthenticatedAdminDirectoryRoute: AuthenticatedAdminDirectoryRoute,
+  AuthenticatedAdminFeedbackRoute: AuthenticatedAdminFeedbackRoute,
   AuthenticatedAdminInsightsRoute: AuthenticatedAdminInsightsRoute,
   AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
   AuthenticatedAdminOverdueRoute: AuthenticatedAdminOverdueRoute,
