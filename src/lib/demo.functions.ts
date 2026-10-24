@@ -227,9 +227,9 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
       const issue = dataset.issues[idx]!;
       return insertedIds.get(issue.ref_code) ?? null;
     };
-    const batchInsert = async (table: string, rows: Record<string, unknown>[], label: string) => {
+    const batchInsert = async (table: 'issue_events' | 'issue_notifications' | 'issue_feedback' | 'issue_secrets', rows: Record<string, unknown>[], label: string) => {
       for (let i = 0; i < rows.length; i += 250) {
-        const ins = await supabaseAdmin.from(table).insert(rows.slice(i, i + 250));
+        const ins = await supabaseAdmin.from(table).insert(rows.slice(i, i + 250) as never);
         if (ins.error) rejected.push(`${label} ${i}: ${ins.error.message}`);
       }
     };
