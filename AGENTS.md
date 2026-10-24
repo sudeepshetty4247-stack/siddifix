@@ -27,7 +27,7 @@
 - Citizen-suggested duplicates are persisted as candidates, not merges; staff review exclusively controls canonical linking to preserve uncertain originals.
 - Completion and inspection photos use separate issue_evidence records in private storage, staff-authorized atomic event writes, and short-lived public-safe signed projections; a database trigger requires completion evidence before resolution.
 - Reporting accepts reliable camera-session GPS as a suggested editable report point; gallery EXIF and manual points require confirmation, and gallery images never inherit current device GPS.
-- Address search and place labels use OpenStreetMap Nominatim (configured hosted instance preferred, public endpoint within its usage policy: identifying User-Agent, on-demand, Bengaluru-bounded, per-person limits). Ward matching is independent and uses published boundaries; overlapping/shared edges require manual review.
+- Nominatim address lookup is on-demand, identified, Bengaluru-bounded and rate-limited; prefer hosted service. Ward matching is independent; shared edges require review.
 - Ward import sources retain publication date, source-check time and SHA256 separately; verified snapshot provenance does not establish current asset ownership or verify department contacts.
 - Ward, department-route and representative records are admin-editable rows in civic_wards / civic_department_routes with trigger-written civic_directory_audit; public/data/bengaluru-wards.json is only the official import source. Cases keep the ward recorded at submission in routing_snapshot.
 - Citizen map boundaries and browsing limits derive from live directory ward polygons; optional map props keep report/staff maps unrestricted for honest out-of-coverage handling.
@@ -36,8 +36,10 @@
 - Private original uploads are validated and hashed before atomic issue_photos persistence; display and annotated copies are separate, keeping metadata provenance distinct from corrected report coordinates.
 - Citizens read safe public case/event projections; hashed reporter capabilities and persistent request limits protect public actions without anonymous table-write grants.
 - AuthorityPortrait requires independent photo verification and source credits; use HTTPS or managed media paths, otherwise initials. Profiles are ward-scoped and audited.
-- Ward and routing edge-case fixtures belong in automated tests only, not citizen-facing test controls; this preserves a real citizen experience and genuine case totals.
+- Ward/routing fixtures stay in tests, never citizen controls.
 
 - Ward MLA/MP come from Election Commission results linked through each ward's official assembly constituency number in civic_wards; corporators are shown as not in office until council elections are held.- Civic Map and the report camera use a live device position (watchPosition) while open: blue dot with accuracy circle, own-ward highlight and 'you are here' ward card; fixes over 100 m are shown as approximate, never auto-confirmed. Automatic location attempts never open dialogs.
 - Staff roles are field_worker (scoped by staff_profiles categories/wards), supervisor (legacy staff counts as supervisor) and admin; acknowledgement, ETA and status RPCs re-check role and scope in the database, never only in the UI.
 - Acknowledgements store message, inspection time and ETA on the issue with an audited event; citizen tracking reads them through public_case_rows, and issue_notifications records only what actually happened (in-app posted, external channel not_configured).
+- Transparency uses aggregate-only canonical cases joined to submission wards, never capped lists or elected-member scores.
+- Visit-only assistant streams validated text history with public aggregates; no private access or writes. Access pauses persist separately from classification.
