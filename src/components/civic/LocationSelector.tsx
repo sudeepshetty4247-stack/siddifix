@@ -27,7 +27,7 @@ export function LocationSelector() {
         <DialogTitle>Your neighbourhood</DialogTitle>
         <DialogDescription>Choose the area you want to report in. Your preference stays on this device.</DialogDescription>
         {notice && <p role="status" className="text-sm text-warning-foreground">{notice}</p>}
-        <Button variant="outline" onClick={detect} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}Use current location</Button>
+        <Button variant="outline" onClick={() => detect()} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}Use current location</Button>
         <label className="space-y-1 text-sm font-medium">Locality or landmark<input aria-label="Locality or landmark" value={label} onChange={e => setLabel(e.target.value)} maxLength={120} placeholder="e.g. Kudlu Gate, Bengaluru" className="h-10 w-full rounded-lg border bg-card px-3 font-normal" /></label>
         <p className="text-xs text-muted-foreground">Address lookup is not connected yet. Confirm your location with a map pin or coordinates.</p>
         <div className="h-52 overflow-hidden rounded-lg border"><LazyMap center={pin ?? location ?? BENGALURU} picked={pin ?? location} onPick={(lat, lng) => { setPin({ lat, lng }); setError(''); }} recenter={pin} zoom={13} /></div>

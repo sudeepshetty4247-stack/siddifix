@@ -1,8 +1,8 @@
 // Browser-only Leaflet map. Load via LazyMap, never import from SSR routes directly.
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMapEvents, useMap } from "react-leaflet";
-import { useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON, Circle, ZoomControl, useMapEvents, useMap } from "react-leaflet";
+import { useEffect, useState } from "react";
 import type { Ward } from "@/lib/directory";
 import { geometryRings, wardMapBounds } from "@/lib/bengaluru-map";
 
@@ -13,12 +13,12 @@ const colorVar = { open: "var(--primary)", resolved: "var(--success)", critical:
 
 function countBadge(count: number) {
   const label = count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count);
-  const size = count >= 100 ? 64 : count >= 10 ? 56 : 48;
+  const size = count >= 100 ? 62 : count >= 10 ? 52 : 44;
   return L.divIcon({
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    html: `<span style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:999px;background:var(--destructive);color:var(--destructive-foreground);font-weight:700;font-size:${count >= 100 ? 17 : 15}px;border:3px solid var(--card);box-shadow:0 4px 14px oklch(0.3 0.1 27 / .45)">${label}</span>`,
+    html: `<span class="civic-count" style="width:${size}px;height:${size}px;font-size:${count >= 100 ? 17 : 15}px">${label}</span>`,
   });
 }
 
@@ -36,20 +36,26 @@ const pin = L.divIcon({
   iconAnchor: [18, 44],
   html: `<svg width="36" height="46" viewBox="0 0 36 46"><path d="M18 2C9.2 2 2 8.9 2 17.4 2 29 18 44 18 44s16-15 16-26.6C34 8.9 26.8 2 18 2Z" style="fill:var(--ink)"/><circle cx="18" cy="17" r="6" style="fill:var(--primary)"/></svg>`,
 });
+const youIcon = L.divIcon({ className: "", iconSize: [22, 22], iconAnchor: [11, 11], html: `<span class="civic-you"></span>` });
 
 function Picker({ onPick }: { onPick?: (lat: number, lng: number) => void }) {
   useMapEvents({ click: (e) => onPick?.(e.latlng.lat, e.latlng.lng) });
   return null;
 }
-function Recenter({ lat, lng, zoom }: { lat: number; lng: number; zoom?: number }) {
+function Recenter({ lat, lng, zoom, nonce }: { lat: number; lng: number; zoom?: number; nonce?: number }) {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng], zoom ?? map.getZoom(), { animate: true });
-  }, [lat, lng, zoom, map]);
+    map.flyTo([lat, lng], zoom ?? map.getZoom(), { duration: 0.8 });
+  }, [lat, lng, zoom, nonce, map]);
+  return null;
+}
+function ZoomWatcher({ onZoom }: { onZoom: (z: number) => void }) {
+  const map = useMapEvents({ zoomend: () => onZoom(map.getZoom()) });
+  useEffect(() => { onZoom(map.getZoom()); }, [map, onZoom]);
   return null;
 }
 
-function WardLayer({ wards, selectedWard, onWardSelect, focused }: { wards: Ward[]; selectedWard?: string; onWardSelect?: (id: string, point: {lat: number; lng: number}) => void; focused: boolean }) {
+function WardLayer({ wards, selectedWard, highlightWard, onWardSelect, focused }: { wards: Ward[]; selectedWard?: string; highlightWard?: string; onWardSelect?: (id: string, point: {lat: number; lng: number}) => void; focused: boolean }) {
   const map = useMap();
   const bounds = wardMapBounds(wards);
   useEffect(() => {
@@ -64,9 +70,14 @@ function WardLayer({ wards, selectedWard, onWardSelect, focused }: { wards: Ward
   const holes = wards.flatMap(w => geometryRings(w.boundary)).map(r => r.map(p => [p[1] ?? 0, p[0] ?? 0]));
   return <>
     <GeoJSON data={{ type: 'Polygon', coordinates: [outer.map(p => [p[1], p[0]]), ...holes.map(r => r.map(p => [p[1], p[0]]))] } as GeoJSON.GeoJsonObject} style={{ fillColor: 'var(--map-mask)', fillOpacity: 0.7, weight: 0 }} interactive={false} />
-    {wards.map(w => <GeoJSON key={`${w.id}-${w.identifier === selectedWard}-${!!onWardSelect}`} data={w.boundary as unknown as GeoJSON.GeoJsonObject}
-      style={{ color: w.identifier === selectedWard ? 'var(--ink)' : 'var(--primary)', weight: w.identifier === selectedWard ? 2.5 : 0.7, fillColor: 'var(--primary)', fillOpacity: w.identifier === selectedWard ? 0.25 : 0.055 }}
-      onEachFeature={(_, layer) => { layer.bindTooltip(`${w.ward_number ?? ''} · ${w.name}`); layer.on('click', (event: L.LeafletMouseEvent) => { if (onWardSelect) L.DomEvent.stopPropagation(event); onWardSelect?.(w.identifier, {lat: event.latlng.lat, lng: event.latlng.lng}); }); }} />)}
+    {wards.map(w => {
+      const hl = w.identifier === highlightWard, sel = w.identifier === selectedWard;
+      return <GeoJSON key={`${w.id}-${sel}-${hl}-${!!onWardSelect}`} data={w.boundary as unknown as GeoJSON.GeoJsonObject}
+        style={hl
+          ? { color: 'var(--destructive)', weight: 2.5, fillColor: 'var(--destructive)', fillOpacity: 0.22 }
+          : { color: sel ? 'var(--ink)' : 'var(--destructive)', weight: sel ? 2.5 : 0.6, opacity: sel ? 1 : 0.45, fillColor: sel ? 'var(--primary)' : 'var(--destructive)', fillOpacity: sel ? 0.22 : 0.04 }}
+        onEachFeature={(_, layer) => { layer.bindTooltip(`${w.ward_number ?? ''} · ${w.name}`); layer.on('click', (event: L.LeafletMouseEvent) => { if (onWardSelect) L.DomEvent.stopPropagation(event); onWardSelect?.(w.identifier, {lat: event.latlng.lat, lng: event.latlng.lng}); }); }} />;
+    })}
   </>;
 }
 
@@ -83,7 +94,10 @@ export default function MapView({
   onCountSelect,
   wards,
   selectedWard,
+  highlightWard,
   onWardSelect,
+  you,
+  clusterBelowZoom,
 }: {
   center: { lat: number; lng: number };
   zoom?: number;
@@ -91,23 +105,38 @@ export default function MapView({
   counts?: MapCount[];
   picked?: { lat: number; lng: number } | null;
   onPick?: (lat: number, lng: number) => void;
-  recenter?: { lat: number; lng: number; zoom?: number } | null;
+  recenter?: { lat: number; lng: number; zoom?: number; nonce?: number } | null;
   className?: string | undefined;
   onSelect?: (id: string) => void;
   onCountSelect?: (id: string) => void;
   wards?: Ward[];
   selectedWard?: string;
+  highlightWard?: string;
   onWardSelect?: (id: string, point: {lat: number; lng: number}) => void;
+  /** Live device position: blue dot with its accuracy circle. */
+  you?: { lat: number; lng: number; accuracy: number } | null;
+  /** When set, ward count bubbles show below this zoom and individual cases at or above it. */
+  clusterBelowZoom?: number;
 }) {
+  const [z, setZ] = useState(zoom);
+  const showCounts = clusterBelowZoom === undefined || z < clusterBelowZoom;
+  const showMarkers = clusterBelowZoom === undefined || z >= clusterBelowZoom;
   return (
-    <MapContainer center={[center.lat, center.lng]} zoom={zoom} maxBoundsViscosity={1} scrollWheelZoom {...(className ? { className } : {})} style={{ height: "100%", width: "100%" }}>
+    <MapContainer center={[center.lat, center.lng]} zoom={zoom} zoomControl={false} maxBoundsViscosity={1} scrollWheelZoom {...(className ? { className } : {})} style={{ height: "100%", width: "100%" }}>
       <TileLayer
+        className="civic-tiles"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {wards?.length ? <WardLayer wards={wards} focused={!!recenter} {...(selectedWard ? { selectedWard } : {})} {...(onWardSelect ? { onWardSelect } : {})} /> : null}
+      <ZoomControl position="bottomright" />
+      {clusterBelowZoom !== undefined && <ZoomWatcher onZoom={setZ} />}
+      {wards?.length ? <WardLayer wards={wards} focused={!!recenter} {...(selectedWard ? { selectedWard } : {})} {...(highlightWard ? { highlightWard } : {})} {...(onWardSelect ? { onWardSelect } : {})} /> : null}
       {onPick && <Picker onPick={onPick} />}
       {recenter && <Recenter {...recenter} />}
+      {you && <>
+        <Circle center={[you.lat, you.lng]} radius={Math.min(you.accuracy, 3000)} pathOptions={{ color: 'var(--map-you)', weight: 1, fillColor: 'var(--map-you)', fillOpacity: 0.12 }} interactive={false} />
+        <Marker position={[you.lat, you.lng]} icon={youIcon} interactive={false} zIndexOffset={1000} />
+      </>}
       {picked && (
         <Marker
           position={[picked.lat, picked.lng]}
@@ -116,19 +145,19 @@ export default function MapView({
           eventHandlers={{ dragend: (e) => { const p = (e.target as L.Marker).getLatLng(); onPick?.(p.lat, p.lng); } }}
         />
       )}
-      {counts.map((c) => (
+      {showCounts && counts.map((c) => (
         <Marker key={`count-${c.id}`} position={[c.lat, c.lng]} icon={countBadge(c.count)} eventHandlers={onCountSelect ? { click: () => onCountSelect(c.id) } : {}}>
-          {c.label && <Popup><div style={{ fontWeight: 600 }}>{c.label}</div><div style={{ fontSize: 12, opacity: 0.7 }}>{c.count} report{c.count === 1 ? "" : "s"}</div></Popup>}
+          {c.label && !onCountSelect && <Popup><div style={{ fontWeight: 600 }}>{c.label}</div><div style={{ fontSize: 12, opacity: 0.7 }}>{c.count} report{c.count === 1 ? "" : "s"}</div></Popup>}
         </Marker>
       ))}
-      {markers.map((m) => (
+      {showMarkers && markers.map((m) => (
         <Marker key={m.id} position={[m.lat, m.lng]} icon={dot(m.tone)} eventHandlers={onSelect ? {click: () => onSelect(m.id)} : {}}>
-          {m.label && (
+          {m.label && !onSelect && (
             <Popup>
               <div style={{ minWidth: 160 }}>
                 <div style={{ fontWeight: 600, marginBottom: 2 }}>{m.label}</div>
                 {m.sub && <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>{m.sub}</div>}
-                {m.href && !onSelect && <a href={m.href} style={{ fontSize: 12, fontWeight: 600, color: "var(--primary)" }}>View issue →</a>}
+                {m.href && <a href={m.href} style={{ fontSize: 12, fontWeight: 600, color: "var(--primary)" }}>View issue →</a>}
               </div>
             </Popup>
           )}

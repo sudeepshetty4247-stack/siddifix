@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { suggestedReportLocation } from './report-location';
 import { reverseGeocode } from './geocoding.functions';
 export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual'; accuracy?: number };
-type LocationContextValue = { location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void; locating: boolean; detect: () => void; notice: string; recent: SelectedLocation[] };
+type LocationContextValue = { location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void; locating: boolean; detect: (quiet?: boolean) => void; notice: string; recent: SelectedLocation[] };
 const LocationContext = createContext<LocationContextValue | null>(null);
 const KEY = 'civicfix-location-v1';
 function valid(v: unknown): v is SelectedLocation {
@@ -24,15 +24,17 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       return next;
     });
   }
-  function detect() {
-    if (!navigator.geolocation) { setNotice('Location is unavailable. Choose a map pin instead.'); setOpen(true); return; }
+  function detect(quiet = false) {
+    // Automatic attempts never interrupt with a dialog; only a tap on "use my location" does.
+    const ask = () => { if (!quiet) setOpen(true); };
+    if (!navigator.geolocation) { setNotice('Location is unavailable. Choose a map pin instead.'); ask(); return; }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(p => {
       const candidate: SelectedLocation = { lat: p.coords.latitude, lng: p.coords.longitude, label: 'Current location', method: 'device', accuracy: p.coords.accuracy };
       setLocating(false);
-      if (!suggestedReportLocation(candidate)) { setNotice(`Device location is too approximate (±${Math.round(p.coords.accuracy)} m). Choose your exact point on the map.`); setOpen(true); return; }
+      if (!suggestedReportLocation(candidate)) { setNotice(`Device location is too approximate (±${Math.round(p.coords.accuracy)} m). Choose your exact point on the map.`); ask(); return; }
       select(candidate);
-    }, error => { setLocating(false); setNotice(error.code === 1 ? 'Location permission was denied. Choose a location manually, or allow location access in your browser.' : error.code === 3 ? 'Device location timed out. Try again or choose a map pin.' : 'Device location is unavailable. Choose a map pin instead.'); setOpen(true); }, { timeout: 15000, maximumAge: 0, enableHighAccuracy: true });
+    }, error => { setLocating(false); setNotice(error.code === 1 ? 'Location permission was denied. Choose a location manually, or allow location access in your browser.' : error.code === 3 ? 'Device location timed out. Try again or choose a map pin.' : 'Device location is unavailable. Choose a map pin instead.'); ask(); }, { timeout: 15000, maximumAge: 0, enableHighAccuracy: true });
   }
   useEffect(() => {
     try {
@@ -43,7 +45,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     try { attempted = sessionStorage.getItem('civicfix-location-attempted') === 'yes'; sessionStorage.setItem('civicfix-location-attempted', 'yes'); } catch { attempted = true; }
     if (attempted) return;
     // A one-time browser permission request; denial leaves manual selection available.
-    detect();
+    detect(true);
   }, []);
   useEffect(()=>{
     if(!location||!suggestedReportLocation(location)||location.label!=='Current location')return;
