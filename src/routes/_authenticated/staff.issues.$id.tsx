@@ -63,6 +63,14 @@ function StaffIssue() {
     },
   });
 
+  const scope = useQuery({
+    queryKey: ["staff-can-work", id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("staff_can_work", { _user_id: (await supabase.auth.getUser()).data.user?.id ?? "", _issue: id });
+      return data === true;
+    },
+  });
+
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["staff-issue", id] });
     qc.invalidateQueries({ queryKey: ["staff-events", id] });
@@ -123,6 +131,7 @@ function StaffIssue() {
   const i = issue.data;
   const myRoles = (roles.data?.roles ?? []) as string[];
   const supervisor = myRoles.some(r => r === "admin" || r === "supervisor" || r === "staff");
+  const canWork = supervisor || scope.data === true;
   const options = (TRANSITIONS[i.status as IssueStatus] ?? []).filter(s => supervisor || FIELD_TARGETS.includes(s));
 
   return (
