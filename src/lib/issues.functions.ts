@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getDirectory } from "./directory.functions";
+import { resolveCivicRouting } from "./directory";
 import { CATEGORIES, SEVERITY_META, categoryById, isInIndia, isInBengaluru, type Severity } from "./civic";
 
 const MAX_IMAGE_CHARS = 7_500_000; // ~5.5MB binary
@@ -73,17 +75,20 @@ export const submitIssue = createServerFn({ method: "POST" })
     // Idempotency: repeated taps / retries return the original report.
     const existing = await supabaseAdmin
       .from("issues")
-      .select("id, ref_code, issue_secrets(recovery_token)")
+      .select("id, ref_code")
       .eq("idempotency_key", data.idempotencyKey)
       .maybeSingle();
-    if (existing.data) {
-      const sec = existing.data.issue_secrets as unknown as { recovery_token: string } | null;
-      return { ref: existing.data.ref_code, token: sec?.recovery_token ?? null, duplicate: true };
-    }
+    if (existing.error) throw new Error("We couldn't verify this submission. Please try again.");
+    if (existing.data) return { ref: existing.data.ref_code, token: null, duplicate: true };
 
     // Upload photo
-    const [, mime, b64] = data.imageDataUrl.match(/^data:image\/(\w+);base64,(.+)$/)!;
-    const bin = Uint8Array.from(atob(b64!), (c) => c.charCodeAt(0));
+    const match = data.imageDataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
+    const mime = match?.[1], b64 = match?.[2];
+    if (!mime || !b64) throw new Error('Invalid image.');
+    const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    if (bin.length > 5500000) throw new Error('The processed image is too large.');
+    const validImage = mime === 'png' ? bin[0] === 137 && bin[1] === 80 && bin[2] === 78 && bin[3] === 71 : mime === 'webp' ? String.fromCharCode(...bin.slice(0,4)) === 'RIFF' && String.fromCharCode(...bin.slice(8,12)) === 'WEBP' : bin[0] === 255 && bin[1] === 216 && bin[2] === 255;
+    if (!validImage) throw new Error('The image format is invalid.');
     const ext = mime === "png" ? "png" : mime === "webp" ? "webp" : "jpg";
     const path = `reports/${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
     const up = await supabaseAdmin.storage.from("issue-photos").upload(path, bin, {
@@ -95,55 +100,32 @@ export const submitIssue = createServerFn({ method: "POST" })
     if (signed.error) throw new Error("Photo upload failed. Please try again.");
 
     const severity = data.severity as Severity;
-    const cat = categoryById(data.category);
+    const routing = resolveCivicRouting(await getDirectory(), data.lat, data.lng, data.category, data.subcategory ?? undefined);
     const refCode = `${isInBengaluru(data.lat, data.lng) ? "BLR" : "IND"}-${randomString(6)}`;
     const token = randomToken();
 
-    const ins = await supabaseAdmin
-      .from("issues")
-      .insert({
-        ref_code: refCode,
-        idempotency_key: data.idempotencyKey,
-        title: data.title,
-        summary: data.summary ?? null,
-        description: data.description ?? null,
-        category: data.category,
-        subcategory: data.subcategory ?? null,
-        severity,
-        status: data.needsClassification ? "needs_classification" : "submitted",
-        ai_confidence: data.aiConfidence ?? null,
-        safety_warning: data.safetyWarning ?? null,
-        lat: data.lat,
-        lng: data.lng,
-        landmark: data.landmark ?? null,
-        photo_url: signed.data.signedUrl,
-        department: isInBengaluru(data.lat, data.lng) ? cat.authority : "Unverified area – authority not configured",
-        duplicate_of: data.duplicateOf ?? null,
-        sla_due_at: new Date(Date.now() + SEVERITY_META[severity].slaHours * 3600_000).toISOString(),
-      })
-      .select("id")
-      .single();
-    if (ins.error) {
-      if (ins.error.code === "23505") {
-        const again = await supabaseAdmin.from("issues").select("ref_code").eq("idempotency_key", data.idempotencyKey).maybeSingle();
-        if (again.data) return { ref: again.data.ref_code, token: null, duplicate: true };
-      }
-      console.error(ins.error);
-      throw new Error("We couldn't save your report. Nothing was submitted — please try again.");
+    const { data: result, error } = await supabaseAdmin.rpc('create_civic_report', {
+      _token: token,
+      _report: {
+        ref_code: refCode, idempotency_key: data.idempotencyKey, title: data.title,
+        summary: data.summary ?? null, description: data.description ?? null,
+        category: data.category, subcategory: data.subcategory ?? null, severity,
+        status: data.needsClassification ? 'needs_classification' : 'submitted',
+        ai_confidence: data.aiConfidence ?? null, safety_warning: data.safetyWarning ?? null,
+        lat: data.lat, lng: data.lng, landmark: data.landmark ?? null, photo_url: signed.data.signedUrl,
+        department: 'Ownership review pending', duplicate_of: data.duplicateOf ?? null,
+        sla_due_at: new Date(Date.now() + SEVERITY_META[severity].slaHours * 3600000).toISOString(),
+        routing_snapshot: JSON.parse(JSON.stringify(routing)),
+      },
+    });
+    if (error) {
+      await supabaseAdmin.storage.from('issue-photos').remove([path]);
+      console.error('Report transaction failed', error.code);
+      throw new Error("We couldn't save your report. Please try again.");
     }
-
-    await supabaseAdmin.from("issue_secrets").insert({ issue_id: ins.data.id, recovery_token: token });
-    await supabaseAdmin.from("issue_events").insert([
-      { issue_id: ins.data.id, kind: "created", to_status: data.needsClassification ? "needs_classification" : "submitted", actor_label: "Citizen", note: "Report submitted" },
-      ...(data.duplicateOf
-        ? [{ issue_id: data.duplicateOf, kind: "linked_report", actor_label: "Citizen", note: `Another citizen reported the same problem (${refCode})` }]
-        : []),
-    ]);
-    if (data.duplicateOf) {
-      const parent = await supabaseAdmin.from("issues").select("support_count").eq("id", data.duplicateOf).maybeSingle();
-      if (parent.data) await supabaseAdmin.from("issues").update({ support_count: parent.data.support_count + 1 }).eq("id", data.duplicateOf);
-    }
-    return { ref: refCode, token, duplicate: false };
+    const saved = result as { ref: string; duplicate: boolean };
+    if (saved.duplicate) await supabaseAdmin.storage.from('issue-photos').remove([path]);
+    return { ref: saved.ref, token: saved.duplicate ? null : token, duplicate: saved.duplicate };
   });
 
 // ---------- Citizen actions with private recovery token ----------
