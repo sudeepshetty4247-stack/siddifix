@@ -13,6 +13,7 @@ import { CivicInfo } from "@/components/civic/CivicInfo";
 import { getDirectory } from "@/lib/directory.functions";
 import { DuplicateReview } from '@/components/civic/DuplicateReview';
 import { AssignmentActions } from '@/components/civic/AssignmentActions';
+import { IssueEvidence } from '@/components/civic/IssueEvidence';
 
 export const Route = createFileRoute("/_authenticated/staff/issues/$id")({
   head: () => ({ meta: [{ title: "Staff issue actions — CivicFix" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Staff issue actions — CivicFix" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -157,6 +158,7 @@ function StaffIssue() {
           </div>
           <DuplicateReview issue={i} />
           <AssignmentActions id={i.id} authorityId={i.authority_id} state={i.assignment_state} />
+          <IssueEvidence issueId={i.id} staff />
         </div>
         <aside className="space-y-4">
           {i.photo_url && <img src={i.photo_url} alt="" className="w-full rounded-2xl border object-cover" />}

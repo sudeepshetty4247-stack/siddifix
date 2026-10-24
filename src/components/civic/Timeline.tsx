@@ -12,6 +12,18 @@ const kindLabel: Record<string, string> = {
   disputed: "Closure disputed",
   citizen_confirmed: "Fix confirmed by reporter",
   escalated: "Escalated",
+  duplicate_candidate: "Possible duplicate flagged for review",
+  duplicate_merge: "Duplicate linked to canonical issue",
+  duplicate_reject: "Duplicate match rejected",
+  duplicate_reverse: "Duplicate merge reversed",
+  assignment_assign: "Internal assignment recorded",
+  assignment_accept: "Internal assignment accepted",
+  assignment_reject: "Internal assignment rejected",
+  assignment_escalate: "Ownership escalated",
+  evidence_inspection: "Inspection evidence recorded",
+  evidence_completion: "Completion evidence recorded",
+  evidence_external_action: "External action evidence recorded",
+  classification: "Classification updated",
 };
 
 export function Timeline({ events }: { events: EventRow[] }) {
