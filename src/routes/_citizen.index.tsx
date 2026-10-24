@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { ISSUE_COLUMNS, IssueCard, type IssueRow } from '@/components/civic/IssueCard';
 import bengaluruPhoto from '@/assets/bengaluru-home.jpg';
+import { NearbyCaseSummary } from '@/components/civic/NearbyCaseSummary';
 export const Route = createFileRoute('/_citizen/')({
   head: () => ({ meta: [
     {title:'CivicFix Bengaluru — Report a problem. Track the progress.'},
@@ -24,6 +25,7 @@ function CitizenHome() {
     return result.data as IssueRow[];
   }, refetchInterval: 30000 });
   return <div>
+    <NearbyCaseSummary />
     <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
       <img src={bengaluruPhoto} alt="" width={1600} height={912} className="absolute inset-0 -z-20 h-full w-full object-cover object-center" fetchPriority="high" />
       <div className="home-photo-shade absolute inset-0 -z-10" />

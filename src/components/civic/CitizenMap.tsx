@@ -15,13 +15,15 @@ import { resolveCivicRouting } from '@/lib/directory';
 import { citizenMapFocus } from '@/lib/map-location';
 import { suggestedReportLocation } from '@/lib/report-location';
 import { CivicInfo } from './CivicInfo';
+import { NearbyCaseSummary } from './NearbyCaseSummary';
+import { distanceMetres, NEARBY_RADIUS_METRES } from '@/lib/nearby-cases';
 
 type MapIssue = IssueRow & { duplicate_of: string | null };
 export function CitizenMap() {
   const { location, select, detect, locating, notice, setOpen } = useLocation();
   const [category, setCategory] = useState('all');
   const [status, setStatus] = useState('open');
-  const [scope, setScope] = useState('all');
+  const [scope, setScope] = useState('nearby');
   const [wardPoint, setWardPoint] = useState<{lat: number; lng: number} | null>(null);
   const dir = useQuery({ queryKey: ['civic-directory'], queryFn: () => getDirectory(), staleTime: 300000 });
   const wards = dir.data?.wards ?? [];
@@ -39,7 +41,7 @@ export function CitizenMap() {
     if (result.error) throw result.error;
     return result.data as MapIssue[];
   }});
-  const list = (q.data ?? []).filter(i => (!dir.data || !!resolveCivicRouting(dir.data, i.lat, i.lng).ward) && !i.duplicate_of && (category === 'all' || i.category === category) && (status === 'all' || (status === 'open' ? OPEN_STATUSES.includes(i.status as never) : ['resolved','closed'].includes(i.status))) && (scope === 'all' || !location || Math.abs(i.lat-location.lat) < 0.05 && Math.abs(i.lng-location.lng) < 0.05));
+  const list = (q.data ?? []).filter(i => (!dir.data || !!resolveCivicRouting(dir.data, i.lat, i.lng).ward) && !i.duplicate_of && (category === 'all' || i.category === category) && (status === 'all' || (status === 'open' ? OPEN_STATUSES.includes(i.status as never) : ['resolved','closed'].includes(i.status))) && (scope === 'all' || !reliableLocation || distanceMetres(reliableLocation,i) <= NEARBY_RADIUS_METRES));
   const active = list.find(i => i.id === selected);
   function confirmPin() {
     if (!pin || !isInIndia(pin.lat,pin.lng)) return;
@@ -47,6 +49,7 @@ export function CitizenMap() {
     setPicking(false);
   }
   return <div className="relative flex flex-col">
+    <NearbyCaseSummary />
     <div className="border-b bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-5">
         <div><p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-primary"><MapPin className="h-3.5 w-3.5" />Bengaluru · 369 wards</p><h1 className="text-3xl font-bold sm:text-4xl">Civic Map</h1><p className="mt-2 text-sm text-muted-foreground">Local reports, ward boundaries and public case histories.</p></div>
@@ -56,7 +59,7 @@ export function CitizenMap() {
     <div className="flex flex-wrap gap-2 border-b bg-background px-4 py-2 sm:px-6">
       <select aria-label="Issue category" className="h-9 min-w-0 max-w-full rounded-lg border bg-card px-2 text-sm" value={category} onChange={e=>setCategory(e.target.value)}><option value="all">All categories</option>{CATEGORIES.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select>
       <select aria-label="Issue status" className="h-9 rounded-lg border bg-card px-2 text-sm" value={status} onChange={e=>setStatus(e.target.value)}><option value="open">Open</option><option value="resolved">Resolved</option><option value="all">All statuses</option></select>
-      <select aria-label="Map area" className="h-9 rounded-lg border bg-card px-2 text-sm" value={scope} onChange={e=>setScope(e.target.value)}><option value="nearby">Near selected location</option><option value="all">All reports</option></select>
+      <select aria-label="Map area" className="h-9 rounded-lg border bg-card px-2 text-sm" value={scope} onChange={e=>setScope(e.target.value)}><option value="nearby">Within 2 km</option><option value="all">All reports</option></select>
       <Button variant={picking?'default':'outline'} size="sm" onClick={()=>{setPicking(!picking);setPin(null);}}><MapPin className="h-4 w-4"/>Choose report pin</Button>
       <Button variant="outline" size="icon" aria-label="Use current location" disabled={locating} onClick={detect}>{locating?<Loader2 className="h-4 w-4 animate-spin"/>:<LocateFixed className="h-4 w-4"/>}</Button>
     </div>
