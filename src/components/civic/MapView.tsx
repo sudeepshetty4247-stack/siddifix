@@ -7,8 +7,20 @@ import type { Ward } from "@/lib/directory";
 import { geometryRings, wardMapBounds } from "@/lib/bengaluru-map";
 
 export type MapMarker = { id: string; lat: number; lng: number; tone?: "open" | "resolved" | "critical" | "overdue"; label?: string; href?: string; sub?: string };
+export type MapCount = { id: string; lat: number; lng: number; count: number; label?: string };
 
 const colorVar = { open: "var(--primary)", resolved: "var(--success)", critical: "var(--destructive)", overdue: "var(--warning)" };
+
+function countBadge(count: number) {
+  const label = count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count);
+  const size = count >= 100 ? 64 : count >= 10 ? 56 : 48;
+  return L.divIcon({
+    className: "",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    html: `<span style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:999px;background:var(--destructive);color:var(--destructive-foreground);font-weight:700;font-size:${count >= 100 ? 17 : 15}px;border:3px solid var(--card);box-shadow:0 4px 14px oklch(0.3 0.1 27 / .45)">${label}</span>`,
+  });
+}
 
 function dot(tone: MapMarker["tone"] = "open") {
   return L.divIcon({
