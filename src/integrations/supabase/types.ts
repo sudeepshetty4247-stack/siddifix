@@ -695,6 +695,7 @@ export type Database = {
           kind: string
           note: string
           recorded_at: string
+          request_key: string | null
           storage_path: string
         }
         Insert: {
@@ -704,6 +705,7 @@ export type Database = {
           kind: string
           note: string
           recorded_at?: string
+          request_key?: string | null
           storage_path: string
         }
         Update: {
@@ -713,6 +715,7 @@ export type Database = {
           kind?: string
           note?: string
           recorded_at?: string
+          request_key?: string | null
           storage_path?: string
         }
         Relationships: [
@@ -1436,6 +1439,10 @@ export type Database = {
       }
       route_issue_to_team: { Args: { _issue: string }; Returns: string }
       set_notification_state: {
+        Args: { _action: string; _id?: string }
+        Returns: number
+      }
+      set_notification_state_required: {
         Args: { _action: string; _id: string }
         Returns: number
       }
