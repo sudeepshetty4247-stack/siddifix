@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { suggestedReportLocation } from './report-location';
 export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual'; accuracy?: number };
 type LocationContextValue = { location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void; locating: boolean; detect: () => void; notice: string; recent: SelectedLocation[] };
 const LocationContext = createContext<LocationContextValue | null>(null);
@@ -26,8 +27,11 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     if (!navigator.geolocation) { setNotice('Location is unavailable. Choose a map pin instead.'); setOpen(true); return; }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(p => {
-      select({ lat: p.coords.latitude, lng: p.coords.longitude, label: 'Current location', method: 'device', accuracy: p.coords.accuracy }); setLocating(false);
-    }, () => { setLocating(false); setNotice('Location permission was not available. You can still choose a location manually.'); setOpen(true); }, { timeout: 10000, maximumAge: 300000, enableHighAccuracy: true });
+      const candidate: SelectedLocation = { lat: p.coords.latitude, lng: p.coords.longitude, label: 'Current location', method: 'device', accuracy: p.coords.accuracy };
+      setLocating(false);
+      if (!suggestedReportLocation(candidate)) { setNotice(`Device location is too approximate (±${Math.round(p.coords.accuracy)} m). Choose your exact point on the map.`); setOpen(true); return; }
+      select(candidate);
+    }, error => { setLocating(false); setNotice(error.code === 1 ? 'Location permission was denied. Choose a location manually, or allow location access in your browser.' : error.code === 3 ? 'Device location timed out. Try again or choose a map pin.' : 'Device location is unavailable. Choose a map pin instead.'); setOpen(true); }, { timeout: 15000, maximumAge: 0, enableHighAccuracy: true });
   }
   useEffect(() => {
     try {
