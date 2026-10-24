@@ -39,6 +39,8 @@ function ReportPage(){
   const [originalPath,setOriginalPath]=useState<string|null>(null);const [done,setDone]=useState<{ref:string;token:string|null;annotated:boolean}|null>(null);
   const analyze=useServerFn(analyzeIssue);const submit=useServerFn(submitIssue);const prepare=useServerFn(prepareOriginalUpload);const annotate=useServerFn(saveAnnotatedPhoto);
   const geocode=useServerFn(reverseGeocode);const findAddress=useServerFn(searchAddress);
+  const dirQ=useQuery({queryKey:['civic-directory'],queryFn:()=>getDirectory(),staleTime:300000});
+  const lockWard=confirmed&&point&&dirQ.data?resolveCivicRouting(dirQ.data,point.lat,point.lng).ward:null;
 
   async function freshGps():Promise<PhotoMetadata['gps']>{
     if(!navigator.geolocation)return null;

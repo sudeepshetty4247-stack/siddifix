@@ -131,13 +131,16 @@ function IssuePage() {
       <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> All issues</Link>
       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge status={i.status} />
-            {overdue && <span className="rounded-full bg-warning px-2.5 py-0.5 text-xs font-semibold text-warning-foreground">Overdue</span>}
-            <span className="font-mono text-sm text-muted-foreground">{i.ref_code}</span>
-          </div>
+          <p className="flex flex-wrap items-center gap-2 text-sm font-bold tracking-wide">
+            <span className={`inline-block h-2.5 w-2.5 rounded-full ${unresolved ? "bg-destructive" : "bg-success"}`} />
+            <span className={i.severity === "critical" || i.severity === "high" ? "text-destructive" : "text-foreground"}>{severityLabel}</span>
+            <span className="text-muted-foreground">·</span>
+            <span className={unresolved ? "text-destructive" : "text-success"}>{statusLabel}</span>
+            <span className="font-mono font-normal text-muted-foreground">{i.ref_code}</span>
+          </p>
           <h1 className="text-3xl font-bold sm:text-4xl">{i.title}</h1>
           <p className="text-muted-foreground">{cat.emoji} {cat.label}{i.subcategory ? ` · ${i.subcategory}` : ""}</p>
+          <p className="text-sm text-muted-foreground">Reported {ageDays === 0 ? "today" : `${ageDays}d ago`}{unresolved && ageDays > 0 ? ` · ${ageDays}d unresolved` : ""}</p>
         </div>
         <div className="flex gap-2">
           <button onClick={toggleFollow} className="inline-flex h-10 items-center gap-2 rounded-lg border bg-card px-4 text-sm font-semibold hover:bg-secondary">
