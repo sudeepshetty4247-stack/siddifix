@@ -14,10 +14,13 @@ import { Route as CitizenRouteImport } from './routes/_citizen'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as CitizenIndexRouteImport } from './routes/_citizen.index'
+import { Route as CitizenAssistantRouteImport } from './routes/_citizen.assistant'
 import { Route as CitizenExploreRouteImport } from './routes/_citizen.explore'
 import { Route as CitizenMapRouteImport } from './routes/_citizen.map'
 import { Route as CitizenReportRouteImport } from './routes/_citizen.report'
 import { Route as CitizenTrackRouteImport } from './routes/_citizen.track'
+import { Route as CitizenTransparencyRouteImport } from './routes/_citizen.transparency'
+import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
 import { Route as AuthenticatedStaffAuditRouteImport } from './routes/_authenticated/staff.audit'
 import { Route as AuthenticatedStaffDirectoryRouteImport } from './routes/_authenticated/staff.directory'
@@ -54,6 +57,11 @@ const CitizenIndexRoute = CitizenIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CitizenRoute,
 } as any)
+const CitizenAssistantRoute = CitizenAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => CitizenRoute,
+} as any)
 const CitizenExploreRoute = CitizenExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
@@ -73,6 +81,16 @@ const CitizenTrackRoute = CitizenTrackRouteImport.update({
   id: '/track',
   path: '/track',
   getParentRoute: () => CitizenRoute,
+} as any)
+const CitizenTransparencyRoute = CitizenTransparencyRouteImport.update({
+  id: '/transparency',
+  path: '/transparency',
+  getParentRoute: () => CitizenRoute,
+} as any)
+const ApiAssistantRoute = ApiAssistantRouteImport.update({
+  id: '/api/assistant',
+  path: '/api/assistant',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedStaffIndexRoute = AuthenticatedStaffIndexRouteImport.update({
   id: '/',
@@ -145,10 +163,13 @@ export interface FileRoutesByFullPath {
   '/': typeof CitizenIndexRoute
   '/auth': typeof AuthRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/assistant': typeof CitizenAssistantRoute
   '/explore': typeof CitizenExploreRoute
   '/map': typeof CitizenMapRoute
   '/report': typeof CitizenReportRoute
   '/track': typeof CitizenTrackRoute
+  '/transparency': typeof CitizenTransparencyRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
@@ -165,10 +186,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof CitizenIndexRoute
   '/auth': typeof AuthRoute
+  '/assistant': typeof CitizenAssistantRoute
   '/explore': typeof CitizenExploreRoute
   '/map': typeof CitizenMapRoute
   '/report': typeof CitizenReportRoute
   '/track': typeof CitizenTrackRoute
+  '/transparency': typeof CitizenTransparencyRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
@@ -188,10 +212,13 @@ export interface FileRoutesById {
   '/_citizen': typeof CitizenRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/_citizen/assistant': typeof CitizenAssistantRoute
   '/_citizen/explore': typeof CitizenExploreRoute
   '/_citizen/map': typeof CitizenMapRoute
   '/_citizen/report': typeof CitizenReportRoute
   '/_citizen/track': typeof CitizenTrackRoute
+  '/_citizen/transparency': typeof CitizenTransparencyRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/_citizen/': typeof CitizenIndexRoute
   '/_authenticated/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/_authenticated/staff/directory': typeof AuthenticatedStaffDirectoryRoute
@@ -212,10 +239,13 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/staff'
+    | '/assistant'
     | '/explore'
     | '/map'
     | '/report'
     | '/track'
+    | '/transparency'
+    | '/api/assistant'
     | '/staff/audit'
     | '/staff/directory'
     | '/staff/map'
@@ -232,10 +262,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/assistant'
     | '/explore'
     | '/map'
     | '/report'
     | '/track'
+    | '/transparency'
+    | '/api/assistant'
     | '/staff/audit'
     | '/staff/directory'
     | '/staff/map'
@@ -254,10 +287,13 @@ export interface FileRouteTypes {
     | '/_citizen'
     | '/auth'
     | '/_authenticated/staff'
+    | '/_citizen/assistant'
     | '/_citizen/explore'
     | '/_citizen/map'
     | '/_citizen/report'
     | '/_citizen/track'
+    | '/_citizen/transparency'
+    | '/api/assistant'
     | '/_citizen/'
     | '/_authenticated/staff/audit'
     | '/_authenticated/staff/directory'
@@ -277,6 +313,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   CitizenRoute: typeof CitizenRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiAssistantRoute: typeof ApiAssistantRoute
   ApiPublicJobsEscalateOverdueRoute: typeof ApiPublicJobsEscalateOverdueRoute
 }
 
@@ -317,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CitizenIndexRouteImport
       parentRoute: typeof CitizenRoute
     }
+    '/_citizen/assistant': {
+      id: '/_citizen/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof CitizenAssistantRouteImport
+      parentRoute: typeof CitizenRoute
+    }
     '/_citizen/explore': {
       id: '/_citizen/explore'
       path: '/explore'
@@ -344,6 +388,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/track'
       preLoaderRoute: typeof CitizenTrackRouteImport
       parentRoute: typeof CitizenRoute
+    }
+    '/_citizen/transparency': {
+      id: '/_citizen/transparency'
+      path: '/transparency'
+      fullPath: '/transparency'
+      preLoaderRoute: typeof CitizenTransparencyRouteImport
+      parentRoute: typeof CitizenRoute
+    }
+    '/api/assistant': {
+      id: '/api/assistant'
+      path: '/api/assistant'
+      fullPath: '/api/assistant'
+      preLoaderRoute: typeof ApiAssistantRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/staff/': {
       id: '/_authenticated/staff/'
@@ -473,19 +531,23 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface CitizenRouteChildren {
+  CitizenAssistantRoute: typeof CitizenAssistantRoute
   CitizenExploreRoute: typeof CitizenExploreRoute
   CitizenMapRoute: typeof CitizenMapRoute
   CitizenReportRoute: typeof CitizenReportRoute
   CitizenTrackRoute: typeof CitizenTrackRoute
+  CitizenTransparencyRoute: typeof CitizenTransparencyRoute
   CitizenIndexRoute: typeof CitizenIndexRoute
   CitizenIssuesRefRoute: typeof CitizenIssuesRefRoute
 }
 
 const CitizenRouteChildren: CitizenRouteChildren = {
+  CitizenAssistantRoute: CitizenAssistantRoute,
   CitizenExploreRoute: CitizenExploreRoute,
   CitizenMapRoute: CitizenMapRoute,
   CitizenReportRoute: CitizenReportRoute,
   CitizenTrackRoute: CitizenTrackRoute,
+  CitizenTransparencyRoute: CitizenTransparencyRoute,
   CitizenIndexRoute: CitizenIndexRoute,
   CitizenIssuesRefRoute: CitizenIssuesRefRoute,
 }
@@ -497,6 +559,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   CitizenRoute: CitizenRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiAssistantRoute: ApiAssistantRoute,
   ApiPublicJobsEscalateOverdueRoute: ApiPublicJobsEscalateOverdueRoute,
 }
 export const routeTree = rootRouteImport

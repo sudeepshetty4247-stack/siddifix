@@ -78,6 +78,8 @@ function StaffLayout() {
         ))}
       </nav>
       <div className="mt-auto space-y-1">
+        <Link to="/transparency" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"><ExternalLink className="h-4 w-4" />Public transparency</Link>
+        <Link to="/assistant" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"><ExternalLink className="h-4 w-4" />Ask Siddi</Link>
         <Link to="/" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"><ExternalLink className="h-4 w-4" /> Citizen site</Link>
         <div className="rounded-xl border border-sidebar-border p-3">
           <p className="truncate text-sm font-medium text-sidebar-accent-foreground">{roles.data?.email}</p>
