@@ -218,7 +218,7 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
 
     const rejected: string[] = [];
     for (let i = 0; i < toInsert.length; i += 250) {
-      const ins = await supabaseAdmin.from('issues').insert(toInsert.slice(i, i + 250));
+      const ins = await supabaseAdmin.from('issues').insert(toInsert.slice(i, i + 250) as never);
       if (ins.error) rejected.push(`issues ${data.offset + i}: ${ins.error.message}`);
     }
     for (const i of toInsert) insertedIds.set(i.ref_code, i.id);
