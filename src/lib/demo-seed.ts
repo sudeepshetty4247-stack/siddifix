@@ -127,14 +127,6 @@ export function buildDemoDataset(args: {
     }
     if (bucket === 'overdue') acknowledged_at = hoursAgo(now, createdHoursBack - rnd() * target.ack_hours);
 
-    const isDuplicate = bucket !== 'unassigned' && rnd() < 0.05 && (canonicalByCategory.get(cat.id)?.length ?? 0) > 0;
-    const duplicateTarget = isDuplicate ? issues[pick(rnd, canonicalByCategory.get(cat.id)!)]! : null;
-    if (duplicateTarget) {
-      // A linked report can never predate the incident it is linked to.
-      created = Math.max(created, new Date(duplicateTarget.created_at).getTime() + 3600000);
-      ackDue = created + target.ack_hours * 3600000;
-      resolveDue = created + target.resolve_hours * 3600000;
-    }
 
     issues.push({
       id: crypto.randomUUID(),
@@ -150,7 +142,7 @@ export function buildDemoDataset(args: {
       routing_snapshot: { ward: { identifier: ward.identifier, name: ward.name }, coverage: ward.coverage_id ? { id: ward.coverage_id } : undefined, source: 'demo', demo: true },
       assignment_state, demo_dataset_id: datasetId,
     });
-    if (!isDuplicate && OPEN_STATUSES.has(status) || status === 'resolved' || status === 'closed') {
+    if (!isDuplicate && (OPEN_STATUSES.has(status) || status === 'resolved' || status === 'closed')) {
       const list = canonicalByCategory.get(cat.id) ?? []; list.push(i); canonicalByCategory.set(cat.id, list);
     }
     secrets.push({ issue_index: i, token: `demo-token-${datasetId}-${i + 1}` });
