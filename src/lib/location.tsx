@@ -2,13 +2,20 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { suggestedReportLocation } from './report-location';
 import { reverseGeocode } from './geocoding.functions';
 import { supabase } from '@/integrations/supabase/client';
-export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual'; accuracy?: number };
-type LocationContextValue = { location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void; locating: boolean; detect: (quiet?: boolean) => void; notice: string; recent: SelectedLocation[] };
+import { DEMO_LOCATION, coverageFromWardMatches, type CoverageStatus } from './coverage';
+export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual' | 'demo'; accuracy?: number };
+type LocationContextValue = {
+  location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void;
+  locating: boolean; detect: (quiet?: boolean) => void; notice: string; recent: SelectedLocation[];
+  /** Coverage of the selected point: supported Bengaluru ward, shared boundary, outside, or still checking. */
+  coverage: CoverageStatus | 'checking' | 'unknown';
+  enterDemo: () => void; exitDemo: () => void;
+};
 const LocationContext = createContext<LocationContextValue | null>(null);
 const KEY = 'civicfix-location-v1';
 function valid(v: unknown): v is SelectedLocation {
   const l = v as SelectedLocation | null;
-  return !!l && Number.isFinite(l.lat) && Number.isFinite(l.lng) && Math.abs(l.lat) <= 90 && Math.abs(l.lng) <= 180 && typeof l.label === 'string' && (l.method === 'manual' || l.method === 'device');
+  return !!l && Number.isFinite(l.lat) && Number.isFinite(l.lng) && Math.abs(l.lat) <= 90 && Math.abs(l.lng) <= 180 && typeof l.label === 'string' && (l.method === 'manual' || l.method === 'device' || l.method === 'demo');
 }
 export function LocationProvider({ children }: { children: ReactNode }) {
   const [location, setLocation] = useState<SelectedLocation | null>(null);
@@ -16,31 +23,34 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [locating, setLocating] = useState(false);
   const [notice, setNotice] = useState('');
+  const [coverage, setCoverage] = useState<LocationContextValue['coverage']>('unknown');
+  function persist(next: SelectedLocation[]) { try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* optional */ } }
   function select(l: SelectedLocation) {
     if (!valid(l)) return;
     setLocation(l); setOpen(false); setNotice('');
     setRecent(prev => {
-      const next = [l, ...prev.filter(p => p.lat !== l.lat || p.lng !== l.lng)].slice(0, 4);
-      try { localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* preferences are optional */ }
+      // Demo points are never stored as a "recent" real place.
+      const next = [l, ...prev.filter(p => p.method !== 'demo' && (p.lat !== l.lat || p.lng !== l.lng))].slice(0, 4);
+      persist(next);
       return next;
     });
   }
+  function enterDemo() { select({ lat: DEMO_LOCATION.lat, lng: DEMO_LOCATION.lng, label: DEMO_LOCATION.label, method: 'demo' }); }
+  function exitDemo() {
+    const real = recent.find(r => r.method !== 'demo') ?? null;
+    setLocation(real); setRecent(prev => { const next = prev.filter(p => p.method !== 'demo'); persist(next); return next; });
+    if (!real) setOpen(true);
+  }
   function detect(quiet = false) {
-    // Automatic attempts never interrupt with a dialog; only a tap on "use my location" does.
     const ask = () => { if (!quiet) setOpen(true); };
-    if (!navigator.geolocation) { setNotice('Location is unavailable. Choose a map pin instead.'); ask(); return; }
+    if (!navigator.geolocation) { setNotice('Location is unavailable. Choose a place instead.'); ask(); return; }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(p => {
-      const candidate: SelectedLocation = { lat: p.coords.latitude, lng: p.coords.longitude, label: 'Current location', method: 'device', accuracy: p.coords.accuracy };
       setLocating(false);
-      // Keep even a rough fix so neighbourhood counts and the map can use it; report submission still requires a confirmed point.
+      const candidate: SelectedLocation = { lat: p.coords.latitude, lng: p.coords.longitude, label: 'Current location', method: 'device', accuracy: p.coords.accuracy };
       select(candidate);
       if (!suggestedReportLocation(candidate)) setNotice(`Device location is approximate (±${Math.round(p.coords.accuracy)} m). Confirm the exact point on the map when you report.`);
-      // Friendly note when the device is outside Bengaluru's published wards.
-      void Promise.resolve(supabase.rpc('ward_at_point', { _lat: candidate.lat, _lng: candidate.lng })).then(r => {
-        if (!r.error && Array.isArray(r.data) && r.data.length === 0) setNotice("Looks like you're outside Bengaluru — we're not in your city yet, but we'd love to reach you soon. You can still explore Bengaluru on the map.");
-      }).catch(() => { /* coverage note is optional */ });
-    }, error => { setLocating(false); setNotice(error.code === 1 ? 'Location permission was denied. Choose a location manually, or allow location access in your browser.' : error.code === 3 ? 'Device location timed out. Try again or choose a map pin.' : 'Device location is unavailable. Choose a map pin instead.'); ask(); }, { timeout: 15000, maximumAge: 0, enableHighAccuracy: true });
+    }, error => { setLocating(false); setNotice(error.code === 1 ? 'Location permission was denied. Choose a location manually, or allow location access in your browser.' : error.code === 3 ? 'Device location timed out. Try again or choose a place.' : 'Device location is unavailable. Choose a place instead.'); ask(); }, { timeout: 15000, maximumAge: 0, enableHighAccuracy: true });
   }
   useEffect(() => {
     try {
@@ -50,11 +60,20 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     let attempted = false;
     try { attempted = sessionStorage.getItem('civicfix-location-attempted') === 'yes'; sessionStorage.setItem('civicfix-location-attempted', 'yes'); } catch { attempted = true; }
     if (attempted) return;
-    // A one-time browser permission request; denial leaves manual selection available.
     detect(true);
   }, []);
+  // Coverage of whatever point is selected — the ward polygons are the source of truth.
+  useEffect(() => {
+    if (!location) { setCoverage('unknown'); return; }
+    let cancelled = false; setCoverage('checking');
+    Promise.resolve(supabase.rpc('ward_at_point', { _lat: location.lat, _lng: location.lng })).then(r => {
+      if (cancelled) return;
+      setCoverage(r.error || !Array.isArray(r.data) ? 'unknown' : coverageFromWardMatches(r.data.length));
+    }).catch(() => { if (!cancelled) setCoverage('unknown'); });
+    return () => { cancelled = true; };
+  }, [location?.lat, location?.lng]);
   useEffect(()=>{
-    if(!location||!suggestedReportLocation(location)||location.label!=='Current location')return;
+    if(!location||location.method==='demo'||location.label!=='Current location')return;
     let cancelled=false;
     reverseGeocode({data:{lat:location.lat,lng:location.lng}}).then(result=>{
       const address=result.address;
@@ -62,6 +81,6 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     }).catch(()=>{/* coordinates remain available */});
     return()=>{cancelled=true;};
   },[location?.lat,location?.lng,location?.label]);
-  return <LocationContext.Provider value={{ location, select, open, setOpen, locating, detect, notice, recent }}>{children}</LocationContext.Provider>;
+  return <LocationContext.Provider value={{ location, select, open, setOpen, locating, detect, notice, recent, coverage, enterDemo, exitDemo }}>{children}</LocationContext.Provider>;
 }
 export function useLocation() { const value = useContext(LocationContext); if (!value) throw new Error('LocationProvider required'); return value; }
