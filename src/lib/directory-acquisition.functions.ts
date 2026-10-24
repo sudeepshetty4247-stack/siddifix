@@ -6,7 +6,7 @@ const safeUrl=z.string().url().refine(allowedDirectoryUrl,'Use an approved offic
 export const queueDirectoryFetch=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((input:unknown)=>z.object({personId:z.string().uuid(),kind:z.enum(['portrait','contact']),sourceUrl:safeUrl,imageUrl:safeUrl.optional(),licenseUrl:z.string().url().optional(),credit:z.string().max(300).optional(),identityEvidence:z.string().min(30).max(2000)}).parse(input)).handler(async({data,context})=>{
   const [role,active]=await Promise.all([context.supabase.rpc('has_role',{_user_id:context.userId,_role:'admin'}),context.supabase.rpc('account_active',{_user:context.userId})]);if(!role.data||!active.data)throw new Error('Active administrator access required.');
   if(data.kind==='portrait'&&(!data.imageUrl||!data.licenseUrl||!data.credit))throw new Error('Portrait candidates need an image URL, rights evidence and attribution.');
-  const r=await context.supabase.from('civic_directory_jobs').upsert({person_id:data.personId,kind:data.kind,source_url:data.sourceUrl,image_url:data.imageUrl,license_url:data.licenseUrl,credit:data.credit,identity_evidence:data.identityEvidence,created_by:context.userId},{onConflict:'person_id,kind,source_url',ignoreDuplicates:true});if(r.error)throw new Error('Candidate could not be queued.');return {ok:true};
+  const r=await context.supabase.from('civic_directory_jobs').upsert({person_id:data.personId,kind:data.kind,source_url:data.sourceUrl,image_url:data.imageUrl??null,license_url:data.licenseUrl??null,credit:data.credit??null,identity_evidence:data.identityEvidence,created_by:context.userId},{onConflict:'person_id,kind,source_url',ignoreDuplicates:true});if(r.error)throw new Error('Candidate could not be queued.');return {ok:true};
 });
 export const runDirectoryFetch=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
   const [role,active]=await Promise.all([context.supabase.rpc('has_role',{_user_id:context.userId,_role:'admin'}),context.supabase.rpc('account_active',{_user:context.userId})]);if(!role.data||!active.data)throw new Error('Active administrator access required.');
@@ -22,7 +22,7 @@ export const runDirectoryFetch=createServerFn({method:'POST'}).middleware([requi
         // Never auto-publish regex matches: duty role and identity are reviewed separately.
         const emails=[...new Set(text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.(?:gov\.in|nic\.in|karnataka\.gov\.in)/gi)??[])];
         const phone=text.match(/(?:080[-\s]?\d{7,8}|\+91[-\s]?\d{10})/g)?.[0]??null;
-        await supabaseAdmin.from('civic_directory_jobs').update({status:'review',contact_email:emails.length===1?emails[0]:null,contact_phone:phone,last_error:emails.length>1?'Multiple contacts: inspect source before approval':null,updated_at:new Date().toISOString()}).eq('id',job.id);
+        await supabaseAdmin.from('civic_directory_jobs').update({status:'review',contact_email:emails.length===1?emails[0]??null:null,contact_phone:phone,last_error:emails.length>1?'Multiple contacts: inspect source before approval':null,updated_at:new Date().toISOString()}).eq('id',job.id);
       }else {
         if(!job.image_url||!job.license_url||!job.credit)throw new Error('Missing portrait rights evidence');
         const response=await fetch(job.image_url,{signal:AbortSignal.timeout(12000),redirect:'error'});if(!response.ok)throw new Error(`Image returned ${response.status}`);if(!response.headers.get('content-type')?.startsWith('image/'))throw new Error('Response is not an image');
@@ -30,7 +30,7 @@ export const runDirectoryFetch=createServerFn({method:'POST'}).middleware([requi
         const reader=response.body?.getReader();if(!reader)throw new Error('Image body missing');let size=0;const chunks:Uint8Array[]=[];
         while(true){const chunk=await reader.read();if(chunk.done)break;size+=chunk.value.byteLength;if(size>5*1024*1024){await reader.cancel();throw new Error('Image exceeds 5 MB');}chunks.push(chunk.value);}
         const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}
-        const {imageSize}=await import('image-size');const dimensions=imageSize(bytes);if(!validPortrait(size,dimensions.width,dimensions.height,dimensions.type))throw new Error('Portrait size/dimensions/format invalid');
+        const {imageSize}=await import('image-size');const dimensions=imageSize(bytes);if(!validPortrait(size,dimensions.width,dimensions.height,dimensions.type??''))throw new Error('Portrait size/dimensions/format invalid');
         const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');const path=`${hash}.${dimensions.type}`;
         const uploaded=await supabaseAdmin.storage.from('officer-portraits').upload(path,bytes,{contentType:response.headers.get('content-type')??'image/jpeg',upsert:true});if(uploaded.error)throw new Error('Portrait storage failed');
         const check=await supabaseAdmin.storage.from('officer-portraits').download(path);if(check.error||check.data.size!==size)throw new Error('Stored portrait could not be verified');
