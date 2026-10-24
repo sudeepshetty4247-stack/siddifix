@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, STATUSES, STATUS_META } from "@/lib/civic";
 import { IssueCard, ISSUE_COLUMNS, type IssueRow } from "@/components/civic/IssueCard";
+import { WardLeaderboard } from "@/components/civic/WardLeaderboard";
 import { publicCases } from '@/lib/public-cases';
 
 export const Route = createFileRoute("/_citizen/explore")({
