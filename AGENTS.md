@@ -27,7 +27,7 @@
 - Citizen-suggested duplicates are persisted as candidates, not merges; staff review exclusively controls canonical linking to preserve uncertain originals.
 - Completion and inspection photos use separate issue_evidence records in private storage, staff-authorized atomic event writes, and short-lived public-safe signed projections; a database trigger requires completion evidence before resolution.
 - Reporting accepts reliable camera-session GPS as a suggested editable report point; gallery EXIF and manual points require confirmation, and gallery images never inherit current device GPS.
-- Confirmed coordinates use hosted Nominatim only for optional address labels; no donated public geocoder fallback. Ward matching is independent, uses published boundaries, and overlapping/shared edges require manual review.
+- Address search and place labels use OpenStreetMap Nominatim (configured hosted instance preferred, public endpoint within its usage policy: identifying User-Agent, on-demand, Bengaluru-bounded, per-person limits). Ward matching is independent and uses published boundaries; overlapping/shared edges require manual review.
 - Ward import sources retain publication date, source-check time and SHA256 separately; verified snapshot provenance does not establish current asset ownership or verify department contacts.
 - Ward, department-route and representative records are admin-editable rows in civic_wards / civic_department_routes with trigger-written civic_directory_audit; public/data/bengaluru-wards.json is only the official import source. Cases keep the ward recorded at submission in routing_snapshot.
 - Citizen map boundaries and browsing limits derive from live directory ward polygons; optional map props keep report/staff maps unrestricted for honest out-of-coverage handling.
@@ -37,3 +37,5 @@
 - Citizens read safe public case/event projections; hashed reporter capabilities and persistent request limits protect public actions without anonymous table-write grants.
 - Verified civic_people profiles use source-backed scope and directory audit; unverified identities stay hidden to avoid guessed operational or elected ward contacts.
 - Ward and routing edge-case fixtures belong in automated tests only, not citizen-facing test controls; this preserves a real citizen experience and genuine case totals.
+
+- Ward MLA/MP come from Election Commission results linked through each ward's official assembly constituency number in civic_wards; corporators are shown as not in office until council elections are held.
