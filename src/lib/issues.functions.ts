@@ -125,7 +125,7 @@ export const submitIssue = createServerFn({ method: "POST" })
         status: data.needsClassification ? 'needs_classification' : 'submitted',
         ai_confidence: data.aiConfidence ?? null, safety_warning: data.safetyWarning ?? null,
         lat: data.lat, lng: data.lng, landmark: data.landmark ?? null, photo_url: signed.data.signedUrl,
-        department: 'Ownership review pending', duplicate_of: data.duplicateOf ?? null,
+        department: null, duplicate_of: data.duplicateOf ?? null,
         sla_due_at: targets.resolveDueAt, ack_due_at:targets.ackDueAt, target_snapshot:JSON.parse(JSON.stringify(targets.snapshot)),
         routing_snapshot: JSON.parse(JSON.stringify(routing)),
         original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
