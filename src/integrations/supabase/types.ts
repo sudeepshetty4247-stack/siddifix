@@ -109,6 +109,7 @@ export type Database = {
           notes: string
           officer_role: string
           receiving_office: string
+          source_checked_at: string | null
           source_url: string | null
           updated_at: string
           updated_by: string | null
@@ -126,6 +127,7 @@ export type Database = {
           notes?: string
           officer_role: string
           receiving_office: string
+          source_checked_at?: string | null
           source_url?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -143,6 +145,7 @@ export type Database = {
           notes?: string
           officer_role?: string
           receiving_office?: string
+          source_checked_at?: string | null
           source_url?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -253,6 +256,9 @@ export type Database = {
           representative: string | null
           representative_source_url: string | null
           representative_status: string
+          source_checked_at: string | null
+          source_published_at: string | null
+          source_sha256: string | null
           source_url: string
           updated_at: string
           updated_by: string | null
@@ -283,6 +289,9 @@ export type Database = {
           representative?: string | null
           representative_source_url?: string | null
           representative_status?: string
+          source_checked_at?: string | null
+          source_published_at?: string | null
+          source_sha256?: string | null
           source_url: string
           updated_at?: string
           updated_by?: string | null
@@ -313,6 +322,9 @@ export type Database = {
           representative?: string | null
           representative_source_url?: string | null
           representative_status?: string
+          source_checked_at?: string | null
+          source_published_at?: string | null
+          source_sha256?: string | null
           source_url?: string
           updated_at?: string
           updated_by?: string | null
