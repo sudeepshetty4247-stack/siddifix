@@ -10,40 +10,27 @@
 <!-- LOVABLE:END -->
 
 ## CivicFix architecture
-- Citizen pages use `_citizen`; separate protected administration uses `_authenticated/admin*` and government operations use `_authenticated/staff*`. BackButton dismisses overlays and falls back after same-page history/redirects. Read nested AGENTS.md.
-- Citizens never write tables directly: report submit/confirm/dispute go through public server functions in `src/lib/issues.functions.ts` using the admin client, because anonymous users have no DB write grants.
-- Recovery tokens live in `issue_secrets` (no client grants) so public issue reads can never leak them.
-- Photos bucket is private (workspace blocks public buckets); submit stores a long-lived signed URL.
-- Staff status changes use the staff_change_issue database RPC with expected-status concurrency checks, backend transitions and an atomic issue_events entry; clients have no status-column UPDATE grant.
-- Public signup never grants roles; an operator explicitly provisions the intended administrator, who grants staff from Team Management, preventing first-signup privilege escalation.
-- Maps load Leaflet only client-side via `LazyMap`; tiles from tile.openstreetmap.org (Carto now requires a key).
-- Directory coverage, authorities, category mappings and ward boundaries live in protected civic_* tables; directory availability rectangles are not jurisdiction proof, and ownership remains review-required without asset rules.
-- Citizen location preferences are provided by LocationProvider across the citizen layout and stored locally, not continuously tracked.
-- Anonymous submission persists the report, recovery secret and creation event through the service-only create_civic_report transaction; retries never return existing recovery credentials.
-- Manifest/icons support installation without a service worker; BrandOpening has a bounded per-load timer and never caches private pages.
-- Case-local civic information reads the protected civic directory; the standalone citizen authority directory has been removed to keep reporting and case work integrated.
-- Duplicate review, assignment lifecycle, classification and reporter resolution decisions use atomic database operations with durable events; ordinary staff clients cannot directly update issue fields.
-- Staff analytics use full-dataset database aggregates, not the capped triage sample; Home keeps its photo-led actions and recent real reports while CitizenMap owns geographic browsing.
-- Citizen-suggested duplicates are persisted as candidates, not merges; staff review exclusively controls canonical linking to preserve uncertain originals.
-- Completion and inspection photos use separate issue_evidence records in private storage, staff-authorized atomic event writes, and short-lived public-safe signed projections; a database trigger requires completion evidence before resolution.
-- Reporting accepts reliable camera-session GPS as a suggested editable report point; gallery EXIF and manual points require confirmation, and gallery images never inherit current device GPS.
-- Nominatim address lookup is on-demand, identified, Bengaluru-bounded and rate-limited; prefer hosted service. Ward matching is independent; shared edges require review.
-- Ward import sources retain publication date, source-check time and SHA256 separately; verified snapshot provenance does not establish current asset ownership or verify department contacts.
-- Ward, department-route and representative records are admin-editable rows in civic_wards / civic_department_routes with trigger-written civic_directory_audit; public/data/bengaluru-wards.json is only the official import source. Cases keep the ward recorded at submission in routing_snapshot.
-- Citizen map boundaries and browsing limits derive from live directory ward polygons; optional map props keep report/staff maps unrestricted for honest out-of-coverage handling.
-- Civic Map focuses reliable GPS or manual coordinates without replacing them with ward interior samples; boundary clicks retain their actual coordinates and outside-city points are never clamped into a ward.
-- Nearby citizen totals use a public safe database aggregate over all canonical cases; map-list distance filtering shares its radius, while ward jurisdiction remains independent of the neighbourhood circle.
-- Private original uploads are validated and hashed before atomic issue_photos persistence; display and annotated copies are separate, keeping metadata provenance distinct from corrected report coordinates.
-- Citizens read safe public case/event projections; hashed reporter capabilities and persistent request limits protect public actions without anonymous table-write grants.
-- AuthorityPortrait requires independent photo verification and source credits; use HTTPS or managed media paths, otherwise initials. Profiles are ward-scoped and audited.
+- Citizens use `_citizen`; protected administration uses `_authenticated/admin*`, operations `_authenticated/staff*`. BackButton dismisses overlays and handles same-page/redirect fallback. Read nested AGENTS.md before changes there.
+- Citizen submit/confirm/dispute use public `issues.functions.ts` server functions with privileged writes; anonymous users never write tables. Safe case/event projections, hashed reporter capabilities and persistent request limits protect public access.
+- `issue_secrets` holds recovery tokens with no client grants. Service-only `create_civic_report` atomically persists report, secret and creation event; retries never return existing credentials.
+- Photos remain private. Submission stores a long-lived signed URL; validated, hashed originals persist atomically in `issue_photos`, separate from display/annotated copies and corrected coordinates.
+- `staff_change_issue` enforces expected-status concurrency, transitions and atomic events; clients cannot directly update issue fields. Duplicate review, assignment, classification and reporter decisions also use atomic audited database operations.
+- Citizen duplicate suggestions remain candidates; only staff review controls canonical linking, preserving uncertain originals.
+- Inspection/completion evidence uses separate private `issue_evidence`, authorized atomic event writes and short-lived public-safe signed projections; a trigger requires completion evidence before resolution.
+- Acknowledgements persist message, inspection time and ETA with an event; tracking reads `public_case_rows`. Notifications record actual outcomes, never assumed external delivery.
+- Staff roles: field_worker, supervisor (legacy staff counts as supervisor), admin. Database predicates enforce active department/category/team/ward/corporation scope on every case read/action, including acknowledgement, ETA and status.
+- PortalShell verifies active server-authorized access before mounting children; operational staff cannot enter administration. Super Admin uses protected `admin_permissions`, provisioned only for the registered one-time owner email; admin creation requires explicit delegation. Signup never grants roles.
+- Account invitations and role/profile/audit setup are atomic. Suspension persists before provider-ban synchronization, blocking existing-session actions. Atomic scope edits and eligible handler assignment are guarded; suspension releases handlers with case-history events.
+- Staff metrics use full-dataset database aggregates, not capped triage lists. Transparency aggregates canonical cases by submission ward, never personal elected-member scores.
+- Home retains photo-led actions/recent real reports; CitizenMap owns geographic browsing. Case-local authority information reads the protected directory; no standalone citizen authority directory.
+- Leaflet loads client-side through LazyMap; use tile.openstreetmap.org (Carto needs a key). Citizen bounds derive from live ward polygons; optional map props leave report/staff maps unrestricted for honest out-of-coverage handling.
+- LocationProvider stores citizen preferences locally without continuous background tracking. Civic Map/report camera watch live position only while open: blue dot, accuracy circle, own-ward highlight/card. Fixes over 100 m remain approximate, never auto-confirmed; automatic attempts never open dialogs.
+- Map focus and boundary clicks retain actual GPS/manual coordinates, never ward samples or clamped outside-city points. Reliable camera-session GPS suggests an editable report point; gallery EXIF/manual pins require confirmation, and gallery images never inherit current device GPS.
+- Nearby totals aggregate all canonical cases; map/list share the distance radius. Ward jurisdiction remains independent of the neighbourhood circle.
+- Nominatim lookup is on-demand, identified, Bengaluru-bounded and rate-limited; prefer hosted service. Ward matching is independent; shared edges need review.
+- Protected civic_* tables hold coverage, authorities, category routes and boundaries. Availability rectangles do not prove jurisdiction; ownership needs asset rules. Source publication date, check time and SHA256 remain separate; provenance never verifies ownership/contacts.
+- Admin-editable civic_wards/civic_department_routes and representative rows have trigger-written civic_directory_audit. public/data/bengaluru-wards.json is import source only; cases retain submission ward in routing_snapshot.
+- MLA/MP mapping uses Election Commission results and each ward's official assembly constituency number. Corporators remain not in office until council elections. AuthorityPortrait requires independent verified photos and credits, HTTPS/managed media or initials; profiles are ward-scoped and audited.
 - Ward/routing fixtures stay in tests, never citizen controls.
-
-- Ward MLA/MP come from Election Commission results linked through each ward's official assembly constituency number in civic_wards; corporators are shown as not in office until council elections are held.- Civic Map and the report camera use a live device position (watchPosition) while open: blue dot with accuracy circle, own-ward highlight and 'you are here' ward card; fixes over 100 m are shown as approximate, never auto-confirmed. Automatic location attempts never open dialogs.
-- Staff roles are field_worker (scoped by staff_profiles categories/wards), supervisor (legacy staff counts as supervisor) and admin; acknowledgement, ETA and status RPCs re-check role and scope in the database, never only in the UI.
-- Acknowledgements store message, inspection time and ETA on the issue with an audited event; citizen tracking reads them through public_case_rows, and issue_notifications records only what actually happened (in-app posted, external channel not_configured).
-- Transparency uses aggregate-only canonical cases joined to submission wards, never capped lists or elected-member scores.
-- Visit-only assistant streams validated text history with public aggregates; no private access or writes. Access pauses persist separately from classification.
-
-- PortalShell verifies active server-authorized access before mounting portal children; admin routes use a separate shell and operational staff cannot enter it. Database scope predicates are authoritative for every case-associated read and mutation.
-- Super Admin is a protected admin_permissions designation provisioned only for the registered one-time owner email; admin creation requires explicit delegation, and no signup trigger grants roles.
-- Account setup uses provider invitations and an atomic role/profile/audit RPC; suspension persists in staff_profiles before provider ban synchronization to block existing-session actions.
+- Manifest/icons support installation without a service worker; BrandOpening has a bounded per-load timer and never caches private pages.
+- Visit-only assistant streams validated text history/public aggregates without private access or writes; access pauses persist separately from classification.

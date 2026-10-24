@@ -27,7 +27,7 @@ function Queue() {
   const listTeamsFn = useServerFn(listTeams);
   const directoryFn = useServerFn(getDirectory);
   const runQueue = useServerFn(staffQueue);
-  const [view, setView] = useState<(typeof VIEWS)[number]>(metric === "resolved" ? "resolved" : metric === "overdue" ? "overdue" : metric === "duplicate_reviews" ? "duplicate candidates" : metric === "unassigned" ? "unassigned" : "open");
+  const [view, setView] = useState<(typeof VIEWS)[number]>(metric === "total_reports" || metric === "citizen_confirmed" ? "all" : metric === "resolved" ? "resolved" : metric === "overdue" ? "overdue" : metric === "duplicate_reviews" ? "duplicate candidates" : metric === "unassigned" ? "unassigned" : "open");
   const [cat, setCat] = useState("");
   const [status, setStatus] = useState(metric === "in_progress" ? "in_progress" : metric === "awaiting_review" ? "awaiting_verification" : metric === "reopened" ? "reopened" : "");
   const [sev, setSev] = useState("");
