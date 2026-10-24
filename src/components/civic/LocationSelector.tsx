@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { LazyMap } from './LazyMap';
 
-export function LocationSelector() {
+export function LocationSelector({ hideTrigger = false }: { hideTrigger?: boolean }) {
   const { location, select, open, setOpen, locating, detect, notice, recent } = useLocation();
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [label, setLabel] = useState('');
@@ -18,10 +18,10 @@ export function LocationSelector() {
     setPin({ lat, lng }); setError('');
   }
   return <>
-    <Button variant="ghost" onClick={() => setOpen(true)} className="h-auto min-w-0 justify-start gap-2 px-2 py-2 text-left" aria-label="Change location">
+    {!hideTrigger && <Button variant="ghost" onClick={() => setOpen(true)} className="h-auto min-w-0 justify-start gap-2 px-2 py-2 text-left" aria-label="Change location">
       <MapPin className="h-5 w-5 shrink-0 text-primary" />
       <span className="min-w-0"><span className="flex items-center gap-1"><span className="max-w-[180px] truncate text-sm font-semibold">{location?.label === 'Current location' ? 'Selected location' : location?.label || 'Choose your location'}</span><ChevronDown className="h-3 w-3 shrink-0" /></span><span className="block text-[11px] font-normal text-muted-foreground">{location ? location.method === 'device' ? `GPS estimate ±${Math.round(location.accuracy??0)} m · Tap to change` : 'Tap to change' : 'Issues and services around you'}</span></span>
-    </Button>
+    </Button>}
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-xl overflow-y-auto">
         <DialogTitle>Your neighbourhood</DialogTitle>

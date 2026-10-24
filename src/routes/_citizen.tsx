@@ -5,6 +5,8 @@ import { Logo } from "@/components/civic/Logo";
 import { useI18n, LANGS, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { LocationProvider } from "@/lib/location";
+import { LocationGate } from "@/components/civic/LocationGate";
+import { LocationSelector } from "@/components/civic/LocationSelector";
 import { Button } from "@/components/ui/button";
 
 
@@ -20,7 +22,13 @@ const NAV: { to: "/" | "/report" | "/map" | "/explore" | "/track"; key: TKey }[]
 ];
 
 function CitizenLayout() {
-  return <LocationProvider><CitizenShell /></LocationProvider>;
+  return (
+    <LocationProvider>
+      <CitizenShell />
+      <LocationGate />
+      <LocationSelector hideTrigger />
+    </LocationProvider>
+  );
 }
 
 function CitizenShell() {
