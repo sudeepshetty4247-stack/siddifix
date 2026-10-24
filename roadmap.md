@@ -1,8 +1,8 @@
 # CivicFix roadmap
 
 ## Current request — location search and officer delivery
-- [ ] Repair real India-wide autocomplete, manual drafts, shared coverage validation and outside-area feedback without erasing report work.
-- [ ] Verify provider responses, keyboard/mobile correction and isolated location/regression tests; document provider limits.
+- [x] Repair real India-wide autocomplete, manual session drafts, shared enabled-coverage validation and outside-area feedback without erasing report work.
+- [x] Real Photon Hyderabad/Kudlu Gate responses, keyboard/desktop and mobile photo-preserving correction verified; 215 tests passed, preview validation OK. Provider scale limits and remaining checks: docs/LOCATION_SEARCH_ACCEPTANCE.md.
 - [ ] Connect authorized officer delivery — blocked until approved channel credentials and verified officer recipient mappings are supplied; no connection or delivery credentials currently available.
 
 ## Current request — recheck automatic department pipeline
