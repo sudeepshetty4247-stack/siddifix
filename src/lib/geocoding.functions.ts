@@ -3,13 +3,12 @@ import { z } from 'zod';
 import { photonResults } from './address-search';
 
 // OpenStreetMap Nominatim: a configured hosted instance is preferred; otherwise the public
-// endpoint is used within its usage policy (identifying User-Agent, on-demand only, no
-// autocomplete, per-person request limits, OSM attribution).
+// endpoint is used for on-demand reverse lookup only, never autocomplete.
+// Search-as-you-type uses Photon, which explicitly supports autocomplete.
 const PUBLIC_ENDPOINT = 'https://nominatim.openstreetmap.org/';
 const USER_AGENT = 'CivicFix-Bengaluru/1.0 (civic issue reporting)';
 const ATTRIBUTION = 'https://www.openstreetmap.org/copyright';
 // Greater Bengaluru search box (lon,lat,lon,lat)
-const VIEWBOX = '77.30,13.25,77.90,12.70';
 
 function endpoint(path: string) {
   const configured = process.env['CIVICFIX_NOMINATIM_URL'];
@@ -35,7 +34,7 @@ export const reverseGeocode = createServerFn({ method: 'POST' })
     const url = endpoint('reverse');
     url.search = new URLSearchParams({ lat: String(data.lat), lon: String(data.lng), format: 'jsonv2', zoom: '18', addressdetails: '1', 'accept-language': 'en' }).toString();
     try {
-      const response = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': USER_AGENT, Referer: 'https://civicfix.lovable.app' } });
+      const response = await fetch(url, { signal:AbortSignal.timeout(8000),headers: { Accept: 'application/json', 'User-Agent': USER_AGENT, Referer: 'https://siddifix.lovable.app' } });
       if (!response.ok) return { address: null, area: null, sourceUrl: null, checkedAt: null, notice: `Place lookup unavailable (${response.status}). Your report can still be submitted.` };
       const result = z.object({ display_name: z.string().max(1000).optional(), address: z.record(z.string(), z.string()).optional() }).parse(await response.json());
       const a = result.address;

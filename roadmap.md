@@ -1,5 +1,10 @@
 # CivicFix roadmap
 
+## Current request — location search and officer delivery
+- [ ] Repair real India-wide autocomplete, manual drafts, shared coverage validation and outside-area feedback without erasing report work.
+- [ ] Verify provider responses, keyboard/mobile correction and isolated location/regression tests; document provider limits.
+- [ ] Connect authorized officer delivery — blocked until approved channel credentials and verified officer recipient mappings are supplied; no connection or delivery credentials currently available.
+
 ## Current request — recheck automatic department pipeline
 - [x] Exercised all eleven supported categories plus unknown/ambiguous/unclassified routing with disposable SQL rows; corrected ownership-review placeholder blocking team matching; 204 tests passed and preview validation OK.
 - [x] Confirmed atomic creation/routing and acknowledgement targets in the deployed database; production stayed at one pre-existing complaint, zero active teams and zero evidence. No new test rows created in production.
