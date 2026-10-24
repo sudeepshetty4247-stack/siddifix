@@ -129,50 +129,66 @@ function IssuePage() {
     toast.success(following ? "Removed from My Tracking" : "Added to My Tracking");
   }
 
+  const ward = (i.routing_snapshot as { ward?: { name?: string; ward_number?: number; zone?: string } } | null)?.ward ?? null;
+  const area = i.landmark?.split(',').map(s => s.trim()).filter(Boolean).slice(-2, -1)[0] ?? null;
+  const updatedAgo = (() => { const m = Math.max(1, Math.round((Date.now() - new Date(i.updated_at).getTime()) / 60000)); return m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} hours ago` : `${Math.round(m / 1440)} days ago`; })();
+  const statusTone = !unresolved ? 'bg-success/10 text-success ring-success/20' : overdue ? 'bg-destructive/10 text-destructive ring-destructive/20' : 'bg-primary-soft text-primary ring-primary/20';
+  const statusText = i.status.replace(/_/g, ' ');
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> All issues</Link>
-      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-3">
-          <p className="flex flex-wrap items-center gap-2 text-sm font-bold tracking-wide">
-            <span className={`inline-block h-2.5 w-2.5 rounded-full ${unresolved ? "bg-destructive" : "bg-success"}`} />
-            <span className={i.severity === "critical" || i.severity === "high" ? "text-destructive" : "text-foreground"}>{severityLabel}</span>
-            <span className="text-muted-foreground">·</span>
-            <span className={unresolved ? "text-destructive" : "text-success"}>{statusLabel}</span>
-            <span className="font-mono font-normal text-muted-foreground">{i.ref_code}</span>
-          </p>
-          <h1 className="text-3xl font-bold sm:text-4xl">{i.title}</h1>
-          <p className="text-muted-foreground">{cat.emoji} {cat.label}{i.subcategory ? ` · ${i.subcategory}` : ""}</p>
-          <p className="text-sm text-muted-foreground">Reported {ageDays === 0 ? "today" : `${ageDays}d ago`}{unresolved && ageDays > 0 ? ` · ${ageDays}d unresolved` : ""}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" disabled={!events.data || events.isError} onClick={() => downloadText(caseReport(i, events.data ?? []), `Siddi-${i.ref_code}.md`, 'text/markdown;charset=utf-8')}><Download className="h-4 w-4" />Download report</Button>
-          <Button variant="outline" onClick={() => window.print()}>Save PDF</Button>
-          <button onClick={toggleFollow} className="inline-flex h-10 items-center gap-2 rounded-lg border bg-card px-4 text-sm font-semibold hover:bg-secondary">
-            {following ? <><EyeOff className="h-4 w-4" /> Unfollow</> : <><Eye className="h-4 w-4" /> Follow</>}
-          </button>
-          <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/issues/${ref}`); toast.success("Public link copied"); }} className="inline-flex h-10 items-center gap-2 rounded-lg border bg-card px-4 text-sm font-semibold hover:bg-secondary">
-            <Copy className="h-4 w-4" /> Share
-          </button>
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mb-4 flex items-center justify-between">
+        <Link to="/explore" aria-label="All issues" className="inline-flex h-9 items-center gap-1.5 rounded-full px-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"><ArrowLeft className="h-4 w-4" /> All issues</Link>
+        <div className="flex gap-1.5">
+          <Button size="sm" variant="ghost" onClick={toggleFollow}>{following ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}<span className="hidden sm:inline">{following ? 'Unfollow' : 'Follow'}</span></Button>
+          <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/issues/${ref}`); toast.success("Public link copied"); }}><Copy className="h-4 w-4" /><span className="hidden sm:inline">Share</span></Button>
+          <Button size="sm" variant="ghost" disabled={!events.data || events.isError} onClick={() => downloadText(caseReport(i, events.data ?? []), `Siddi-${i.ref_code}.md`, 'text/markdown;charset=utf-8')}><Download className="h-4 w-4" /><span className="hidden sm:inline">Report</span></Button>
+          <Button size="sm" variant="ghost" onClick={() => window.print()} className="hidden sm:inline-flex">PDF</Button>
         </div>
       </div>
 
-      <div className="mt-6"><JourneyBar status={i.status} /></div>
-      {i.duplicate_of && <section className="mt-6 space-y-3 border-y bg-primary-soft p-4"><h2 className="font-semibold">This original report is linked to an underlying issue</h2><p className="text-sm">Your reference, photo and history are preserved. Current work and resolution are tracked on the canonical issue.</p>{canonical.data?<Button asChild><Link to="/issues/$ref" params={{ref:canonical.data.ref_code}}>Track {canonical.data.ref_code} · {canonical.data.title}</Link></Button>:<p className="text-sm">{canonical.isError?'The linked issue could not be loaded.':'Loading linked issue…'}</p>}</section>}
-      {i.duplicate_candidate_id && !i.duplicate_of && <p className="mt-4 border-l-2 border-warning pl-3 text-sm text-muted-foreground">A possible matching report is awaiting staff review. This report has not been merged.</p>}
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="min-w-0 space-y-6">
-          {!i.duplicate_of && <StaffResponse c={i} />}
-          {i.photo_url && <img src={i.photo_url} alt={i.title} className="max-h-[520px] w-full rounded-3xl border object-cover shadow-soft" />}
-          {photo.data?.url&&<details className="border-y py-4"><summary className="cursor-pointer text-sm font-semibold">Annotated report photo</summary><img src={photo.data.url} alt="Separate annotated report evidence with report location and available capture metadata" className="mt-4 w-full rounded-lg" loading="lazy"/><p className="mt-2 text-xs text-muted-foreground">A separate copy. The untouched original stays private; report location is not proof of photo capture location.</p></details>}
-          {i.safety_warning && <div className="flex gap-3 rounded-2xl bg-destructive-soft p-4 text-sm text-destructive"><ShieldAlert className="h-5 w-5 shrink-0" />{i.safety_warning}</div>}
-          {(i.summary || i.description) && (
-            <div className="rounded-2xl border bg-card p-6">
-              <h2 className="text-lg font-semibold">About this issue</h2>
-              {i.summary && <p className="mt-2">{i.summary}</p>}
-              {i.description && i.description !== i.summary && <p className="mt-3 border-l-2 pl-3 text-sm italic text-muted-foreground">"{i.description}"</p>}
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <div className="min-w-0 space-y-5">
+          <article className="overflow-hidden rounded-3xl border bg-card shadow-soft">
+            <div className="space-y-3 p-5 sm:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <span className="inline-flex items-center rounded-full bg-destructive/10 px-2.5 py-1 text-[11px] font-semibold text-destructive">Civic issue · {SEVERITY_META[i.severity as Severity].label}</span>
+                <div className="text-right">
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold capitalize ring-1 ${statusTone}`}><span className="h-2 w-2 rounded-full bg-current" />{overdue && unresolved ? 'Overdue' : statusText}</span>
+                  <p className="mt-1 text-[11px] text-muted-foreground">Updated {updatedAgo}</p>
+                </div>
+              </div>
+              <h1 className="text-2xl font-bold leading-tight sm:text-3xl">{i.title}</h1>
+              <p className="flex items-start gap-1.5 text-sm text-muted-foreground"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{i.landmark || `${i.lat.toFixed(5)}, ${i.lng.toFixed(5)}`}</p>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="rounded-md bg-success/10 px-2 py-0.5 text-xs font-medium text-success">{cat.emoji} {cat.label}</span>
+                {ward?.name && <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">Ward {ward.ward_number}</span>}
+                {(area || ward?.name) && <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{ward?.name ?? area}</span>}
+                {i.support_count > 0 && <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{i.support_count + 1} reports</span>}
+              </div>
             </div>
-          )}
+            {i.photo_url && <img src={i.photo_url} alt={i.title} className="aspect-[16/10] max-h-[520px] w-full object-cover" />}
+            <div className="space-y-4 p-5 sm:p-6">
+              {(i.summary || i.description) && <div>
+                {i.summary && <p className="text-sm leading-relaxed">{i.summary}</p>}
+                {i.description && i.description !== i.summary && <p className="mt-2 border-l-2 pl-3 text-sm italic text-muted-foreground">"{i.description}"</p>}
+              </div>}
+              <dl className="grid grid-cols-3 divide-x rounded-2xl border bg-background text-center">
+                <div className="p-3"><dt className="sr-only">Report ID</dt><dd className="truncate font-mono text-xs font-semibold">{i.ref_code}</dd><p className="mt-0.5 text-[11px] text-muted-foreground">Report ID</p></div>
+                <div className="p-3"><dt className="sr-only">Reported</dt><dd className="text-xs font-semibold">{new Date(i.created_at).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</dd><p className="mt-0.5 text-[11px] text-muted-foreground">{new Date(i.created_at).toLocaleTimeString('en-IN', { timeStyle: 'short' })} · {ageDays === 0 ? 'today' : `${ageDays}d ago`}</p></div>
+                <div className="p-3"><dt className="sr-only">Coordinates</dt><dd className="truncate text-xs font-semibold tabular-nums">{i.lat.toFixed(4)}, {i.lng.toFixed(4)}</dd><p className="mt-0.5 text-[11px] text-muted-foreground">Coordinates</p></div>
+              </dl>
+              <div className="divide-y rounded-2xl border">
+                <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-success/10 text-success"><MapPin className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Ward details</p><p className="truncate text-sm font-semibold">{ward?.name ? `Ward ${ward.ward_number} – ${ward.name}` : 'Ward under staff review'}</p>{ward?.zone && <p className="text-[11px] text-muted-foreground">{ward.zone} zone</p>}</div></div>
+                <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary"><Users className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Assigned team</p><p className="truncate text-sm font-semibold">{i.department ?? 'Ownership review pending'}</p><p className="text-[11px] text-muted-foreground">Internal Siddi record — not an official referral</p></div></div>
+              </div>
+            </div>
+          </article>
+          <div className="rounded-3xl border bg-card p-5 sm:p-6"><h2 className="mb-4 text-base font-semibold">Progress</h2><JourneyBar status={i.status} /></div>
+          {i.duplicate_of && <section className="space-y-3 rounded-2xl border bg-primary-soft p-4"><h2 className="font-semibold">This original report is linked to an underlying issue</h2><p className="text-sm">Your reference, photo and history are preserved. Current work and resolution are tracked on the canonical issue.</p>{canonical.data?<Button asChild><Link to="/issues/$ref" params={{ref:canonical.data.ref_code}}>Track {canonical.data.ref_code} · {canonical.data.title}</Link></Button>:<p className="text-sm">{canonical.isError?'The linked issue could not be loaded.':'Loading linked issue…'}</p>}</section>}
+          {i.duplicate_candidate_id && !i.duplicate_of && <p className="border-l-2 border-warning pl-3 text-sm text-muted-foreground">A possible matching report is awaiting staff review. This report has not been merged.</p>}
+          {!i.duplicate_of && <StaffResponse c={i} />}
+          {photo.data?.url&&<details className="rounded-2xl border bg-card p-4"><summary className="cursor-pointer text-sm font-semibold">Annotated report photo</summary><img src={photo.data.url} alt="Separate annotated report evidence with report location and available capture metadata" className="mt-4 w-full rounded-lg" loading="lazy"/><p className="mt-2 text-xs text-muted-foreground">A separate copy. The untouched original stays private; report location is not proof of photo capture location.</p></details>}
+          {i.safety_warning && <div className="flex gap-3 rounded-2xl bg-destructive-soft p-4 text-sm text-destructive"><ShieldAlert className="h-5 w-5 shrink-0" />{i.safety_warning}</div>}
           <div className="rounded-2xl border bg-card p-6">
             <h2 className="mb-5 text-lg font-semibold">Action history</h2>
             {events.isError?<div role="alert"><p>History could not be loaded.</p><Button variant="outline" onClick={()=>events.refetch()}>Retry history</Button></div>:<Timeline events={events.data ?? []} />}
