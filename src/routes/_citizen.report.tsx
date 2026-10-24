@@ -85,7 +85,7 @@ function ReportPage() {
     if (!locationConfirmed || !loc) return;
     let cancelled = false;
     setAddressLoading(true);
-    geocode({ data: loc }).then(result => { if (!cancelled) setAddressResult(result); }).catch(() => { if (!cancelled) setAddressResult({ address: null, sourceUrl: null, checkedAt: null, notice: 'Address lookup is unavailable. Your confirmed pin remains usable.' }); }).finally(() => { if (!cancelled) setAddressLoading(false); });
+    geocode({ data: loc }).then(result => { if (!cancelled) setAddressResult(result); }).catch(() => { if (!cancelled) setAddressResult({ address: null, sourceUrl: null, checkedAt: null, notice: 'Address lookup is unavailable. Your report can still be submitted.' }); }).finally(() => { if (!cancelled) setAddressLoading(false); });
     return () => { cancelled = true; };
   }, [locationConfirmed, loc]);
   useEffect(() => { if (loc) return; const suggestion = suggestedReportLocation(location); if (suggestion) { setLoc(suggestion); setLandmark(location?.method === 'manual' ? location.label : ''); } else if (location) setLocationNotice('Device location is too approximate. Place the problem’s exact pin on the map.'); }, [location, loc]);

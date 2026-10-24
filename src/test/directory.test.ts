@@ -29,7 +29,7 @@ describe('source-based civic routing', () => {
   });
   it('requires manual review for shared ward edges instead of choosing the first ward', () => {
     const square = (west: number, east: number) => ({ type: 'Polygon', coordinates: [[[west,12],[east,12],[east,13],[west,13],[west,12]]] });
-    const wards = [{ id: 'a', identifier: 'a', active: true, boundary: square(77,77.5) }, { id: 'b', identifier: 'b', active: true, boundary: square(77.5,78) }] as Directory['wards'];
+    const wards = [{ id: 'a', identifier: 'a', active: true, boundary: square(77,77.5) }, { id: 'b', identifier: 'b', active: true, boundary: square(77.5,78) }] as unknown as Directory['wards'];
     const result = resolveCivicRouting({ ...directory, wards }, 12.5, 77.5, 'roads');
     expect(result.ward).toBeNull();
     expect(result.reviewReason).toContain('shared ward boundaries');
