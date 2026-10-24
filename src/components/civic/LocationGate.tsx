@@ -42,8 +42,18 @@ export function LocationGate() {
   useEffect(() => { if (!location) wasEmpty.current = true; }, [location]);
 
   const point = suggestedReportLocation(location);
-  const directory = useQuery({ queryKey: ['civic-directory'], queryFn: () => getDirectory(), staleTime: 300000 });
-  const routing = point && directory.data ? resolveCivicRouting(directory.data, point.lat, point.lng) : null;
+  const wardQuery = useQuery({
+    queryKey: ['ward-at-point', point?.lat, point?.lng],
+    enabled: !!point,
+    queryFn: async () => {
+      if (!point) throw new Error('Select a location');
+      const result = await supabase.rpc('ward_at_point', { _lat: point.lat, _lng: point.lng });
+      if (result.error) throw result.error;
+      return z.array(wardSchema).parse(result.data);
+    },
+  });
+  const wards = wardQuery.data ?? [];
+  const ward = wards.length === 1 ? wards[0] : null;
   const counts = useQuery({
     queryKey: ['nearby-case-summary', point?.lat, point?.lng],
     enabled: !!point,
