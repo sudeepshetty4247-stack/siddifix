@@ -14,6 +14,10 @@
 - Citizens never write tables directly: report submit/confirm/dispute go through public server functions in `src/lib/issues.functions.ts` using the admin client, because anonymous users have no DB write grants.
 - Recovery tokens live in `issue_secrets` (no client grants) so public issue reads can never leak them.
 - Photos bucket is private (workspace blocks public buckets); submit stores a long-lived signed URL.
-- Every staff status change must insert an `issue_events` row (Civic Continuity audit trail); allowed transitions are in the staff issue page.
+- Staff status changes use the staff_change_issue database RPC with expected-status concurrency checks, backend transitions and an atomic issue_events entry; clients have no status-column UPDATE grant.
 - First account to sign up becomes admin via trigger; admins grant staff from Team Management.
 - Maps load Leaflet only client-side via `LazyMap`; tiles from tile.openstreetmap.org (Carto now requires a key).
+- Directory coverage, authorities, category mappings and ward boundaries live in protected civic_* tables; directory availability rectangles are not jurisdiction proof, and ownership remains review-required without asset rules.
+- Citizen location preferences are provided by LocationProvider across the citizen layout and stored locally, not continuously tracked.
+- Anonymous submission persists the report, recovery secret and creation event through the service-only create_civic_report transaction; retries never return existing recovery credentials.
+- Home-screen installability uses a manifest and icons only; no app-shell service worker is registered, preserving fresh previews.

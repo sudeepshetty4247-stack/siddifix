@@ -1,0 +1,66 @@
+CREATE TABLE public.civic_coverage (id text PRIMARY KEY, name text NOT NULL, state text NOT NULL DEFAULT 'partial' CHECK (state IN ('supported','partial','community','expanding','unavailable')), bounds jsonb NOT NULL, source_url text, verified_at date, notice text NOT NULL, enabled boolean NOT NULL DEFAULT true);
+GRANT SELECT ON public.civic_coverage TO anon, authenticated;
+GRANT ALL ON public.civic_coverage TO service_role;
+ALTER TABLE public.civic_coverage ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public coverage" ON public.civic_coverage FOR SELECT TO anon, authenticated USING (enabled);
+CREATE POLICY "admins manage coverage" ON public.civic_coverage FOR ALL TO authenticated USING (public.has_role(auth.uid(),'admin')) WITH CHECK (public.has_role(auth.uid(),'admin'));
+GRANT INSERT, UPDATE, DELETE ON public.civic_coverage TO authenticated;
+CREATE TABLE public.civic_authorities (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), coverage_id text REFERENCES public.civic_coverage(id), name text NOT NULL, kind text NOT NULL DEFAULT 'service', website_url text NOT NULL, reporting_url text, phone text, source_url text NOT NULL, verified_at date NOT NULL, notes text NOT NULL DEFAULT '', active boolean NOT NULL DEFAULT true);
+GRANT SELECT ON public.civic_authorities TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.civic_authorities TO authenticated;
+GRANT ALL ON public.civic_authorities TO service_role;
+ALTER TABLE public.civic_authorities ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public authorities" ON public.civic_authorities FOR SELECT TO anon, authenticated USING (active);
+CREATE POLICY "admins manage authorities" ON public.civic_authorities FOR ALL TO authenticated USING (public.has_role(auth.uid(),'admin')) WITH CHECK (public.has_role(auth.uid(),'admin'));
+CREATE TABLE public.civic_service_rules (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), authority_id uuid NOT NULL REFERENCES public.civic_authorities(id), category text NOT NULL, subcategory text, confidence text NOT NULL DEFAULT 'candidate' CHECK (confidence IN ('candidate','verified')), source_url text NOT NULL, notes text NOT NULL DEFAULT 'Asset ownership and jurisdiction require review.', UNIQUE(authority_id,category,subcategory));
+GRANT SELECT ON public.civic_service_rules TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.civic_service_rules TO authenticated;
+GRANT ALL ON public.civic_service_rules TO service_role;
+ALTER TABLE public.civic_service_rules ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public service rules" ON public.civic_service_rules FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "admins manage rules" ON public.civic_service_rules FOR ALL TO authenticated USING (public.has_role(auth.uid(),'admin')) WITH CHECK (public.has_role(auth.uid(),'admin'));
+CREATE TABLE public.civic_wards (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), coverage_id text NOT NULL REFERENCES public.civic_coverage(id), identifier text NOT NULL, name text NOT NULL, corporation text NOT NULL, boundary jsonb NOT NULL, source_url text NOT NULL, verified_at date NOT NULL, representative text, representative_source_url text, active boolean NOT NULL DEFAULT true, UNIQUE(coverage_id,identifier));
+GRANT SELECT ON public.civic_wards TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.civic_wards TO authenticated;
+GRANT ALL ON public.civic_wards TO service_role;
+ALTER TABLE public.civic_wards ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public wards" ON public.civic_wards FOR SELECT TO anon, authenticated USING (active);
+CREATE POLICY "admins manage wards" ON public.civic_wards FOR ALL TO authenticated USING (public.has_role(auth.uid(),'admin')) WITH CHECK (public.has_role(auth.uid(),'admin'));
+ALTER TABLE public.issues ADD COLUMN routing_snapshot jsonb;
+CREATE OR REPLACE FUNCTION public.staff_change_issue(_id uuid, _expected public.issue_status, _next public.issue_status, _note text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE current_status public.issue_status; allowed text[];
+BEGIN
+ IF NOT public.is_staff(auth.uid()) THEN RAISE EXCEPTION 'Staff access required'; END IF;
+ SELECT status INTO current_status FROM public.issues WHERE id=_id FOR UPDATE;
+ IF current_status IS NULL THEN RAISE EXCEPTION 'Issue not found'; END IF;
+ IF current_status<>_expected THEN RAISE EXCEPTION 'This issue changed. Refresh before continuing.'; END IF;
+ allowed := CASE current_status WHEN 'needs_classification' THEN ARRAY['under_review','rejected'] WHEN 'submitted' THEN ARRAY['under_review','assigned','rejected'] WHEN 'under_review' THEN ARRAY['assigned','rejected'] WHEN 'assigned' THEN ARRAY['in_progress','under_review','rejected'] WHEN 'in_progress' THEN ARRAY['resolved','assigned'] WHEN 'resolved' THEN ARRAY['closed','reopened'] WHEN 'rejected' THEN ARRAY['reopened'] WHEN 'reopened' THEN ARRAY['under_review','assigned','in_progress'] WHEN 'closed' THEN ARRAY['reopened'] ELSE ARRAY[]::text[] END;
+ IF NOT (_next::text=ANY(allowed)) THEN RAISE EXCEPTION 'Invalid status transition'; END IF;
+ IF _next IN ('resolved','rejected') AND length(trim(coalesce(_note,'')))<5 THEN RAISE EXCEPTION 'A reason of at least 5 characters is required'; END IF;
+ IF length(coalesce(_note,''))>1000 THEN RAISE EXCEPTION 'Note is too long'; END IF;
+ UPDATE public.issues SET status=_next WHERE id=_id;
+ INSERT INTO public.issue_events(issue_id,kind,from_status,to_status,note,actor_id,actor_label) VALUES(_id,'status_change',current_status,_next,nullif(trim(_note),''),auth.uid(),'CivicFix staff');
+END $$;
+REVOKE ALL ON FUNCTION public.staff_change_issue(uuid,public.issue_status,public.issue_status,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.staff_change_issue(uuid,public.issue_status,public.issue_status,text) TO authenticated;
+REVOKE UPDATE ON public.issues FROM authenticated;
+GRANT UPDATE(category,subcategory,severity,department,assigned_to) ON public.issues TO authenticated;
+CREATE OR REPLACE FUNCTION public.create_civic_report(_report jsonb, _token text) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE new_id uuid; existing_ref text; parent_id uuid;
+BEGIN
+ PERFORM pg_advisory_xact_lock(hashtextextended(_report->>'idempotency_key',0));
+ SELECT ref_code INTO existing_ref FROM public.issues WHERE idempotency_key=_report->>'idempotency_key';
+ IF existing_ref IS NOT NULL THEN RETURN jsonb_build_object('ref',existing_ref,'duplicate',true); END IF;
+ parent_id := nullif(_report->>'duplicate_of','')::uuid;
+ IF parent_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.nearby_issues((_report->>'lat')::float8,(_report->>'lng')::float8,120,_report->>'category') WHERE id=parent_id) THEN RAISE EXCEPTION 'Duplicate candidate is no longer eligible'; END IF;
+ INSERT INTO public.issues(ref_code,idempotency_key,title,summary,description,category,subcategory,severity,status,ai_confidence,safety_warning,lat,lng,landmark,photo_url,department,duplicate_of,sla_due_at,routing_snapshot) VALUES(_report->>'ref_code',_report->>'idempotency_key',_report->>'title',_report->>'summary',_report->>'description',_report->>'category',_report->>'subcategory',(_report->>'severity')::public.issue_severity,(_report->>'status')::public.issue_status,(_report->>'ai_confidence')::real,_report->>'safety_warning',(_report->>'lat')::float8,(_report->>'lng')::float8,_report->>'landmark',_report->>'photo_url',_report->>'department',parent_id,(_report->>'sla_due_at')::timestamptz,_report->'routing_snapshot') RETURNING id INTO new_id;
+ INSERT INTO public.issue_secrets(issue_id,recovery_token) VALUES(new_id,_token);
+ INSERT INTO public.issue_events(issue_id,kind,to_status,actor_label,note) VALUES(new_id,'created',(_report->>'status')::public.issue_status,'Citizen','Report recorded in CivicFix. No government delivery recorded.');
+ IF parent_id IS NOT NULL THEN
+ UPDATE public.issues SET support_count=support_count+1 WHERE id=parent_id;
+ INSERT INTO public.issue_events(issue_id,kind,actor_label,note) VALUES(parent_id,'linked_report','Citizen','Another report linked: '||(_report->>'ref_code'));
+ END IF;
+ RETURN jsonb_build_object('ref',_report->>'ref_code','duplicate',false);
+END $$;
+REVOKE ALL ON FUNCTION public.create_civic_report(jsonb,text) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.create_civic_report(jsonb,text) TO service_role;

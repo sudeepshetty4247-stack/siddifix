@@ -9,8 +9,11 @@ import { StatusBadge, SeverityTag } from "@/components/civic/StatusBadge";
 import { Timeline, type EventRow } from "@/components/civic/Timeline";
 import { LazyMap } from "@/components/civic/LazyMap";
 import { useRoles } from "./staff";
+import { CivicInfo } from "@/components/civic/CivicInfo";
+import { getDirectory } from "@/lib/directory.functions";
 
 export const Route = createFileRoute("/_authenticated/staff/issues/$id")({
+  head: () => ({ meta: [{ title: "Staff issue actions — CivicFix" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Staff issue actions — CivicFix" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: StaffIssue,
 });
 
@@ -31,6 +34,7 @@ function StaffIssue() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
   const roles = useRoles();
+  const directory = useQuery({ queryKey: ["civic-directory"], queryFn: () => getDirectory() });
   const [note, setNote] = useState("");
   const [nextStatus, setNextStatus] = useState<IssueStatus | "">("");
   const [busy, setBusy] = useState(false);
@@ -71,9 +75,9 @@ function StaffIssue() {
     setBusy(true);
     try {
       const from = issue.data.status as IssueStatus;
-      const { error } = await supabase.from("issues").update({ status: nextStatus }).eq("id", id);
+      const { error } = await supabase.rpc("staff_change_issue", { _id: id, _expected: from, _next: nextStatus, _note: note.trim() });
       if (error) throw error;
-      await logEvent({ kind: "status_change", from_status: from, to_status: nextStatus, note: note.trim() || null });
+
       setNote("");
       setNextStatus("");
       toast.success(`Status changed to ${STATUS_META[nextStatus].label}`);
@@ -170,7 +174,7 @@ function StaffIssue() {
               <span className="text-muted-foreground">Responsible authority / team</span>
               <select value={i.department ?? ""} onChange={(e) => updateField({ department: e.target.value }, `Ownership handed to ${e.target.value}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
                 <option value="" disabled>Choose…</option>
-                {[...new Set([i.department, ...CATEGORIES.map((c) => c.authority)])].filter(Boolean).map((a) => <option key={a!} value={a!}>{a}</option>)}
+                {[...new Set([i.department ?? "Ownership review pending", ...(directory.data?.authorities.map(a => a.name) ?? [])])].map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </label>
           </div>
@@ -182,6 +186,7 @@ function StaffIssue() {
             <p className="mt-1"><span className="text-muted-foreground">Linked reports:</span> {i.support_count}</p>
           </div>
           <div className="h-56 overflow-hidden rounded-2xl border"><LazyMap center={{ lat: i.lat, lng: i.lng }} zoom={16} picked={{ lat: i.lat, lng: i.lng }} /></div>
+          <CivicInfo lat={i.lat} lng={i.lng} category={i.category} subcategory={i.subcategory} />
           <p className="text-xs text-muted-foreground">Status options: {STATUSES.length} lifecycle states; only valid next steps are shown.</p>
         </aside>
       </div>

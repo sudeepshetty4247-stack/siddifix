@@ -11,6 +11,8 @@ import { LazyMap } from "@/components/civic/LazyMap";
 import { saveTracked } from "@/lib/tracking";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useLocation } from "@/lib/location";
+import { CivicInfo } from "@/components/civic/CivicInfo";
 
 export const Route = createFileRoute("/_citizen/report")({
   head: () => ({
@@ -41,11 +43,15 @@ async function compressImage(file: File): Promise<string> {
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Image processing unavailable");
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
   return canvas.toDataURL("image/jpeg", 0.82); // re-encoding strips EXIF/GPS metadata
 }
 
 function ReportPage() {
+  const { location } = useLocation();
   const [step, setStep] = useState(0);
   const [image, setImage] = useState<string | null>(null);
   const [description, setDescription] = useState("");
@@ -65,6 +71,7 @@ function ReportPage() {
   const analyze = useServerFn(analyzeIssue);
   const submit = useServerFn(submitIssue);
   const analysisRun = useRef(0);
+  useEffect(() => { if (location && !loc) { setLoc({ lat: location.lat, lng: location.lng }); setLandmark(location.label === 'Current location' ? '' : location.label); } }, [location, loc]);
 
   async function runAnalysis(img: string | null, desc: string) {
     const run = ++analysisRun.current;
@@ -129,7 +136,7 @@ function ReportPage() {
   const canNext = [!!image, locValid, !!analysis && (analysis.title?.trim().length ?? 0) >= 3, true][step];
 
   async function onSubmit() {
-    if (!image || !loc || !analysis) return;
+    if (submitting || !image || !loc || !analysis) return;
     setSubmitting(true);
     try {
       const res = await submit({
@@ -161,7 +168,7 @@ function ReportPage() {
     }
   }
 
-  if (done) return <Confirmation done={done} title={analysis?.title ?? ""} loc={loc!} needsClass={needsClass} />;
+  if (done && loc) return <Confirmation done={done} title={analysis?.title ?? ""} loc={loc} needsClass={needsClass} />;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
@@ -238,7 +245,7 @@ function ReportPage() {
                 {isInBengaluru(loc.lat, loc.lng)
                   ? `Inside Bengaluru · ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`
                   : isInIndia(loc.lat, loc.lng)
-                    ? "Outside Bengaluru — we'll accept it, but authority routing isn't configured for this area yet."
+                    ? "Community reporting available. Verified local authority information may be incomplete."
                     : "This location is outside India. Please place the pin where the problem is."}
               </p>
             )}
@@ -323,10 +330,12 @@ function ReportPage() {
                 <p className="text-lg font-semibold">{analysis.title}</p>
                 <p className="text-sm text-muted-foreground">{analysis.summary}</p>
                 <p className="text-sm"><span className="text-muted-foreground">Severity:</span> <strong>{SEVERITY_META[analysis.severity].label}</strong></p>
-                <p className="text-sm"><span className="text-muted-foreground">Likely authority:</span> {isInBengaluru(loc.lat, loc.lng) ? categoryById(analysis.category).authority : "Not configured for this area"} <span className="text-xs text-muted-foreground">(indicative)</span></p>
+                <p className="text-sm"><span className="text-muted-foreground">Confirmed report location:</span> {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)}</p>
+                <p className="text-xs text-muted-foreground">Location attached during reporting; photo capture location and time are not verified.</p>
                 {landmark && <p className="text-sm"><span className="text-muted-foreground">Landmark:</span> {landmark}</p>}
               </div>
             </div>
+            <CivicInfo lat={loc.lat} lng={loc.lng} category={analysis.category} subcategory={analysis.subcategory} />
             {nearby.length > 0 && (
               <div className="rounded-2xl border border-warning/40 bg-warning-soft p-4">
                 <p className="flex items-center gap-2 font-semibold text-warning-foreground"><Link2 className="h-4 w-4" /> This might already be reported</p>
@@ -405,7 +414,7 @@ function DescriptionInput({ value, onChange }: { value: string; onChange: (v: st
     const rec = new Ctor();
     rec.lang = "en-IN";
     rec.interimResults = false;
-    rec.onresult = (e) => onChange((value ? value + " " : "") + Array.from(e.results).map((r) => r[0]!.transcript).join(" "));
+    rec.onresult = (e) => onChange((value ? value + " " : "") + Array.from(e.results).map((r) => r[0]?.transcript ?? '').join(" "));
     rec.onend = () => setListening(false);
     recRef.current = rec;
     rec.start();

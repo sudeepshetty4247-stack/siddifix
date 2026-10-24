@@ -7,12 +7,13 @@ import { LazyMap } from "@/components/civic/LazyMap";
 import { StatusBadge } from "@/components/civic/StatusBadge";
 import { ISSUE_COLUMNS, type IssueRow } from "@/components/civic/IssueCard";
 import { cn } from "@/lib/utils";
+import { useLocation } from "@/lib/location";
 
 export const Route = createFileRoute("/_citizen/map")({
   head: () => ({
     meta: [
-      { title: "Civic Map of Bengaluru — CivicFix" },
-      { name: "description", content: "See open and resolved infrastructure issues across Bengaluru on a live map." },
+      { title: "Nearby Civic Map — CivicFix" },
+      { name: "description", content: "Explore real civic reports around your selected location in India." },
       { property: "og:title", content: "Civic Map — CivicFix" },
       { property: "og:description", content: "A live map of reported potholes, streetlights, drains and more." },
       { property: "og:type", content: "website" },
@@ -23,10 +24,12 @@ export const Route = createFileRoute("/_citizen/map")({
 });
 
 function MapPage() {
+  const { location } = useLocation();
   const [cat, setCat] = useState<string | null>(null);
   const [show, setShow] = useState<"open" | "resolved" | "all">("open");
   const q = useQuery({
     queryKey: ["map-issues"],
+    refetchInterval: 30000,
     queryFn: async () => {
       const { data, error } = await supabase.from("issues").select(ISSUE_COLUMNS).order("created_at", { ascending: false }).limit(1000);
       if (error) throw error;
@@ -51,7 +54,7 @@ function MapPage() {
   }));
 
   return (
-    <div className="grid h-[calc(100vh-4rem)] lg:grid-cols-[380px_1fr]">
+    <div className="grid min-h-[70vh] lg:h-[calc(100vh-5rem)] lg:grid-cols-[380px_1fr]">
       <aside className="order-2 flex min-h-0 flex-col border-r bg-card lg:order-1">
         <div className="space-y-3 border-b p-4">
           <h1 className="text-xl font-bold">Civic Map</h1>
@@ -88,7 +91,7 @@ function MapPage() {
         </div>
       </aside>
       <div className="order-1 h-[50vh] lg:order-2 lg:h-auto">
-        <LazyMap center={BENGALURU} zoom={12} markers={markers} />
+        <LazyMap center={location ?? BENGALURU} recenter={location} picked={location} zoom={12} markers={markers} />
       </div>
     </div>
   );
