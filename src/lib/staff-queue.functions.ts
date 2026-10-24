@@ -57,7 +57,7 @@ async function requireAdmin(supabase: RpcClient, userId: string) {
 export const listAuditLog = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AuditEntry[]> => {
-    await requireAdmin(context.supabase, context.userId);
+    await requireAdmin(context.supabase as unknown as RpcClient, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const [events, assignments, duplicates, notifications, directory, issues] = await Promise.all([
@@ -136,7 +136,7 @@ export type HealthCheck = { key: string; label: string; status: "ok" | "warning"
 export const systemHealth = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<HealthCheck[]> => {
-    await requireAdmin(context.supabase, context.userId);
+    await requireAdmin(context.supabase as unknown as RpcClient, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const checks: HealthCheck[] = [];
 
