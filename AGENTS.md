@@ -38,4 +38,4 @@
 - Verified civic_people profiles use source-backed scope and directory audit; unverified identities stay hidden to avoid guessed operational or elected ward contacts.
 - Ward and routing edge-case fixtures belong in automated tests only, not citizen-facing test controls; this preserves a real citizen experience and genuine case totals.
 
-- Ward MLA/MP come from Election Commission results linked through each ward's official assembly constituency number in civic_wards; corporators are shown as not in office until council elections are held.
+- Ward MLA/MP come from Election Commission results linked through each ward's official assembly constituency number in civic_wards; corporators are shown as not in office until council elections are held.- Civic Map and the report camera use a live device position (watchPosition) while open: blue dot with accuracy circle, own-ward highlight and 'you are here' ward card; fixes over 100 m are shown as approximate, never auto-confirmed. Automatic location attempts never open dialogs.

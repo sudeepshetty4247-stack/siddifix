@@ -54,3 +54,4 @@
 - [ ] Resolution evidence photos and backend resolution prerequisite implemented; signed-in upload/resolution verification blocked by zero staff accounts
 - [ ] Area notifications (browser push)
 - [ ] Analytics + civic memory and audit log page
+- [x] Live location on Civic Map and report camera (blue dot, own ward, active counts)
