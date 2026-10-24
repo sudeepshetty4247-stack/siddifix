@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { LayoutDashboard, ListTodo, Map, Users, LogOut, ExternalLink, Clock, Menu, X, Bell } from "lucide-react";
+import { LayoutDashboard, ListTodo, Map, Users, LogOut, ExternalLink, Clock, Menu, X, Bell, ShieldCheck } from "lucide-react";
 import { getMyRoles } from "@/lib/issues.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/civic/Logo";
@@ -62,6 +62,7 @@ function StaffLayout() {
     { to: "/staff/notifications" as const, label: "Notifications", icon: Bell },
     ...(isAdmin ? [{ to: "/staff/directory" as const, label: "Routing Setup", icon: ListTodo }] : []),
     ...(isAdmin ? [{ to: "/staff/team" as const, label: "Team Management", icon: Users }] : []),
+    ...(isAdmin ? [{ to: "/staff/audit" as const, label: "Audit & Health", icon: ShieldCheck }] : []),
   ];
 
   const sidebar = (
