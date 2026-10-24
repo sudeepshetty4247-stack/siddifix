@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { suggestedReportLocation } from './report-location';
 import { reverseGeocode } from './geocoding.functions';
+import { supabase } from '@/integrations/supabase/client';
 export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual'; accuracy?: number };
 type LocationContextValue = { location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void; locating: boolean; detect: (quiet?: boolean) => void; notice: string; recent: SelectedLocation[] };
 const LocationContext = createContext<LocationContextValue | null>(null);
