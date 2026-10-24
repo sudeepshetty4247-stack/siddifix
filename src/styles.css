@@ -107,7 +107,7 @@
   --shadow-lift: 0 2px 4px oklch(0.22 0.04 255 / 0.06), 0 24px 48px -20px oklch(0.22 0.04 255 / 0.25);
   --grid-line: oklch(0.22 0.04 255 / 0.06);
   --map-mask: oklch(0.86 0.015 210);
-  --map-you: var(--map-you);
+  --map-you: oklch(0.6 0.17 245);
   --home-shade: oklch(0.18 0.035 255 / 0.72);
 }
 
@@ -172,12 +172,12 @@
 .civic-you {
   display: block; width: 22px; height: 22px; border-radius: 999px;
   background: var(--map-you); border: 3px solid var(--card);
-  box-shadow: 0 0 0 6px oklch(0.6 0.17 245 / 0.22), 0 2px 6px oklch(0.2 0.04 255 / 0.35);
+  box-shadow: 0 0 0 6px color-mix(in oklch, var(--map-you) calc(0.22 * 100%), transparent), 0 2px 6px oklch(0.2 0.04 255 / 0.35);
   animation: civic-you-pulse 2s ease-out infinite;
 }
 @keyframes civic-you-pulse {
-  0% { box-shadow: 0 0 0 0 oklch(0.6 0.17 245 / 0.45), 0 2px 6px oklch(0.2 0.04 255 / 0.35); }
-  100% { box-shadow: 0 0 0 14px oklch(0.6 0.17 245 / 0), 0 2px 6px oklch(0.2 0.04 255 / 0.35); }
+  0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--map-you) calc(0.45 * 100%), transparent), 0 2px 6px oklch(0.2 0.04 255 / 0.35); }
+  100% { box-shadow: 0 0 0 14px color-mix(in oklch, var(--map-you) calc(0 * 100%), transparent), 0 2px 6px oklch(0.2 0.04 255 / 0.35); }
 }
 .leaflet-bottom.leaflet-right .leaflet-control-zoom { margin-bottom: 84px; border: 0; box-shadow: var(--shadow-soft, 0 2px 8px oklch(0.2 0.04 255 / .15)); border-radius: 12px; overflow: hidden; }
 
