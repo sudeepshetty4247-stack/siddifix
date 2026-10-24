@@ -185,6 +185,51 @@ export type Database = {
           },
         ]
       }
+      issue_assignments: {
+        Row: {
+          action: string
+          actor_id: string
+          authority_id: string | null
+          created_at: string
+          id: string
+          issue_id: string
+          reason: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          authority_id?: string | null
+          created_at?: string
+          id?: string
+          issue_id: string
+          reason: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          authority_id?: string | null
+          created_at?: string
+          id?: string
+          issue_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_assignments_authority_id_fkey"
+            columns: ["authority_id"]
+            isOneToOne: false
+            referencedRelation: "civic_authorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issue_assignments_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_duplicate_reviews: {
         Row: {
           actor_id: string
@@ -307,11 +352,14 @@ export type Database = {
         Row: {
           ai_confidence: number | null
           assigned_to: string | null
+          assignment_state: string
+          authority_id: string | null
           category: string
           created_at: string
           department: string | null
           description: string | null
           duplicate_of: string | null
+          escalated_at: string | null
           id: string
           idempotency_key: string | null
           landmark: string | null
@@ -334,11 +382,14 @@ export type Database = {
         Insert: {
           ai_confidence?: number | null
           assigned_to?: string | null
+          assignment_state?: string
+          authority_id?: string | null
           category?: string
           created_at?: string
           department?: string | null
           description?: string | null
           duplicate_of?: string | null
+          escalated_at?: string | null
           id?: string
           idempotency_key?: string | null
           landmark?: string | null
@@ -361,11 +412,14 @@ export type Database = {
         Update: {
           ai_confidence?: number | null
           assigned_to?: string | null
+          assignment_state?: string
+          authority_id?: string | null
           category?: string
           created_at?: string
           department?: string | null
           description?: string | null
           duplicate_of?: string | null
+          escalated_at?: string | null
           id?: string
           idempotency_key?: string | null
           landmark?: string | null
@@ -386,6 +440,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "issues_authority_id_fkey"
+            columns: ["authority_id"]
+            isOneToOne: false
+            referencedRelation: "civic_authorities"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "issues_duplicate_of_fkey"
             columns: ["duplicate_of"]
@@ -421,6 +482,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_civic_issue: {
+        Args: {
+          _action: string
+          _authority: string
+          _id: string
+          _reason: string
+        }
+        Returns: undefined
+      }
       citizen_change_issue: {
         Args: { _action: string; _note: string; _ref: string; _token: string }
         Returns: string
@@ -470,6 +540,15 @@ export type Database = {
           _id: string
           _next: Database["public"]["Enums"]["issue_status"]
           _note: string
+        }
+        Returns: undefined
+      }
+      staff_edit_classification: {
+        Args: {
+          _category: string
+          _id: string
+          _note: string
+          _severity: Database["public"]["Enums"]["issue_severity"]
         }
         Returns: undefined
       }
