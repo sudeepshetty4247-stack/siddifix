@@ -12,6 +12,8 @@ import { LazyMap } from "@/components/civic/LazyMap";
 import { citizenAction, verifyToken } from "@/lib/issues.functions";
 import { getTracked, isTracked, removeTracked, saveTracked } from "@/lib/tracking";
 import { CivicInfo } from "@/components/civic/CivicInfo";
+import { IssueEvidence } from '@/components/civic/IssueEvidence';
+import { Button } from '@/components/ui/button';
 
 export const Route = createFileRoute("/_citizen/issues/$ref")({
   head: ({ params }) => ({
@@ -36,6 +38,7 @@ function IssuePage() {
   const verify = useServerFn(verifyToken);
   const act = useServerFn(citizenAction);
   const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState('');
 
   const issue = useQuery({
     queryKey: ["issue", ref],
@@ -57,6 +60,12 @@ function IssuePage() {
       return (data ?? []) as EventRow[];
     },
   });
+  const canonical = useQuery({ queryKey: ['canonical-issue', issue.data?.duplicate_of], enabled: !!issue.data?.duplicate_of, queryFn: async () => {
+    if (!issue.data?.duplicate_of) return null;
+    const result = await supabase.from('issues').select('id,ref_code,title,status').eq('id',issue.data.duplicate_of).maybeSingle();
+    if (result.error) throw result.error;
+    return result.data;
+  }});
 
   useEffect(() => {
     const hash = new URLSearchParams(window.location.hash.slice(1)).get("t");
@@ -98,7 +107,7 @@ function IssuePage() {
     if (!token) return;
     setBusy(true);
     try {
-      await act({ data: { ref, token, action } });
+      await act({ data: { ref, token, action, note: feedback } });
       toast.success(action === "reopen" ? "Issue reopened for staff review." : "Thanks for confirming the fix!");
       qc.invalidateQueries({ queryKey: ["issue", ref] });
       qc.invalidateQueries({ queryKey: ["issue-events", i.id] });
@@ -139,6 +148,8 @@ function IssuePage() {
         </div>
       </div>
 
+      {i.duplicate_of && <section className="mt-6 space-y-3 border-y bg-primary-soft p-4"><h2 className="font-semibold">This original report is linked to an underlying issue</h2><p className="text-sm">Your reference, photo and history are preserved. Current work and resolution are tracked on the canonical issue.</p>{canonical.data?<Button asChild><Link to="/issues/$ref" params={{ref:canonical.data.ref_code}}>Track {canonical.data.ref_code} · {canonical.data.title}</Link></Button>:<p className="text-sm">{canonical.isError?'The linked issue could not be loaded.':'Loading linked issue…'}</p>}</section>}
+      {i.duplicate_candidate_id && !i.duplicate_of && <p className="mt-4 border-l-2 border-warning pl-3 text-sm text-muted-foreground">A possible matching report is awaiting staff review. This report has not been merged.</p>}
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-6">
           {i.photo_url && <img src={i.photo_url} alt={i.title} className="max-h-[520px] w-full rounded-3xl border object-cover shadow-soft" />}
@@ -152,14 +163,16 @@ function IssuePage() {
           )}
           <div className="rounded-2xl border bg-card p-6">
             <h2 className="mb-5 text-lg font-semibold">Action history</h2>
-            <Timeline events={events.data ?? []} />
+            {events.isError?<div role="alert"><p>History could not be loaded.</p><Button variant="outline" onClick={()=>events.refetch()}>Retry history</Button></div>:<Timeline events={events.data ?? []} />}
           </div>
+          <IssueEvidence issueId={i.id} />
         </div>
         <aside className="space-y-4">
           {tokenValid && i.status === "resolved" && (
             <div className="rounded-2xl border-2 border-primary bg-primary-soft p-5">
               <p className="font-semibold">Is it actually fixed?</p>
               <p className="mt-1 text-sm text-muted-foreground">As the original reporter, you can confirm or dispute this closure.</p>
+              <label className="mt-3 block text-sm">Feedback (optional)<textarea aria-label="Reporter feedback" value={feedback} maxLength={500} onChange={e=>setFeedback(e.target.value)} className="mt-1 w-full rounded-lg border bg-card p-2"/></label>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <button disabled={busy} onClick={() => doAction("confirm")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-success text-sm font-semibold text-primary-foreground disabled:opacity-50"><ThumbsUp className="h-4 w-4" /> Yes, fixed</button>
                 <button disabled={busy} onClick={() => doAction("reopen")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-destructive text-sm font-semibold text-destructive-foreground disabled:opacity-50"><ThumbsDown className="h-4 w-4" /> Not fixed</button>
