@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Camera, LocateFixed, MapPin, Loader2, Layers, X, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { BENGALURU, CATEGORIES, OPEN_STATUSES, categoryById, isOverdue, isInIndia } from '@/lib/civic';
@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { WardLeaderboard } from './WardLeaderboard';
 import { getDirectory } from '@/lib/directory.functions';
 import { resolveCivicRouting } from '@/lib/directory';
-import { wardPreviewPoint } from '@/lib/bengaluru-map';
+import { citizenMapFocus } from '@/lib/map-location';
+import { suggestedReportLocation } from '@/lib/report-location';
 import { CivicInfo } from './CivicInfo';
 
 type MapIssue = IssueRow & { duplicate_of: string | null };
@@ -24,7 +25,12 @@ export function CitizenMap() {
   const [wardPoint, setWardPoint] = useState<{lat: number; lng: number} | null>(null);
   const dir = useQuery({ queryKey: ['civic-directory'], queryFn: () => getDirectory(), staleTime: 300000 });
   const wards = dir.data?.wards ?? [];
-  const focusWard = wardPoint && dir.data ? resolveCivicRouting(dir.data, wardPoint.lat, wardPoint.lng).ward : null;
+  const locationFocus = citizenMapFocus(dir.data, location);
+  const detailPoint = wardPoint ?? locationFocus;
+  const focusWard = detailPoint && dir.data ? resolveCivicRouting(dir.data, detailPoint.lat, detailPoint.lng).ward : null;
+  const reliableLocation = suggestedReportLocation(location);
+  const outsideCoverage = !!dir.data && !!reliableLocation && !locationFocus;
+  useEffect(() => { setWardPoint(null); setPin(null); setSelected(null); }, [location?.lat, location?.lng]);
   const [picking, setPicking] = useState(false);
   const [pin, setPin] = useState<{lat: number; lng: number} | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -55,20 +61,22 @@ export function CitizenMap() {
       <Button variant="outline" size="icon" aria-label="Use current location" disabled={locating} onClick={detect}>{locating?<Loader2 className="h-4 w-4 animate-spin"/>:<LocateFixed className="h-4 w-4"/>}</Button>
     </div>
     {notice && <p role="status" className="bg-warning-soft px-4 py-2 text-sm text-warning-foreground">{notice}</p>}
+    {outsideCoverage && <p role="status" className="bg-warning-soft px-4 py-2 text-sm text-warning-foreground">Your selected location is outside the Bengaluru ward boundaries. Civic Map stays in Bengaluru; your location has not been moved or assigned a Bengaluru ward.</p>}
+    {location && <p className="border-b px-4 py-2 text-xs text-muted-foreground">Selected location: {location.lat.toFixed(5)}, {location.lng.toFixed(5)}{location.method === 'device' ? ` · Device estimate ±${Math.round(location.accuracy ?? 0)} m` : ' · Manual pin'}</p>}
     <div className="grid flex-1 lg:grid-cols-[1fr_360px]">
       <div className="relative h-[55dvh] min-h-80 lg:h-[min(70dvh,760px)]">
-        <LazyMap wards={wards} {...(focusWard ? {selectedWard: focusWard.identifier} : {})} onWardSelect={id=>{const w=wards.find(w=>w.identifier===id); const p=w?wardPreviewPoint(w):null; if(p){setWardPoint(p);setSelected(null);}}} center={BENGALURU} zoom={13} recenter={pin??wardPoint} picked={picking?pin:wardPoint} {...(picking ? {onPick:(lat:number,lng:number)=>setPin({lat,lng})} : {})} markers={list.map(i=>({id:i.id,lat:i.lat,lng:i.lng,tone:['resolved','closed'].includes(i.status)?'resolved':i.severity==='critical'?'critical':isOverdue(i)?'overdue':'open',label:i.title,sub:`${categoryById(i.category).label} · ${i.ref_code}`,href:`/issues/${i.ref_code}`}))} onSelect={setSelected}/>
+        <LazyMap wards={wards} {...(focusWard ? {selectedWard: focusWard.identifier} : {})} {...(!picking ? {onWardSelect:(_id: string, point: {lat: number; lng: number})=>{setWardPoint(point);setSelected(null);}} : {})} center={locationFocus ?? BENGALURU} zoom={locationFocus ? 16 : 13} recenter={pin ? {...pin, zoom:16} : detailPoint ? {...detailPoint, zoom:16} : null} picked={picking?pin:detailPoint} {...(picking ? {onPick:(lat:number,lng:number)=>setPin({lat,lng})} : {})} markers={list.map(i=>({id:i.id,lat:i.lat,lng:i.lng,tone:['resolved','closed'].includes(i.status)?'resolved':i.severity==='critical'?'critical':isOverdue(i)?'overdue':'open',label:i.title,sub:`${categoryById(i.category).label} · ${i.ref_code}`,href:`/issues/${i.ref_code}`}))} onSelect={setSelected}/>
         <div className="pointer-events-none absolute left-14 top-3 z-[500] flex items-center gap-2 rounded-lg border bg-card/95 px-3 py-2 text-xs shadow-soft"><Layers className="h-4 w-4 text-primary" />{wards.length ? `${wards.length} GBA wards · Bengaluru` : 'Loading Bengaluru boundaries…'}</div>
         {picking && <div className="absolute inset-x-3 bottom-4 z-[500] border bg-card p-3 shadow-soft"><p className="text-sm font-semibold">{pin?`${pin.lat.toFixed(5)}, ${pin.lng.toFixed(5)}`:'Place the problem location on the map'}</p>{pin&&!isInIndia(pin.lat,pin.lng)&&<p role="alert" className="text-xs text-destructive">Choose a location within India.</p>}<div className="mt-2 flex gap-2"><Button disabled={!pin||!isInIndia(pin.lat,pin.lng)} onClick={confirmPin}>Confirm location</Button><Button variant="ghost" onClick={()=>setPicking(false)}>Cancel</Button></div></div>}
       </div>
       <aside className="max-h-[min(70dvh,760px)] overflow-y-auto border-t bg-card lg:border-l lg:border-t-0">
-        {wardPoint ? <section className="p-4"><div className="flex items-center justify-between"><h2 className="font-semibold">{focusWard?.name ?? 'Selected location'}</h2><Button size="icon" variant="ghost" aria-label="Close ward details" onClick={()=>setWardPoint(null)}><X className="h-4 w-4"/></Button></div><CivicInfo lat={wardPoint.lat} lng={wardPoint.lng} {...(category!=='all'?{category}:{})} /></section> : null}
+        {detailPoint ? <section className="p-4"><div className="flex items-center justify-between"><h2 className="font-semibold">{wardPoint ? 'Selected point' : 'Your location'} · {focusWard?.name ?? 'Ward needs review'}</h2>{wardPoint && <Button size="icon" variant="ghost" aria-label="Return to your location" onClick={()=>setWardPoint(null)}><X className="h-4 w-4"/></Button>}</div><p className="mt-1 font-mono text-xs text-muted-foreground">{detailPoint.lat.toFixed(5)}, {detailPoint.lng.toFixed(5)}</p><CivicInfo lat={detailPoint.lat} lng={detailPoint.lng} {...(category!=='all'?{category}:{})} /></section> : null}
         <div className="border-b p-4"><h2 className="font-semibold">{scope==='nearby'?'Nearby issues':'Reported issues'}</h2><p className="mt-1 text-xs text-muted-foreground">{q.isLoading?'Loading reports…':`${list.length} underlying issues in this view`}</p><div className="mt-3 flex flex-wrap gap-3 text-xs"><span className="text-primary">● Open</span><span className="text-warning-foreground">● Overdue</span><span className="text-destructive">● Critical</span><span className="text-success">● Resolved</span></div></div>
         {q.isError?<div role="alert" className="p-4"><p>Reports could not be loaded.</p><Button variant="outline" onClick={()=>q.refetch()}>Retry</Button></div>:!q.isLoading&&!list.length?<div className="space-y-3 p-4"><h3 className="font-semibold">No matching CivicFix reports yet</h3><p className="text-sm text-muted-foreground">No real submissions match this area and these filters.</p>{!location&&<Button variant="outline" onClick={()=>setOpen(true)}>Choose location</Button>}<Button asChild className="w-full"><Link to="/report"><Camera className="h-4 w-4"/>Report a Problem</Link></Button></div>:null}
         {active && <section className="space-y-3 border-b bg-primary-soft p-4"><StatusBadge status={active.status}/><h3 className="font-semibold">{active.title}</h3>{active.photo_url&&<img src={active.photo_url} alt={active.title} className="aspect-video w-full rounded-lg object-cover"/>}<Button asChild><Link to="/issues/$ref" params={{ref:active.ref_code}}>View issue and history</Link></Button></section>}
         {list.map(i=><Link key={i.id} to="/issues/$ref" params={{ref:i.ref_code}} className="flex gap-3 border-b p-4 hover:bg-secondary">{i.photo_url&&<img src={i.photo_url} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" loading="lazy"/>}<div className="min-w-0 space-y-1"><h3 className="line-clamp-2 text-sm font-semibold">{i.title}</h3><p className="font-mono text-xs text-muted-foreground">{i.ref_code}</p><StatusBadge status={i.status}/></div></Link>)}
         {(q.data?.length??0)>=1000&&<p className="p-4 text-xs text-muted-foreground">Showing the latest 1,000 reports; not a city-wide total.</p>}
-        {!wardPoint && <WardLeaderboard />}
+        {!detailPoint && <WardLeaderboard />}
       </aside>
     </div>
   </div>;

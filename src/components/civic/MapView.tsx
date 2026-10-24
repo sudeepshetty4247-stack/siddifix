@@ -37,16 +37,16 @@ function Recenter({ lat, lng, zoom }: { lat: number; lng: number; zoom?: number 
   return null;
 }
 
-function WardLayer({ wards, selectedWard, onWardSelect }: { wards: Ward[]; selectedWard?: string; onWardSelect?: (id: string) => void }) {
+function WardLayer({ wards, selectedWard, onWardSelect, focused }: { wards: Ward[]; selectedWard?: string; onWardSelect?: (id: string, point: {lat: number; lng: number}) => void; focused: boolean }) {
   const map = useMap();
   const bounds = wardMapBounds(wards);
   useEffect(() => {
     if (!bounds) return;
     map.setMaxBounds(L.latLngBounds(bounds).pad(0.08));
     map.setMinZoom(Math.max(10, map.getBoundsZoom(L.latLngBounds(bounds), false)));
-    map.fitBounds(bounds, { padding: [18, 18], animate: false });
+    if (!focused) map.fitBounds(bounds, { padding: [18, 18], animate: false });
     return () => { map.setMaxBounds([]); map.setMinZoom(0); };
-  }, [wards, map]);
+  }, [wards, map, focused]);
   // A local outer ring avoids the antimeridian wrapping of a world-sized mask.
   const outer = [[10, 74], [16, 74], [16, 81], [10, 81], [10, 74]];
   const holes = wards.flatMap(w => geometryRings(w.boundary)).map(r => r.map(p => [p[1] ?? 0, p[0] ?? 0]));
@@ -54,7 +54,7 @@ function WardLayer({ wards, selectedWard, onWardSelect }: { wards: Ward[]; selec
     <GeoJSON data={{ type: 'Polygon', coordinates: [outer.map(p => [p[1], p[0]]), ...holes.map(r => r.map(p => [p[1], p[0]]))] } as GeoJSON.GeoJsonObject} style={{ fillColor: 'var(--map-mask)', fillOpacity: 0.7, weight: 0 }} interactive={false} />
     {wards.map(w => <GeoJSON key={`${w.id}-${w.identifier === selectedWard}`} data={w.boundary as unknown as GeoJSON.GeoJsonObject}
       style={{ color: w.identifier === selectedWard ? 'var(--ink)' : 'var(--primary)', weight: w.identifier === selectedWard ? 2.5 : 0.7, fillColor: 'var(--primary)', fillOpacity: w.identifier === selectedWard ? 0.25 : 0.055 }}
-      onEachFeature={(_, layer) => { layer.bindTooltip(`${w.ward_number ?? ''} · ${w.name}`); layer.on('click', () => onWardSelect?.(w.identifier)); }} />)}
+      onEachFeature={(_, layer) => { layer.bindTooltip(`${w.ward_number ?? ''} · ${w.name}`); layer.on('click', (event: L.LeafletMouseEvent) => { if (onWardSelect) L.DomEvent.stopPropagation(event); onWardSelect?.(w.identifier, {lat: event.latlng.lat, lng: event.latlng.lng}); }); }} />)}
   </>;
 }
 
@@ -81,7 +81,7 @@ export default function MapView({
   onSelect?: (id: string) => void;
   wards?: Ward[];
   selectedWard?: string;
-  onWardSelect?: (id: string) => void;
+  onWardSelect?: (id: string, point: {lat: number; lng: number}) => void;
 }) {
   return (
     <MapContainer center={[center.lat, center.lng]} zoom={zoom} maxBoundsViscosity={1} scrollWheelZoom {...(className ? { className } : {})} style={{ height: "100%", width: "100%" }}>
@@ -89,7 +89,7 @@ export default function MapView({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {wards?.length ? <WardLayer wards={wards} {...(selectedWard ? { selectedWard } : {})} {...(onWardSelect ? { onWardSelect } : {})} /> : null}
+      {wards?.length ? <WardLayer wards={wards} focused={!!recenter} {...(selectedWard ? { selectedWard } : {})} {...(onWardSelect ? { onWardSelect } : {})} /> : null}
       {onPick && <Picker onPick={onPick} />}
       {recenter && <Recenter {...recenter} />}
       {picked && (
