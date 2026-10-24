@@ -19,7 +19,7 @@ describe('Demo tagging, purge and master-data validation', () => {
       CREATE SCHEMA auth;
       CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS 'SELECT NULL::uuid';
       CREATE FUNCTION public.has_role(_user_id uuid, _role text) RETURNS boolean LANGUAGE sql AS 'SELECT true';
-      CREATE TABLE issues(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), ref_code text, status text, duplicate_of uuid, team_id uuid, routing_snapshot jsonb, demo_dataset_id text);
+      CREATE TABLE issues(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), ref_code text, status text, duplicate_of uuid, duplicate_candidate_id uuid, team_id uuid, routing_snapshot jsonb, demo_dataset_id text);
       CREATE TABLE issue_feedback(issue_id uuid);
       CREATE TABLE issue_evidence(issue_id uuid);
       CREATE TABLE issue_notifications(issue_id uuid);
@@ -77,7 +77,7 @@ describe('Demo tagging, purge and master-data validation', () => {
     await db.query(`INSERT INTO civic_wards VALUES ('W1', true, 'unverified', 'blr')`);
     await db.query(`INSERT INTO civic_coverage VALUES ('blr', true)`);
     await db.query(`INSERT INTO service_targets VALUES ('roads','medium',48,168,12,true),('roads','medium',24,96,6,true)`);
-    const r = await db.query<{ checks: { check: string; severity: string; count: number }[] }>(`SELECT admin_validate_master_data() AS checks`);
+    const r = await db.query<{ checks: { check: string; severity: string; count: number }[] }>(`SELECT admin_validate_master_data()->'checks' AS checks`);
     const checks = r.rows[0]!.checks;
     const byName = Object.fromEntries(checks.map(c => [c.check, c]));
     expect(byName['routed_categories_without_team']!.severity).toBe('error');
