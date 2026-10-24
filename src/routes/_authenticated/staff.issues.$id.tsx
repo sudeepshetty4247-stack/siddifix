@@ -62,7 +62,7 @@ function StaffIssue() {
     qc.invalidateQueries({ queryKey: ["staff-queue"] });
     qc.invalidateQueries({ queryKey: ["staff-all"] });
   };
-  const actor = () => ({ actor_id: roles.data?.userId, actor_label: roles.data?.roles.includes("admin") ? "CivicFix administrator" : "CivicFix staff" });
+  const actor = () => ({ actor_id: roles.data?.userId ?? null, actor_label: roles.data?.roles.includes("admin") ? "CivicFix administrator" : "CivicFix staff" });
 
   async function logEvent(e: { kind: string; note?: string | null; from_status?: IssueStatus | null; to_status?: IssueStatus | null }) {
     const { error } = await supabase.from("issue_events").insert({ issue_id: id, ...actor(), ...e });
