@@ -7,6 +7,7 @@ import { CATEGORIES, SEVERITY_META, categoryById, isInIndia, isInBengaluru, type
 import { reportInputSchema } from './report-input';
 import { validateImageContainer } from './image-format';
 import { TRACKING_TOKEN_RE, CASE_REF_RE } from './tracking-token';
+import { incidentCoverage } from './incident-coverage';
 
 const MAX_IMAGE_CHARS = 7_500_000; // ~5.5MB binary
 const dataUrlRe = /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$/;
@@ -63,6 +64,8 @@ export const submitIssue = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const {consumeRequest}=await import('./civic-security.server');await consumeRequest('submit',10);
     if (!isInIndia(data.lat, data.lng)) throw new Error("CivicFix currently accepts locations within India only.");
+    const incidentCheck=incidentCoverage(await getDirectory(),data.lat,data.lng);
+    if(incidentCheck.status!=='supported')throw new Error(incidentCheck.status==='unknown'?"We couldn't verify this location yet. Confirm a point inside a single supported ward.":"Siddi currently accepts reports only inside its configured Bengaluru service area. Change the incident location.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Idempotency: repeated taps / retries return the original report.
@@ -127,7 +130,7 @@ export const submitIssue = createServerFn({ method: "POST" })
         lat: data.lat, lng: data.lng, landmark: data.landmark ?? null, photo_url: signed.data.signedUrl,
         department: null, duplicate_of: data.duplicateOf ?? null,
         sla_due_at: targets.resolveDueAt, ack_due_at:targets.ackDueAt, target_snapshot:JSON.parse(JSON.stringify(targets.snapshot)),
-        routing_snapshot: JSON.parse(JSON.stringify(routing)),
+        routing_snapshot: JSON.parse(JSON.stringify({...routing,incident_location:{original_address:data.incidentLocation?.originalAddress??data.landmark??null,normalized_address:data.incidentLocation?.normalizedAddress??null,source:data.incidentLocation?.source??'map',entered_city:data.incidentLocation?.city??null,entered_state:data.incidentLocation?.state??null,entered_pin:data.incidentLocation?.pin??null,directions:data.incidentLocation?.directions??null,verification:'supported',checked_at:new Date().toISOString()}})),
         original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
         photo_source:data.photoMetadata?.source??'gallery',photo_metadata:data.photoMetadata ? JSON.parse(JSON.stringify(data.photoMetadata)) : null,
       },

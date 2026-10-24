@@ -27,7 +27,7 @@
 - LocationProvider stores citizen preferences locally without continuous background tracking. Civic Map/report camera watch live position only while open: blue dot, accuracy circle, own-ward highlight/card. Fixes over 100 m remain approximate, never auto-confirmed; automatic attempts never open dialogs.
 - Map focus and boundary clicks retain actual GPS/manual coordinates, never ward samples or clamped outside-city points. Reliable camera-session GPS suggests an editable report point; gallery EXIF/manual pins require confirmation, and gallery images never inherit current device GPS.
 - Nearby totals aggregate all canonical cases; map/list share the distance radius. Ward jurisdiction remains independent of the neighbourhood circle.
-- Nominatim lookup is on-demand, identified, Bengaluru-bounded and rate-limited; prefer hosted service. Ward matching is independent; shared edges need review.
+- Nominatim reverse lookup is on-demand only; Photon provides India-wide debounced address suggestions with bounded timeout and country filtering. Prefer hosted providers for production scale; never autocomplete against public Nominatim.
 - Protected civic_* tables hold coverage, authorities, category routes and boundaries. Availability rectangles do not prove jurisdiction; ownership needs asset rules. Source publication date, check time and SHA256 remain separate; provenance never verifies ownership/contacts.
 - Admin-editable civic_wards/civic_department_routes and representative rows have trigger-written civic_directory_audit. public/data/bengaluru-wards.json is import source only; cases retain submission ward in routing_snapshot.
 - MLA/MP mapping uses Election Commission results and each ward's official assembly constituency number. Corporators remain not in office until council elections. AuthorityPortrait requires independent verified photos and credits, HTTPS/managed media or initials; profiles are ward-scoped and audited.
@@ -37,3 +37,4 @@
 
 - Recipient notifications reuse issue_notifications with guarded ownership/current-scope RPCs, event keys and 15-second recovery-safe polling; notification_reads stores read/archive state. Public/internal messages are separate event visibility, and reminder timing is explicitly admin-configured.
 - Unresolved report ownership is null, not a routing department; the legacy review label is treated as unknown so unique category/ward team routing remains possible without inventing ownership.
+- Shared incidentCoverage validates enabled coverage and unique ward polygons for location UI and submission; unresolved text stays a separate session draft and validated address provenance persists in routing_snapshot.

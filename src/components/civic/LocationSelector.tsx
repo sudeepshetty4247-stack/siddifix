@@ -7,6 +7,7 @@ import { searchAddress } from '@/lib/geocoding.functions';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { LazyMap } from './LazyMap';
+import { AddressEntry } from './AddressEntry';
 
 export function LocationSelector() {
   const { location, select, open, setOpen, locating, detect, notice, recent, coverage } = useLocation();
@@ -45,11 +46,7 @@ export function LocationSelector() {
         <DialogDescription>Siddi currently serves Bengaluru. Pick the place you want to report in — it stays on this device.</DialogDescription>
         {notice && <p role="status" className="text-sm text-warning-foreground">{notice}</p>}
         <Button variant="outline" onClick={() => detect()} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}Use current location</Button>
-        <form className="flex gap-2" onSubmit={async e => { e.preventDefault(); if (query.trim().length < 3) return; setSearching(true); setError(''); try { const r = await findAddress({ data: { query } }); setResults(r.results); if (!r.results.length && r.notice) setError(r.notice); } catch { setError('Address search is unavailable right now. Place a pin instead.'); } finally { setSearching(false); } }}>
-          <input aria-label="Search a Bengaluru place" value={query} onChange={e => setQuery(e.target.value)} maxLength={160} placeholder="Search a Bengaluru area or landmark" className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 text-sm" />
-          <Button type="submit" variant="outline" disabled={searching}>{searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}Search</Button>
-        </form>
-        {results.length > 0 && <div className="divide-y rounded-lg border">{results.map(r => <button key={`${r.lat},${r.lng}`} onClick={() => { setPin({ lat: r.lat, lng: r.lng }); setLabel(r.label.slice(0, 120)); setResults([]); }} className="block w-full truncate px-3 py-2 text-left text-sm hover:bg-secondary">{r.label}</button>)}</div>}
+        <AddressEntry onDraft={()=>setPin(null)} onSelect={r=>{setPin({lat:r.lat,lng:r.lng});setLabel(r.originalAddress||r.label);}} />
         <label className="space-y-1 text-sm font-medium">Name this place (optional)<input aria-label="Locality or landmark" value={label} onChange={e => setLabel(e.target.value)} maxLength={120} placeholder="e.g. Kudlu Gate" className="h-10 w-full rounded-lg border bg-card px-3 font-normal" /></label>
         <div className="h-52 overflow-hidden rounded-lg border"><LazyMap center={pin ?? location ?? BENGALURU} picked={pin ?? location} onPick={(lat, lng) => { setPin({ lat, lng }); setError(''); }} recenter={pin} zoom={13} /></div>
         <div className="flex gap-2"><input aria-label="Latitude, longitude" value={coordinates} onChange={e => setCoordinates(e.target.value)} placeholder="12.9716, 77.5946" className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 text-sm" /><Button variant="outline" onClick={applyCoordinates}>Set pin</Button></div>

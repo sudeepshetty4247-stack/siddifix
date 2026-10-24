@@ -11,5 +11,5 @@ export function coverageFromWardMatches(matchCount: number): CoverageStatus {
 
 /** Backend rule: a report is accepted only for a point inside a supported ward (shared edges go to review). */
 export function canAcceptReport(status: CoverageStatus) {
-  return status !== 'outside';
+  return status === 'supported';
 }
