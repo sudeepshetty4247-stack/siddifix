@@ -100,3 +100,10 @@
 - [ ] External authority notification (email/grievance API) — blocked: no authorized channel or credentials.
 - [x] Real Bengaluru authority directory populated (24 Oct 2026): 6 verified leadership (GBA Chief Commissioner + 5 corporation commissioners), 37 zone-level operational officers pending admin verification (independent directory source, 31-07-2026), 369 ward-linked MLA + 369 ward-linked MP profiles verified against official KLA/Sansad lists. Case pages now load ward info via a lightweight point lookup instead of the 4 MB full-boundary download. Zone names on officer profiles corrected to official zone names. Ward-level engineers and corporators remain absent: no verified per-ward officer source exists and councils are not elected yet — documented, not fabricated.
 - [x] Master production audit (24 Oct 2026, docs/PRODUCTION_AUDIT_2026-10-24.md): fixed critical citizen-tracking regression (migration 0021), 4.2 MB case-page download, field-worker scope UI, zone naming. Full lifecycle verified live: submit → route → assign → acknowledge → resolve → citizen confirm → closed. Decision: READY WITH DOCUMENTED LIMITATIONS.
+
+## Final master upgrade — 24 Oct 2026
+- [x] Automatic multi-signal duplicate suggestions with staff link / related / reject decisions (audited database operation).
+- [x] Recurring-issue intelligence with explainable priority and separate report/issue/duplicate counts (/staff/insights). 18 tests.
+- [x] Audit document docs/FINAL_AUDIT_2026-10-24.md.
+- [ ] Configurable SLA targets per category/severity — not built.
+- [ ] Government handoff, SMS/push, physical device, isolated test backend — blocked on external access.

@@ -24,6 +24,7 @@ import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
 import { Route as AuthenticatedStaffAuditRouteImport } from './routes/_authenticated/staff.audit'
 import { Route as AuthenticatedStaffDirectoryRouteImport } from './routes/_authenticated/staff.directory'
+import { Route as AuthenticatedStaffInsightsRouteImport } from './routes/_authenticated/staff.insights'
 import { Route as AuthenticatedStaffMapRouteImport } from './routes/_authenticated/staff.map'
 import { Route as AuthenticatedStaffNotificationsRouteImport } from './routes/_authenticated/staff.notifications'
 import { Route as AuthenticatedStaffOverdueRouteImport } from './routes/_authenticated/staff.overdue'
@@ -108,6 +109,12 @@ const AuthenticatedStaffDirectoryRoute =
     path: '/directory',
     getParentRoute: () => AuthenticatedStaffRoute,
   } as any)
+const AuthenticatedStaffInsightsRoute =
+  AuthenticatedStaffInsightsRouteImport.update({
+    id: '/insights',
+    path: '/insights',
+    getParentRoute: () => AuthenticatedStaffRoute,
+  } as any)
 const AuthenticatedStaffMapRoute = AuthenticatedStaffMapRouteImport.update({
   id: '/map',
   path: '/map',
@@ -172,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/api/assistant': typeof ApiAssistantRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
+  '/staff/insights': typeof AuthenticatedStaffInsightsRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
   '/staff/notifications': typeof AuthenticatedStaffNotificationsRoute
   '/staff/overdue': typeof AuthenticatedStaffOverdueRoute
@@ -195,6 +203,7 @@ export interface FileRoutesByTo {
   '/api/assistant': typeof ApiAssistantRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
+  '/staff/insights': typeof AuthenticatedStaffInsightsRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
   '/staff/notifications': typeof AuthenticatedStaffNotificationsRoute
   '/staff/overdue': typeof AuthenticatedStaffOverdueRoute
@@ -222,6 +231,7 @@ export interface FileRoutesById {
   '/_citizen/': typeof CitizenIndexRoute
   '/_authenticated/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/_authenticated/staff/directory': typeof AuthenticatedStaffDirectoryRoute
+  '/_authenticated/staff/insights': typeof AuthenticatedStaffInsightsRoute
   '/_authenticated/staff/map': typeof AuthenticatedStaffMapRoute
   '/_authenticated/staff/notifications': typeof AuthenticatedStaffNotificationsRoute
   '/_authenticated/staff/overdue': typeof AuthenticatedStaffOverdueRoute
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/api/assistant'
     | '/staff/audit'
     | '/staff/directory'
+    | '/staff/insights'
     | '/staff/map'
     | '/staff/notifications'
     | '/staff/overdue'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/api/assistant'
     | '/staff/audit'
     | '/staff/directory'
+    | '/staff/insights'
     | '/staff/map'
     | '/staff/notifications'
     | '/staff/overdue'
@@ -297,6 +309,7 @@ export interface FileRouteTypes {
     | '/_citizen/'
     | '/_authenticated/staff/audit'
     | '/_authenticated/staff/directory'
+    | '/_authenticated/staff/insights'
     | '/_authenticated/staff/map'
     | '/_authenticated/staff/notifications'
     | '/_authenticated/staff/overdue'
@@ -424,6 +437,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffDirectoryRouteImport
       parentRoute: typeof AuthenticatedStaffRoute
     }
+    '/_authenticated/staff/insights': {
+      id: '/_authenticated/staff/insights'
+      path: '/insights'
+      fullPath: '/staff/insights'
+      preLoaderRoute: typeof AuthenticatedStaffInsightsRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
     '/_authenticated/staff/map': {
       id: '/_authenticated/staff/map'
       path: '/map'
@@ -493,6 +513,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffAuditRoute: typeof AuthenticatedStaffAuditRoute
   AuthenticatedStaffDirectoryRoute: typeof AuthenticatedStaffDirectoryRoute
+  AuthenticatedStaffInsightsRoute: typeof AuthenticatedStaffInsightsRoute
   AuthenticatedStaffMapRoute: typeof AuthenticatedStaffMapRoute
   AuthenticatedStaffNotificationsRoute: typeof AuthenticatedStaffNotificationsRoute
   AuthenticatedStaffOverdueRoute: typeof AuthenticatedStaffOverdueRoute
@@ -506,6 +527,7 @@ interface AuthenticatedStaffRouteChildren {
 const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
   AuthenticatedStaffAuditRoute: AuthenticatedStaffAuditRoute,
   AuthenticatedStaffDirectoryRoute: AuthenticatedStaffDirectoryRoute,
+  AuthenticatedStaffInsightsRoute: AuthenticatedStaffInsightsRoute,
   AuthenticatedStaffMapRoute: AuthenticatedStaffMapRoute,
   AuthenticatedStaffNotificationsRoute: AuthenticatedStaffNotificationsRoute,
   AuthenticatedStaffOverdueRoute: AuthenticatedStaffOverdueRoute,
