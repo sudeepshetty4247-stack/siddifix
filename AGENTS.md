@@ -47,3 +47,5 @@
 - PortalShell verifies active server-authorized access before mounting portal children; admin routes use a separate shell and operational staff cannot enter it. Database scope predicates are authoritative for every case-associated read and mutation.
 - Super Admin is a protected admin_permissions designation provisioned only for the registered one-time owner email; admin creation requires explicit delegation, and no signup trigger grants roles.
 - Account setup uses provider invitations and an atomic role/profile/audit RPC; suspension persists in staff_profiles before provider ban synchronization to block existing-session actions.
+
+- Operational scope profile edits and eligible case-handler assignment use atomic guarded RPCs; suspension releases handlers with case-history events so no case silently loses accountability.

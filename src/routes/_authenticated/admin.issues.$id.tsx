@@ -15,10 +15,11 @@ import { DuplicateReview } from '@/components/civic/DuplicateReview';
 import { AssignmentActions } from '@/components/civic/AssignmentActions';
 import { IssueEvidence } from '@/components/civic/IssueEvidence';
 import { StaffCommitment } from '@/components/civic/StaffCommitment';
+import { CaseHandlerAssignment } from "@/components/portals/CaseHandlerAssignment";
 import { FIELD_TARGETS } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/admin/issues/$id")({
-  head: () => ({ meta: [{ title: "Staff issue actions — Siddi" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Staff issue actions — Siddi" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin case operations — Siddi" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Admin case operations — Siddi" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: StaffIssue,
 });
 
@@ -48,7 +49,7 @@ function StaffIssue() {
   const [busy, setBusy] = useState(false);
 
   const issue = useQuery({
-    queryKey: ["staff-issue", id],
+    queryKey: ["staff-issue", id], refetchInterval:15000,
     queryFn: async () => {
       const { data, error } = await supabase.from("issues").select("*").eq("id", id).single();
       if (error) throw error;
@@ -56,7 +57,7 @@ function StaffIssue() {
     },
   });
   const events = useQuery({
-    queryKey: ["staff-events", id],
+    queryKey: ["staff-events", id], refetchInterval:15000,
     queryFn: async () => {
       const { data } = await supabase.from("issue_events").select("*").eq("issue_id", id).order("created_at");
       return (data ?? []) as EventRow[];
@@ -180,7 +181,8 @@ function StaffIssue() {
             <Timeline events={events.data ?? []} />
           </div>
           {canWork && <DuplicateReview issue={i} />}
-          {canWork && <AssignmentActions id={i.id} authorityId={i.authority_id} state={i.assignment_state} />}
+          {canWork && roles.data?.roles.some(r=>["admin","staff","supervisor"].includes(r)) && <CaseHandlerAssignment issueId={i.id} current={i.assigned_to}/>}
+          {canWork && roles.data?.roles.some(r=>["admin","staff","supervisor"].includes(r)) && <AssignmentActions id={i.id} authorityId={i.authority_id} state={i.assignment_state} />}
           {canWork && <IssueEvidence issueId={i.id} staff />}
         </div>
         <aside className="space-y-4">
