@@ -150,3 +150,10 @@
 - [x] Floating Ask Siddhi launcher; assistant knows coverage/demo/location steps.
 - [ ] Portrait review centre with candidate approve/reject — not built this round; 10 MLAs + 1 MP verified photos remain, others initials.
 - [ ] Signed-in staff walkthrough of the demo scenario with isolated test data — needs a separate test backend.
+
+## Master implementation prompt (Oct 25)
+- [x] Citizen feedback survey on tracking page + admin feedback analytics
+- [ ] External government delivery (email/SMS/official API) — blocked: authorized provider credentials and verified officer contacts
+- [ ] Real departments/teams data — blocked: verified official department structure and staff to invite (admin tools already exist)
+- [ ] Street/landmark directory import — blocked: permitted official street-to-ward dataset
+- [ ] Live citizen-to-staff walkthrough — blocked: an active team plus an invited test staff account, and approval to create a test report in the live database

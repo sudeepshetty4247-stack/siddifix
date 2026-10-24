@@ -19,6 +19,7 @@ import { publicCases, publicEvents } from '@/lib/public-cases';
 import { getReportPhoto } from '@/lib/report-media.functions';
 import { caseReport } from '@/lib/case-report';
 import { downloadText } from '@/lib/transparency';
+import { FeedbackSurvey } from '@/components/civic/FeedbackSurvey';
 
 export const Route = createFileRoute("/_citizen/issues/$ref")({
   head: ({ params }) => ({
@@ -209,6 +210,7 @@ function IssuePage() {
               </div>
             </div>
           )}
+          {tokenValid && token && (i.status === "resolved" || i.status === "closed") && <FeedbackSurvey caseRef={ref} token={token} onReopened={()=>qc.invalidateQueries()} />}
           {tokenValid && i.status !== "resolved" && (
             <p className="rounded-xl bg-secondary p-3 text-xs text-muted-foreground">You're viewing this as the original reporter. You'll be able to confirm or dispute the fix once it's marked resolved.</p>
           )}

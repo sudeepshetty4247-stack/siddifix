@@ -169,6 +169,26 @@ export const verifyToken = createServerFn({ method: "POST" })
     return {valid:!result.error&&result.data===true};
   });
 
+export const feedbackState = createServerFn({ method: "POST" })
+  .inputValidator((input: { ref: string; token: string }) => z.object({ ref: z.string().regex(CASE_REF_RE), token: z.string().regex(TRACKING_TOKEN_RE) }).parse(input))
+  .handler(async ({ data }) => {
+    const {consumeRequest}=await import('./civic-security.server');await consumeRequest('feedback-state',30);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const r=await supabaseAdmin.rpc('citizen_feedback_state',{_ref:data.ref,_token:data.token});
+    if(r.error) throw new Error('Feedback status could not be loaded');
+    return r.data as { allowed: boolean; submitted?: boolean; submitted_at?: string | null };
+  });
+
+export const submitFeedback = createServerFn({ method: "POST" })
+  .inputValidator((input: { ref: string; token: string; rating: number; resolution: string; responseTime: string; comment?: string }) => z.object({ ref: z.string().regex(CASE_REF_RE), token: z.string().regex(TRACKING_TOKEN_RE), rating: z.number().int().min(1).max(5), resolution: z.enum(['complete','partial','not_resolved']), responseTime: z.enum(['excellent','good','average','poor']), comment: z.string().trim().max(1000).optional() }).parse(input))
+  .handler(async ({ data }) => {
+    const {consumeRequest}=await import('./civic-security.server');await consumeRequest('feedback-submit',10);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const r=await supabaseAdmin.rpc('citizen_submit_feedback',{_ref:data.ref,_token:data.token,_rating:data.rating,_resolution:data.resolution,_response_time:data.responseTime,_comment:data.comment??''});
+    if(r.error) throw new Error(r.error.message);
+    return r.data as { saved: boolean; reopened: boolean };
+  });
+
 // ---------- Staff / admin ----------
 export const getMyRoles = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
