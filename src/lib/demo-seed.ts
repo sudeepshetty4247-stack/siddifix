@@ -131,9 +131,10 @@ export function buildDemoDataset(args: {
     if (bucket === 'overdue') acknowledged_at = new Date(Math.min(now - 3600000, created + rnd() * target.ack_hours * 3600000)).toISOString();
 
 
+    const catPhotos = photos[cat.id] ?? [];
     issues.push({
       id: crypto.randomUUID(),
-      photo_url: photos.length && rnd() < 0.6 ? pick(rnd, photos) : null,
+      photo_url: catPhotos.length && rnd() < 0.7 ? pick(rnd, catPhotos) : null,
       ref_code: ref, idempotency_key: ref, title: `${sub} near ${ward.name}`, summary: `${sub} reported in ${ward.name}.`,
       description: `Synthetic demonstration report (${datasetId}). ${sub} observed near ${ward.name}; generated for workflow testing only.`,
       category: cat.id, subcategory: sub, severity, status, lat, lng,

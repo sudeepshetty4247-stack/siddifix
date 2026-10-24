@@ -76,8 +76,19 @@ const seedSchema = z.object({
   datasetId: z.string().trim().regex(/^[a-z0-9-]{3,40}$/).default('demo-v1'),
   offset: z.number().int().min(0).default(0),
   limit: z.number().int().min(50).max(500).default(500),
-  photos: z.array(z.string().url()).max(50).default([]),
 });
+
+/** Licensed demo photographs (see public/demo-media/CREDITS.md), matched to report category. */
+const DEMO_PHOTOS: Record<string, string[]> = {
+  roads: ['/demo-media/roads-bengaluru-munnekollala.jpg', '/demo-media/roads-potholes-driving.jpg', '/demo-media/roads-potholes.jpg', '/demo-media/roads-broken-delhi.jpg'],
+  drainage: ['/demo-media/drainage-bda-rain-1.jpg', '/demo-media/drainage-bda-rain-2.jpg', '/demo-media/drainage-storm-drain.jpg'],
+  water: ['/demo-media/drainage-storm-drain.jpg'],
+  electricity: ['/demo-media/electricity-streetlight-off.jpg', '/demo-media/electricity-streetlight.jpg'],
+  waste: ['/demo-media/waste-garbage-panvel.jpg', '/demo-media/waste-garbage-municipal.jpg'],
+  sanitation: ['/demo-media/waste-garbage-municipal.jpg'],
+  trees: ['/demo-media/trees-fallen.jpg'],
+  transport: ['/demo-media/transport-auto-bangalore.jpg'],
+};
 
 /**
  * Resumable demo seeder. Teams and staff are ensured first (deterministic, never doubled);
