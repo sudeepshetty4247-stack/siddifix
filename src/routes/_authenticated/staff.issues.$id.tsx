@@ -196,7 +196,7 @@ function StaffIssue() {
             </label>
             <label className="block text-sm">
               <span className="text-muted-foreground">Severity</span>
-              <select value={i.severity} onChange={(e) => updateField({ severity: e.target.value as "low" }, `Severity set to ${SEVERITY_META[e.target.value as "low"].label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
+              <select value={i.severity} disabled={!canWork} onChange={(e) => updateField({ severity: e.target.value as "low" }, `Severity set to ${SEVERITY_META[e.target.value as "low"].label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
                 {SEVERITIES.map((s) => <option key={s} value={s}>{SEVERITY_META[s].label}</option>)}
               </select>
             </label>
