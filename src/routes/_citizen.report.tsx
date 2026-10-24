@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useLocation } from "@/lib/location";
 import { CivicInfo } from "@/components/civic/CivicInfo";
+import { Button } from "@/components/ui/button";
+import { suggestedReportLocation } from "@/lib/report-location";
 
 export const Route = createFileRoute("/_citizen/report")({
   head: () => ({
@@ -59,6 +61,9 @@ function ReportPage() {
   const [recenter, setRecenter] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
   const [landmark, setLandmark] = useState("");
   const [locating, setLocating] = useState(false);
+  const [locationConfirmed, setLocationConfirmed] = useState(false);
+  const [locationNotice, setLocationNotice] = useState("Current location is only a suggestion. Confirm where the photo’s problem actually is.");
+  const [nearbyNotice, setNearbyNotice] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [aiState, setAiState] = useState<"idle" | "running" | "done" | "fallback">("idle");
   const [aiNotice, setAiNotice] = useState<string | null>(null);
@@ -71,7 +76,7 @@ function ReportPage() {
   const analyze = useServerFn(analyzeIssue);
   const submit = useServerFn(submitIssue);
   const analysisRun = useRef(0);
-  useEffect(() => { if (location && !loc) { setLoc({ lat: location.lat, lng: location.lng }); setLandmark(location.label === 'Current location' ? '' : location.label); } }, [location, loc]);
+  useEffect(() => { if (loc) return; const suggestion = suggestedReportLocation(location); if (suggestion) { setLoc(suggestion); setLandmark(location?.method === 'manual' ? location.label : ''); } else if (location) setLocationNotice('Device location is too approximate. Place the problem’s exact pin on the map.'); }, [location, loc]);
 
   async function runAnalysis(img: string | null, desc: string) {
     const run = ++analysisRun.current;
@@ -100,7 +105,10 @@ function ReportPage() {
     try {
       const url = await compressImage(file);
       setImage(url);
-      runAnalysis(url, description);
+      setLocationConfirmed(false);
+      setAnalysis(null);
+      setAiState("idle");
+      analysisRun.current += 1;
     } catch {
       toast.error("We couldn't read that image. Try another photo.");
     }
@@ -112,13 +120,16 @@ function ReportPage() {
     navigator.geolocation.getCurrentPosition(
       (p) => {
         const next = { lat: p.coords.latitude, lng: p.coords.longitude };
+        setLocationConfirmed(false);
+        if (p.coords.accuracy > 100) { setLocationNotice(`GPS is approximate (within ${Math.round(p.coords.accuracy)} m). Place an exact map pin before continuing.`); setLocating(false); return; }
+        setLocationNotice(`Suggested device location (within ${Math.round(p.coords.accuracy)} m). Confirm the problem location; this does not verify photo capture location.`);
         setLoc(next);
         setRecenter({ ...next, zoom: 17 });
         setLocating(false);
       },
       () => {
         setLocating(false);
-        toast.error("We couldn't get your location. Tap the map to place a pin instead.");
+        setLocationNotice("Location permission was denied or unavailable. Place a pin manually; reporting still works.");
       },
       { enableHighAccuracy: true, timeout: 12000 },
     );
@@ -127,16 +138,19 @@ function ReportPage() {
   // Duplicate check when entering review
   useEffect(() => {
     if (step !== 3 || !loc || !analysis) return;
+    let cancelled = false;
+    setNearbyNotice("Checking nearby reports…");
     supabase
       .rpc("nearby_issues", { _lat: loc.lat, _lng: loc.lng, _radius_m: 120, _category: analysis.category })
-      .then(({ data }) => setNearby((data as Nearby[]) ?? []));
+      .then(({ data, error }) => { if (cancelled) return; setNearby((data as Nearby[]) ?? []); setNearbyNotice(error ? "Nearby search is unavailable. Your report can still be submitted for staff review." : ""); });
+    return () => { cancelled = true; };
   }, [step, loc, analysis]);
 
-  const locValid = !!loc && isInIndia(loc.lat, loc.lng);
+  const locValid = !!loc && isInIndia(loc.lat, loc.lng) && locationConfirmed;
   const canNext = [!!image, locValid, !!analysis && (analysis.title?.trim().length ?? 0) >= 3, true][step];
 
   async function onSubmit() {
-    if (submitting || !image || !loc || !analysis) return;
+    if (submitting || !image || !loc || !analysis || !locValid) return;
     setSubmitting(true);
     try {
       const res = await submit({
@@ -174,7 +188,7 @@ function ReportPage() {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
       <div className="mb-8">
         <h1 className="text-3xl font-bold sm:text-4xl">Report a problem</h1>
-        <p className="mt-1 text-muted-foreground">Takes under a minute. No sign-up, no personal details.</p>
+        <p className="mt-1 text-muted-foreground">Photo, confirmed location, and a tracking reference. No sign-up.</p>
       </div>
 
       {/* Stepper */}
@@ -189,7 +203,7 @@ function ReportPage() {
         ))}
       </ol>
 
-      <div className="rounded-3xl border bg-card p-5 shadow-soft sm:p-8">
+      <div className="border-t pt-5 sm:pt-8">
         {step === 0 && (
           <div className="space-y-6">
             {image ? (
@@ -232,12 +246,13 @@ function ReportPage() {
                 <h2 className="text-xl font-semibold">Where is it?</h2>
                 <p className="text-sm text-muted-foreground">We use the location only to place the report on the map. Tap the map or drag the pin to adjust.</p>
               </div>
-              <button onClick={locate} disabled={locating} className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-ink-foreground disabled:opacity-60">
+              <Button onClick={locate} disabled={locating} className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-ink-foreground disabled:opacity-60">
                 {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />} Use my location
-              </button>
+              </Button>
             </div>
+            <p role="status" className="text-sm text-muted-foreground">{locationNotice}</p>
             <div className="h-[360px] overflow-hidden rounded-2xl border">
-              <LazyMap center={loc ?? BENGALURU} zoom={loc ? 17 : 12} picked={loc} onPick={(lat, lng) => setLoc({ lat, lng })} recenter={recenter} />
+              <LazyMap center={loc ?? BENGALURU} zoom={loc ? 17 : 12} picked={loc} onPick={(lat, lng) => { setLoc({ lat, lng }); setLocationConfirmed(false); }} recenter={recenter} />
             </div>
             {loc && (
               <p className={cn("flex items-center gap-2 text-sm", isInBengaluru(loc.lat, loc.lng) ? "text-success" : isInIndia(loc.lat, loc.lng) ? "text-warning-foreground" : "text-destructive")}>
@@ -249,6 +264,7 @@ function ReportPage() {
                     : "This location is outside India. Please place the pin where the problem is."}
               </p>
             )}
+            <Button variant={locationConfirmed ? "outline" : "default"} disabled={!loc || !isInIndia(loc.lat, loc.lng)} onClick={() => setLocationConfirmed(true)}><CheckCircle2 className="h-4 w-4" />{locationConfirmed ? "Problem location confirmed" : "Confirm this problem location"}</Button>
             <div>
               <label className="text-sm font-medium" htmlFor="landmark">Landmark (optional)</label>
               <input id="landmark" value={landmark} maxLength={200} onChange={(e) => setLandmark(e.target.value)} placeholder="e.g. Opposite Indiranagar Metro, near bus stop" className="mt-1.5 h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
@@ -275,20 +291,21 @@ function ReportPage() {
               <div className="rounded-xl border border-primary/30 bg-primary-soft p-4 text-sm">
                 <p className="font-medium">{analysis.clarification_question}</p>
                 <p className="mt-1 text-muted-foreground">Add a short description below, or submit as "Needs classification" and staff will review it.</p>
-                <button onClick={() => runAnalysis(image, description)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"><RefreshCw className="h-3.5 w-3.5" /> Re-analyse with my description</button>
+                <Button variant="ghost" onClick={() => runAnalysis(image, description)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"><RefreshCw className="h-3.5 w-3.5" /> Re-analyse with my description</Button>
               </div>
             )}
+            {aiState === "running" && <Button variant="outline" onClick={() => { analysisRun.current += 1; setAiState("fallback"); setAiNotice("Manual details selected. Staff will review the classification."); setNeedsClass(true); setAnalysis({category:"other",subcategory:"Other",title:"",summary:description,severity:"medium",urgency:"Standard",confidence:0,missing_info:null,safety_warning:null,clarification_question:null,is_civic_issue:true}); }}>Enter details manually</Button>}
             {analysis && (
               <>
                 <Field label="Title">
-                  <input value={analysis.title} maxLength={120} onChange={(e) => setAnalysis({ ...analysis, title: e.target.value })} placeholder="Short description of the problem" className="h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                  <input aria-label="Problem title" value={analysis.title} maxLength={120} onChange={(e) => setAnalysis({ ...analysis, title: e.target.value })} placeholder="Short description of the problem" className="h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
                 </Field>
                 <Field label="Category">
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {CATEGORIES.map((c) => (
-                      <button key={c.id} type="button" onClick={() => setAnalysis({ ...analysis, category: c.id, subcategory: c.subs[0] })} className={cn("flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition", analysis.category === c.id ? "border-primary bg-primary-soft font-semibold text-primary" : "hover:bg-secondary")}>
-                        <span>{c.emoji}</span><span className="truncate">{c.label}</span>
-                      </button>
+                      <Button variant="outline" key={c.id} type="button" onClick={() => setAnalysis({ ...analysis, category: c.id, subcategory: c.subs[0] })} className={cn("flex h-auto justify-start gap-2 whitespace-normal rounded-lg border px-3 py-2.5 text-left text-sm transition", analysis.category === c.id ? "border-primary bg-primary-soft font-semibold text-primary" : "hover:bg-secondary")}>
+                        <span>{c.emoji}</span><span className="whitespace-normal">{c.label}</span>
+                      </Button>
                     ))}
                   </div>
                 </Field>
@@ -301,9 +318,9 @@ function ReportPage() {
                   <Field label="How serious is it?">
                     <div className="grid grid-cols-4 gap-1 rounded-xl bg-secondary p-1">
                       {SEVERITIES.map((s) => (
-                        <button key={s} type="button" onClick={() => setAnalysis({ ...analysis, severity: s })} className={cn("rounded-lg py-2 text-xs font-semibold transition", analysis.severity === s ? (s === "critical" ? "bg-destructive text-destructive-foreground" : "bg-card shadow-soft") : "text-muted-foreground")}>
+                        <Button variant="ghost" key={s} type="button" onClick={() => setAnalysis({ ...analysis, severity: s })} className={cn("rounded-lg px-1 py-2 text-xs font-semibold transition", analysis.severity === s ? (s === "critical" ? "bg-destructive text-destructive-foreground" : "bg-card shadow-soft") : "text-muted-foreground")}>
                           {SEVERITY_META[s].label}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </Field>
@@ -336,10 +353,11 @@ function ReportPage() {
               </div>
             </div>
             <CivicInfo lat={loc.lat} lng={loc.lng} category={analysis.category} subcategory={analysis.subcategory} />
+            {nearbyNotice && <p role="status" className="text-sm text-muted-foreground">{nearbyNotice}</p>}
             {nearby.length > 0 && (
               <div className="rounded-2xl border border-warning/40 bg-warning-soft p-4">
                 <p className="flex items-center gap-2 font-semibold text-warning-foreground"><Link2 className="h-4 w-4" /> This might already be reported</p>
-                <p className="mt-1 text-sm text-warning-foreground/80">Linking adds your voice to the existing report. Your report is still saved separately.</p>
+                <p className="mt-1 text-sm text-warning-foreground/80">Flagging a match saves your report separately for staff review. It does not merge uncertain reports.</p>
                 <div className="mt-3 space-y-2">
                   {nearby.map((n) => (
                     <label key={n.id} className={cn("flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-sm", linkTo === n.id && "border-primary ring-2 ring-primary/20")}>
@@ -362,24 +380,24 @@ function ReportPage() {
         )}
 
         <div className="mt-8 flex items-center justify-between border-t pt-6">
-          <button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} className="inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold text-muted-foreground transition hover:bg-secondary disabled:invisible">
+          <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} className="inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold text-muted-foreground transition hover:bg-secondary disabled:invisible">
             <ArrowLeft className="h-4 w-4" /> Back
-          </button>
+          </Button>
           {step < 3 ? (
-            <button
+            <Button
               onClick={() => {
-                if (step === 0 && aiState === "idle") runAnalysis(image, description);
+                if (step === 1 && aiState === "idle") runAnalysis(image, description);
                 setStep((s) => s + 1);
               }}
               disabled={!canNext}
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90 disabled:opacity-40"
             >
               Continue <ArrowRight className="h-4 w-4" />
-            </button>
+            </Button>
           ) : (
-            <button onClick={onSubmit} disabled={submitting} className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lift transition hover:bg-primary/90 disabled:opacity-60">
+            <Button onClick={onSubmit} disabled={submitting} className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lift transition hover:bg-primary/90 disabled:opacity-60">
               {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting…</> : <>Submit report <CheckCircle2 className="h-4 w-4" /></>}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -425,9 +443,9 @@ function DescriptionInput({ value, onChange }: { value: string; onChange: (v: st
       <div className="flex items-center justify-between">
         <label htmlFor="desc" className="text-sm font-medium">Anything to add? <span className="font-normal text-muted-foreground">(optional)</span></label>
         {supported && (
-          <button type="button" onClick={toggle} className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold", listening ? "bg-destructive text-destructive-foreground" : "bg-secondary")}>
+          <Button variant="ghost" type="button" onClick={toggle} className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold", listening ? "bg-destructive text-destructive-foreground" : "bg-secondary")}>
             {listening ? <><MicOff className="h-3.5 w-3.5" /> Stop</> : <><Mic className="h-3.5 w-3.5" /> Speak</>}
-          </button>
+          </Button>
         )}
       </div>
       <textarea id="desc" value={value} onChange={(e) => onChange(e.target.value)} maxLength={1000} rows={3} placeholder="e.g. Pothole has been growing for 2 weeks, bikes are skidding at night" className="mt-1.5 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
@@ -458,7 +476,7 @@ function Confirmation({ done, title, loc, needsClass }: { done: { ref: string; t
             <p className="mt-0.5 text-xs text-muted-foreground">Keep this safe. It lets you confirm or dispute the fix later from any device. It's also saved on this device.</p>
             <div className="mt-3 flex gap-2">
               <input readOnly value={privateLink} className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 font-mono text-xs" onFocus={(e) => e.target.select()} />
-              <button onClick={() => { navigator.clipboard.writeText(privateLink); toast.success("Link copied"); }} className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground"><Copy className="h-4 w-4" /> Copy</button>
+              <Button onClick={() => { navigator.clipboard.writeText(privateLink); toast.success("Link copied"); }} className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground"><Copy className="h-4 w-4" /> Copy</Button>
             </div>
           </div>
         )}

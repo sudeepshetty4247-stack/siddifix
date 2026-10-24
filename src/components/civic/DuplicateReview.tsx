@@ -5,14 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { descriptionOverlap } from '@/lib/duplicate-evidence';
 
-export function DuplicateReview({ issue }: { issue: { id: string; lat: number; lng: number; category: string; title: string; summary: string | null; photo_url: string | null; duplicate_of: string | null } }) {
+export function DuplicateReview({ issue }: { issue: { id: string; lat: number; lng: number; category: string; title: string; summary: string | null; photo_url: string | null; duplicate_of: string | null; duplicate_candidate_id?: string | null } }) {
   const qc = useQueryClient();
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
   const q = useQuery({ queryKey: ['duplicate-candidates', issue.id], queryFn: async () => {
     const nearby = await supabase.rpc('nearby_issues', { _lat: issue.lat, _lng: issue.lng, _radius_m: 120, _category: issue.category });
     if (nearby.error) throw nearby.error;
-    const ids = [...new Set([...(nearby.data ?? []).filter(r => r.id !== issue.id).map(r => r.id), ...(issue.duplicate_of ? [issue.duplicate_of] : [])])];
+    const ids = [...new Set([...(nearby.data ?? []).filter(r => r.id !== issue.id).map(r => r.id), ...(issue.duplicate_of ? [issue.duplicate_of] : []), ...(issue.duplicate_candidate_id ? [issue.duplicate_candidate_id] : [])])];
     if (!ids.length) return [];
     const result = await supabase.from('issues').select('id,ref_code,title,summary,photo_url,duplicate_of').in('id', ids);
     if (result.error) throw result.error;

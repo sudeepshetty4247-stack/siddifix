@@ -37,8 +37,8 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     let attempted = false;
     try { attempted = sessionStorage.getItem('civicfix-location-attempted') === 'yes'; sessionStorage.setItem('civicfix-location-attempted', 'yes'); } catch { attempted = true; }
     if (attempted) return;
-    // Only attempt automatically where browser permission was previously granted.
-    navigator.permissions?.query({ name: 'geolocation' }).then(p => { if (p.state === 'granted') detect(); else setOpen(true); }).catch(() => setOpen(true));
+    // A one-time browser permission request; denial leaves manual selection available.
+    detect();
   }, []);
   return <LocationContext.Provider value={{ location, select, open, setOpen, locating, detect, notice, recent }}>{children}</LocationContext.Provider>;
 }

@@ -30,8 +30,10 @@ function Track() {
   const live = useQuery({
     queryKey: ["tracked", refs],
     enabled: refs.length > 0,
+    refetchInterval: 30000,
     queryFn: async () => {
-      const { data } = await supabase.from("issues").select("ref_code, status, title, updated_at, photo_url").in("ref_code", refs);
+      const { data, error } = await supabase.from("issues").select("ref_code, status, title, updated_at, photo_url").in("ref_code", refs);
+      if (error) throw error;
       return data ?? [];
     },
   });

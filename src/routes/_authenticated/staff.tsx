@@ -9,7 +9,7 @@ import { Logo } from "@/components/civic/Logo";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/staff")({
-  head: () => ({ meta: [{ title: "Staff workspace — CivicFix" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Staff workspace — CivicFix" }, { name: "description", content: "Review real civic reports, assignments, evidence and resolution history." }, { property: "og:title", content: "Staff workspace — CivicFix" }, { property: "og:description", content: "Authenticated civic issue resolution workspace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: StaffLayout,
 });
 
@@ -55,7 +55,7 @@ function StaffLayout() {
     { to: "/staff" as const, label: "Overview", icon: LayoutDashboard, exact: true },
     { to: "/staff/queue" as const, label: "Issue Queue", icon: ListTodo },
     { to: "/staff/map" as const, label: "Map & Hotspots", icon: Map },
-    ...(isAdmin ? [{ to: "/staff/directory" as const, label: "Authority Directory", icon: ListTodo }] : []),
+    ...(isAdmin ? [{ to: "/staff/directory" as const, label: "Routing Setup", icon: ListTodo }] : []),
     ...(isAdmin ? [{ to: "/staff/team" as const, label: "Team Management", icon: Users }] : []),
   ];
 

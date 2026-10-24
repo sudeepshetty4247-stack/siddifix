@@ -22,12 +22,13 @@ function Queue() {
   const q = useQuery({
     queryKey: ["staff-queue"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("issues").select("id, ref_code, title, category, severity, status, sla_due_at, created_at, landmark, department, support_count, photo_url,authority_id,assignment_state,escalated_at,duplicate_of").order("created_at", { ascending: false }).limit(1000);
+      const { data, error } = await supabase.from("issues").select("id, ref_code, title, category, severity, status, sla_due_at, created_at, landmark, department, support_count, photo_url,authority_id,assignment_state,escalated_at,duplicate_of,duplicate_candidate_id").order("created_at", { ascending: false }).limit(1000);
       if (error) throw error;
       return data;
     },
   });
   const rows = (q.data ?? []).filter((i) => {
+    if (view === 'duplicate candidates' && !i.duplicate_candidate_id) return false;
     if (view === "open" && !OPEN_STATUSES.includes(i.status as never)) return false;
     if (view === "overdue" && !isOverdue(i)) return false;
     if (view === 'unassigned' && (i.authority_id || !OPEN_STATUSES.includes(i.status as never))) return false;
@@ -51,7 +52,7 @@ function Queue() {
           <p className="text-muted-foreground">{rows.length} issue{rows.length === 1 ? "" : "s"}</p>
         </div>
         <div className="flex flex-wrap gap-1 rounded-xl bg-secondary p-1 text-sm">
-          {(['open','unassigned','assigned','rejected assignments','overdue','escalated','resolved','linked reports','all']).map((v) => (
+          {(['open','unassigned','assigned','rejected assignments','overdue','escalated','resolved','linked reports','duplicate candidates','all']).map((v) => (
             <button key={v} onClick={() => setView(v)} className={cn("rounded-lg px-4 py-1.5 font-medium capitalize", view === v ? "bg-card shadow-soft" : "text-muted-foreground")}>{v}</button>
           ))}
         </div>
