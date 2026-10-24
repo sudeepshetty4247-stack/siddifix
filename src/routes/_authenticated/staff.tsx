@@ -100,8 +100,8 @@ function StaffLayout() {
           <button onClick={() => setOpen(true)} aria-label="Menu">{open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</button>
           <Logo to="/staff" />
         </div>
+        <div className="border-b px-4 py-2"><BackButton fallback="/staff" /></div>
         <Outlet />
-        <div className="border-t px-4 py-3"><BackButton fallback="/staff" /></div>
       </div>
     </div>
   );
