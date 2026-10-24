@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { STATUSES, STATUS_META } from '@/lib/civic';
 import { toast } from 'sonner';
-export const Route = createFileRoute('/_authenticated/admin/responses')({ head: () => ({ meta: [{ title: 'Response configuration — Siddi' }, { name: 'description', content: 'Configure truthful staff response templates for authorized lifecycle states.' }, { property: 'og:title', content: 'Response configuration — Siddi' }, { property: 'og:description', content: 'Audited operational response configuration.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }), component: Responses });
+export const Route = createFileRoute('/_authenticated/admin/responses')({ head: () => ({ meta: [{ title: 'Response configuration — Siddi' }, { name: 'description', content: 'Configure truthful staff response templates for authorized lifecycle states.' }, { property: 'og:title', content: 'Response configuration — Siddi' }, { property: 'og:description', content: 'Audited operational response configuration.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, {name:'robots',content:'noindex'}] }), component: Responses });
 function Responses() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ['response-templates'], queryFn: async () => { const r = await supabase.from('staff_response_templates').select('*').order('name'); if (r.error) throw r.error; return r.data; }});

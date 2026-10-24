@@ -67,7 +67,7 @@ export async function buildReportWorkbook(r: ReportSnapshot,id:string) {
   const book=new ExcelJS.Workbook(); book.creator='Siddi'; book.created=new Date(r.generated_at);
   const chartSheets: {sheet:number;rows:number;title:string}[]=[];
   function sheet(name:string,headers:string[],rows:unknown[][]) {
-    const s=book.addWorksheet(name,{views:[{state:'frozen',ySplit:1}]}); s.addRow(headers); rows.forEach(row=>s.addRow(row));
+    const s=book.addWorksheet(name,{views:[{state:'frozen',ySplit:1}],pageSetup:{orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:'1:1'}}); s.addRow(headers); rows.forEach(row=>s.addRow(row));
     s.getRow(1).font={bold:true,color:{argb:REPORT_THEME.paper},name:'Arial'}; s.getRow(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:REPORT_THEME.ink}};
     s.columns.forEach((c,i)=>{c.width=i===0?46:24;}); s.autoFilter={from:'A1',to:{row:Math.max(1,s.rowCount),column:headers.length}};
     s.eachRow((row,index)=>{if(index>1)row.font={name:'Arial',size:11};row.alignment={vertical:'top',wrapText:true};row.eachCell(cell=>{if(typeof cell.value==='number')cell.numFmt='#,##0.0;(#,##0.0);"-"';if(cell.value instanceof Date)cell.numFmt='yyyy-mm-dd hh:mm';});});
