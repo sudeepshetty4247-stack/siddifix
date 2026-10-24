@@ -83,7 +83,7 @@ export const submitIssue = createServerFn({ method: "POST" })
 
     // Upload photo
     const [, mime, b64] = data.imageDataUrl.match(/^data:image\/(\w+);base64,(.+)$/)!;
-    const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const bin = Uint8Array.from(atob(b64!), (c) => c.charCodeAt(0));
     const ext = mime === "png" ? "png" : mime === "webp" ? "webp" : "jpg";
     const path = `reports/${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
     const up = await supabaseAdmin.storage.from("issue-photos").upload(path, bin, {

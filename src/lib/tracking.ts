@@ -1,5 +1,5 @@
 // Device-local list of reports this citizen submitted or follows (no login required).
-export type TrackedIssue = { ref: string; token?: string; title: string; savedAt: string };
+export type TrackedIssue = { ref: string; token?: string | undefined; title: string; savedAt: string };
 const KEY = "civicfix.tracked.v1";
 
 export function getTracked(): TrackedIssue[] {

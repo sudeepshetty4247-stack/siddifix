@@ -454,7 +454,7 @@ function Confirmation({ done, title, loc, needsClass }: { done: { ref: string; t
           </div>
         )}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link to="/issues/$ref" params={{ ref: done.ref }} hash={done.token ? `t=${done.token}` : undefined} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-ink px-5 text-sm font-semibold text-ink-foreground">View public issue <ArrowRight className="h-4 w-4" /></Link>
+          <Link to="/issues/$ref" params={{ ref: done.ref }} {...(done.token ? { hash: `t=${done.token}` } : {})} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-ink px-5 text-sm font-semibold text-ink-foreground">View public issue <ArrowRight className="h-4 w-4" /></Link>
           <a href="/report" className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-semibold hover:bg-secondary">Report another</a>
         </div>
       </div>
