@@ -97,5 +97,5 @@ The core report-to-resolution workflow, security model and the new duplicate and
 - escalate_overdue_issues: escalates past ETA or resolution target, and separately past acknowledgement target; SKIP LOCKED + per-case timestamps make reruns idempotent. Runs hourly on the existing managed schedule.
 - submitIssue rejects points outside every active ward (shared boundaries allowed for staff review); ref codes are always BLR-.
 - Demo mode: fixed Cubbon Park point, labelled banner, final submit simulated client-side — no rows written, public metrics unaffected.
-- Tests: 158 → 162 passing (service-target calculation, overdue rule, coverage acceptance). Browser: Vijayawada GPS shows coverage screen → demo → banner, neighbourhood panel and launcher; no page errors.
+- Tests: 154 → 158 passing (service-target calculation, overdue rule, coverage acceptance). Browser: Vijayawada GPS shows coverage screen → demo → banner, neighbourhood panel and launcher; no page errors.
 - Not done: portrait review centre; staff demo with isolated data (no separate test backend).
