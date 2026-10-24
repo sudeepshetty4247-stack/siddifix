@@ -32,8 +32,9 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     navigator.geolocation.getCurrentPosition(p => {
       const candidate: SelectedLocation = { lat: p.coords.latitude, lng: p.coords.longitude, label: 'Current location', method: 'device', accuracy: p.coords.accuracy };
       setLocating(false);
-      if (!suggestedReportLocation(candidate)) { setNotice(`Device location is too approximate (±${Math.round(p.coords.accuracy)} m). Choose your exact point on the map.`); ask(); return; }
+      // Keep even a rough fix so neighbourhood counts and the map can use it; report submission still requires a confirmed point.
       select(candidate);
+      if (!suggestedReportLocation(candidate)) setNotice(`Device location is approximate (±${Math.round(p.coords.accuracy)} m). Confirm the exact point on the map when you report.`);
     }, error => { setLocating(false); setNotice(error.code === 1 ? 'Location permission was denied. Choose a location manually, or allow location access in your browser.' : error.code === 3 ? 'Device location timed out. Try again or choose a map pin.' : 'Device location is unavailable. Choose a map pin instead.'); ask(); }, { timeout: 15000, maximumAge: 0, enableHighAccuracy: true });
   }
   useEffect(() => {
