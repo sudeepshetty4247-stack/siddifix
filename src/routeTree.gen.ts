@@ -28,6 +28,7 @@ import { Route as AuthenticatedStaffRoutingRouteImport } from './routes/_authent
 import { Route as AuthenticatedStaffTeamRouteImport } from './routes/_authenticated/staff.team'
 import { Route as CitizenIssuesRefRouteImport } from './routes/_citizen.issues.$ref'
 import { Route as AuthenticatedStaffIssuesIdRouteImport } from './routes/_authenticated/staff.issues.$id'
+import { Route as ApiPublicJobsEscalateOverdueRouteImport } from './routes/api/public/jobs/escalate-overdue'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -127,6 +128,12 @@ const AuthenticatedStaffIssuesIdRoute =
     path: '/issues/$id',
     getParentRoute: () => AuthenticatedStaffRoute,
   } as any)
+const ApiPublicJobsEscalateOverdueRoute =
+  ApiPublicJobsEscalateOverdueRouteImport.update({
+    id: '/api/public/jobs/escalate-overdue',
+    path: '/api/public/jobs/escalate-overdue',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof CitizenIndexRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/issues/$ref': typeof CitizenIssuesRefRoute
   '/staff/': typeof AuthenticatedStaffIndexRoute
   '/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
+  '/api/public/jobs/escalate-overdue': typeof ApiPublicJobsEscalateOverdueRoute
 }
 export interface FileRoutesByTo {
   '/': typeof CitizenIndexRoute
@@ -164,6 +172,7 @@ export interface FileRoutesByTo {
   '/issues/$ref': typeof CitizenIssuesRefRoute
   '/staff': typeof AuthenticatedStaffIndexRoute
   '/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
+  '/api/public/jobs/escalate-overdue': typeof ApiPublicJobsEscalateOverdueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -186,6 +195,7 @@ export interface FileRoutesById {
   '/_citizen/issues/$ref': typeof CitizenIssuesRefRoute
   '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
   '/_authenticated/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
+  '/api/public/jobs/escalate-overdue': typeof ApiPublicJobsEscalateOverdueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/issues/$ref'
     | '/staff/'
     | '/staff/issues/$id'
+    | '/api/public/jobs/escalate-overdue'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/issues/$ref'
     | '/staff'
     | '/staff/issues/$id'
+    | '/api/public/jobs/escalate-overdue'
   id:
     | '__root__'
     | '/_authenticated'
@@ -246,12 +258,14 @@ export interface FileRouteTypes {
     | '/_citizen/issues/$ref'
     | '/_authenticated/staff/'
     | '/_authenticated/staff/issues/$id'
+    | '/api/public/jobs/escalate-overdue'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   CitizenRoute: typeof CitizenRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicJobsEscalateOverdueRoute: typeof ApiPublicJobsEscalateOverdueRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -389,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffIssuesIdRouteImport
       parentRoute: typeof AuthenticatedStaffRoute
     }
+    '/api/public/jobs/escalate-overdue': {
+      id: '/api/public/jobs/escalate-overdue'
+      path: '/api/public/jobs/escalate-overdue'
+      fullPath: '/api/public/jobs/escalate-overdue'
+      preLoaderRoute: typeof ApiPublicJobsEscalateOverdueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -455,6 +476,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   CitizenRoute: CitizenRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicJobsEscalateOverdueRoute: ApiPublicJobsEscalateOverdueRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
