@@ -142,29 +142,41 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
       const teamId = (p.team_ids as string[] | null)?.[0];
       if (teamId) staff.push({ id: p.user_id as string, team_id: teamId, department: p.department as string, categories: (p.categories as string[]) ?? [], name: (p.display_name as string) ?? 'Demo staff' });
     }
-    let staffSeq = 0;
+    // Create missing demo staff in parallel batches (sequential creation is too slow for a full demo org).
+    const toCreate: { team: DemoTeam; n: number; role: string; email: string; password: string; name: string }[] = [];
     for (const team of teams) {
       const have = staff.filter(s => s.team_id === team.id).length;
       for (let n = have; n < data.staffPerDepartment; n++) {
-        staffSeq++;
+        const seq = teams.indexOf(team) * 25 + n + 1;
         const role = n === 0 ? 'supervisor' : 'field_worker';
-        const email = `demo-${data.datasetId}-${teams.indexOf(team) * 25 + n + 1}@${DEMO_EMAIL_DOMAIN}`;
-        const password = `Demo!${crypto.randomUUID().replaceAll('-', '').slice(0, 16)}`;
-        const name = `Demo ${role === 'supervisor' ? 'Supervisor' : 'Officer'} ${teams.indexOf(team) * 25 + n + 1}`;
-        const created = await supabaseAdmin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name: name, demo: true } });
+        toCreate.push({
+          team, n, role,
+          email: `demo-${data.datasetId}-${seq}@${DEMO_EMAIL_DOMAIN}`,
+          password: `Demo!${crypto.randomUUID().replaceAll('-', '').slice(0, 16)}`,
+          name: `Demo ${role === 'supervisor' ? 'Supervisor' : 'Officer'} ${seq}`,
+        });
+      }
+    }
+    for (let i = 0; i < toCreate.length; i += 10) {
+      const results = await Promise.all(toCreate.slice(i, i + 10).map(async c => {
+        const created = await supabaseAdmin.auth.admin.createUser({ email: c.email, password: c.password, email_confirm: true, user_metadata: { full_name: c.name, demo: true } });
         if (created.error || !created.data.user) {
-          if (created.error?.message?.includes('already been registered')) continue;
+          if (created.error?.message?.includes('already been registered')) return null;
           throw new Error(`Demo account creation failed: ${created.error?.message ?? 'unknown'}`);
         }
         const provision = await supabaseAdmin.rpc('admin_provision_account', {
-          _user: created.data.user.id, _role: role,
-          _profile: { fullName: name, designation: role === 'supervisor' ? 'Demo Supervisor' : 'Demo Field Officer', department: team.department, categories: team.categories, wards: [], teamIds: [team.id], corporations: [] },
+          _user: created.data.user.id, _role: c.role,
+          _profile: { fullName: c.name, designation: c.role === 'supervisor' ? 'Demo Supervisor' : 'Demo Field Officer', department: c.team.department, categories: c.team.categories, wards: [], teamIds: [c.team.id], corporations: [] },
           _actor: context.userId,
         });
         if (provision.error) { await supabaseAdmin.auth.admin.deleteUser(created.data.user.id); throw new Error(`Demo provisioning failed: ${provision.error.message}`); }
         await supabaseAdmin.from('staff_profiles').update({ demo_dataset_id: data.datasetId }).eq('user_id', created.data.user.id);
-        staff.push({ id: created.data.user.id, team_id: team.id, department: team.department, categories: team.categories, name });
-        credentials.push({ email, password, department: team.department, role });
+        return { c, id: created.data.user.id };
+      }));
+      for (const r of results) {
+        if (!r) continue;
+        staff.push({ id: r.id, team_id: r.c.team.id, department: r.c.team.department, categories: r.c.team.categories, name: r.c.name });
+        credentials.push({ email: r.c.email, password: r.c.password, department: r.c.team.department, role: r.c.role });
       }
     }
 
