@@ -14,7 +14,6 @@ import { Route as CitizenRouteImport } from './routes/_citizen'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as CitizenIndexRouteImport } from './routes/_citizen.index'
-import { Route as CitizenAuthoritiesRouteImport } from './routes/_citizen.authorities'
 import { Route as CitizenExploreRouteImport } from './routes/_citizen.explore'
 import { Route as CitizenMapRouteImport } from './routes/_citizen.map'
 import { Route as CitizenReportRouteImport } from './routes/_citizen.report'
@@ -48,11 +47,6 @@ const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
 const CitizenIndexRoute = CitizenIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => CitizenRoute,
-} as any)
-const CitizenAuthoritiesRoute = CitizenAuthoritiesRouteImport.update({
-  id: '/authorities',
-  path: '/authorities',
   getParentRoute: () => CitizenRoute,
 } as any)
 const CitizenExploreRoute = CitizenExploreRouteImport.update({
@@ -117,7 +111,6 @@ export interface FileRoutesByFullPath {
   '/': typeof CitizenIndexRoute
   '/auth': typeof AuthRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
-  '/authorities': typeof CitizenAuthoritiesRoute
   '/explore': typeof CitizenExploreRoute
   '/map': typeof CitizenMapRoute
   '/report': typeof CitizenReportRoute
@@ -133,7 +126,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof CitizenIndexRoute
   '/auth': typeof AuthRoute
-  '/authorities': typeof CitizenAuthoritiesRoute
   '/explore': typeof CitizenExploreRoute
   '/map': typeof CitizenMapRoute
   '/report': typeof CitizenReportRoute
@@ -152,7 +144,6 @@ export interface FileRoutesById {
   '/_citizen': typeof CitizenRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
-  '/_citizen/authorities': typeof CitizenAuthoritiesRoute
   '/_citizen/explore': typeof CitizenExploreRoute
   '/_citizen/map': typeof CitizenMapRoute
   '/_citizen/report': typeof CitizenReportRoute
@@ -172,7 +163,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/staff'
-    | '/authorities'
     | '/explore'
     | '/map'
     | '/report'
@@ -188,7 +178,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/authorities'
     | '/explore'
     | '/map'
     | '/report'
@@ -206,7 +195,6 @@ export interface FileRouteTypes {
     | '/_citizen'
     | '/auth'
     | '/_authenticated/staff'
-    | '/_citizen/authorities'
     | '/_citizen/explore'
     | '/_citizen/map'
     | '/_citizen/report'
@@ -262,13 +250,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof CitizenIndexRouteImport
-      parentRoute: typeof CitizenRoute
-    }
-    '/_citizen/authorities': {
-      id: '/_citizen/authorities'
-      path: '/authorities'
-      fullPath: '/authorities'
-      preLoaderRoute: typeof CitizenAuthoritiesRouteImport
       parentRoute: typeof CitizenRoute
     }
     '/_citizen/explore': {
@@ -384,7 +365,6 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface CitizenRouteChildren {
-  CitizenAuthoritiesRoute: typeof CitizenAuthoritiesRoute
   CitizenExploreRoute: typeof CitizenExploreRoute
   CitizenMapRoute: typeof CitizenMapRoute
   CitizenReportRoute: typeof CitizenReportRoute
@@ -394,7 +374,6 @@ interface CitizenRouteChildren {
 }
 
 const CitizenRouteChildren: CitizenRouteChildren = {
-  CitizenAuthoritiesRoute: CitizenAuthoritiesRoute,
   CitizenExploreRoute: CitizenExploreRoute,
   CitizenMapRoute: CitizenMapRoute,
   CitizenReportRoute: CitizenReportRoute,
