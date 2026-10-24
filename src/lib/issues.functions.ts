@@ -4,7 +4,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getDirectory } from "./directory.functions";
 import { resolveCivicRouting } from "./directory";
 import { CATEGORIES, SEVERITY_META, categoryById, isInIndia, isInBengaluru, type Severity } from "./civic";
-import { photoMetadataSchema } from './report-photo';
+import { reportInputSchema } from './report-input';
+import { validateImageContainer } from './image-format';
 import { TRACKING_TOKEN_RE, CASE_REF_RE } from './tracking-token';
 
 const MAX_IMAGE_CHARS = 7_500_000; // ~5.5MB binary
@@ -55,25 +56,7 @@ export const analyzeIssue = createServerFn({ method: "POST" })
   });
 
 // ---------- Submit (public, idempotent) ----------
-const submitSchema = z.object({
-  idempotencyKey: z.string().uuid(),
-  imageDataUrl: z.string().max(MAX_IMAGE_CHARS).regex(dataUrlRe),
-  description: z.string().max(1000).nullable().optional(),
-  title: z.string().trim().min(3).max(120),
-  summary: z.string().max(600).nullable().optional(),
-  category: z.enum(CATEGORIES.map((c) => c.id) as [string, ...string[]]),
-  subcategory: z.string().max(80).nullable().optional(),
-  severity: z.enum(["low", "medium", "high", "critical"]),
-  aiConfidence: z.number().min(0).max(1).nullable().optional(),
-  safetyWarning: z.string().max(300).nullable().optional(),
-  needsClassification: z.boolean(),
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  landmark: z.string().max(200).nullable().optional(),
-  duplicateOf: z.string().uuid().nullable().optional(),
-  originalPath:z.string().max(300).optional(),
-  photoMetadata:photoMetadataSchema.optional(),
-});
+const submitSchema = reportInputSchema;
 
 export const submitIssue = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof submitSchema>) => submitSchema.parse(input))
@@ -97,8 +80,8 @@ export const submitIssue = createServerFn({ method: "POST" })
       const original=await supabaseAdmin.storage.from('issue-photos').download(data.originalPath);
       if(original.error||!original.data||original.data.size>25*1024*1024)throw new Error('Original photo could not be verified.');
       const bytes=new Uint8Array(await original.data.arrayBuffer());
-      const valid=bytes[0]===255&&bytes[1]===216 || bytes[0]===137&&bytes[1]===80 || String.fromCharCode(...bytes.slice(0,4))==='RIFF';
-      if(!valid)throw new Error('Original photo format is invalid.');
+      const extension=data.originalPath.split('.').at(-1) ?? '';
+      validateImageContainer(bytes,extension);
       originalHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
     }
 
@@ -108,8 +91,7 @@ export const submitIssue = createServerFn({ method: "POST" })
     if (!mime || !b64) throw new Error('Invalid image.');
     const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
     if (bin.length > 5500000) throw new Error('The processed image is too large.');
-    const validImage = mime === 'png' ? bin[0] === 137 && bin[1] === 80 && bin[2] === 78 && bin[3] === 71 : mime === 'webp' ? String.fromCharCode(...bin.slice(0,4)) === 'RIFF' && String.fromCharCode(...bin.slice(8,12)) === 'WEBP' : bin[0] === 255 && bin[1] === 216 && bin[2] === 255;
-    if (!validImage) throw new Error('The image format is invalid.');
+    validateImageContainer(bin,mime);
     const ext = mime === "png" ? "png" : mime === "webp" ? "webp" : "jpg";
     const path = `reports/${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
     const up = await supabaseAdmin.storage.from("issue-photos").upload(path, bin, {
