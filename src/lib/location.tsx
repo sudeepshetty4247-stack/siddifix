@@ -37,7 +37,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       select(candidate);
       if (!suggestedReportLocation(candidate)) setNotice(`Device location is approximate (±${Math.round(p.coords.accuracy)} m). Confirm the exact point on the map when you report.`);
       // Friendly note when the device is outside Bengaluru's published wards.
-      supabase.rpc('ward_at_point', { _lat: candidate.lat, _lng: candidate.lng }).then(r => {
+      void Promise.resolve(supabase.rpc('ward_at_point', { _lat: candidate.lat, _lng: candidate.lng })).then(r => {
         if (!r.error && Array.isArray(r.data) && r.data.length === 0) setNotice("Looks like you're outside Bengaluru — we're not in your city yet, but we'd love to reach you soon. You can still explore Bengaluru on the map.");
       }).catch(() => { /* coverage note is optional */ });
     }, error => { setLocating(false); setNotice(error.code === 1 ? 'Location permission was denied. Choose a location manually, or allow location access in your browser.' : error.code === 3 ? 'Device location timed out. Try again or choose a map pin.' : 'Device location is unavailable. Choose a map pin instead.'); ask(); }, { timeout: 15000, maximumAge: 0, enableHighAccuracy: true });
