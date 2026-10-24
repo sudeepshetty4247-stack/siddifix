@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as CitizenRouteImport } from './routes/_citizen'
 import { Route as CitizenIndexRouteImport } from './routes/_citizen.index'
+import { Route as CitizenReportRouteImport } from './routes/_citizen.report'
 
 const CitizenRoute = CitizenRouteImport.update({
   id: '/_citizen',
@@ -21,24 +22,32 @@ const CitizenIndexRoute = CitizenIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CitizenRoute,
 } as any)
+const CitizenReportRoute = CitizenReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => CitizenRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof CitizenIndexRoute
+  '/report': typeof CitizenReportRoute
 }
 export interface FileRoutesByTo {
+  '/report': typeof CitizenReportRoute
   '/': typeof CitizenIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_citizen': typeof CitizenRouteWithChildren
+  '/_citizen/report': typeof CitizenReportRoute
   '/_citizen/': typeof CitizenIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/report'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/_citizen' | '/_citizen/'
+  to: '/report' | '/'
+  id: '__root__' | '/_citizen' | '/_citizen/report' | '/_citizen/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -61,14 +70,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CitizenIndexRouteImport
       parentRoute: typeof CitizenRoute
     }
+    '/_citizen/report': {
+      id: '/_citizen/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof CitizenReportRouteImport
+      parentRoute: typeof CitizenRoute
+    }
   }
 }
 
 interface CitizenRouteChildren {
+  CitizenReportRoute: typeof CitizenReportRoute
   CitizenIndexRoute: typeof CitizenIndexRoute
 }
 
 const CitizenRouteChildren: CitizenRouteChildren = {
+  CitizenReportRoute: CitizenReportRoute,
   CitizenIndexRoute: CitizenIndexRoute,
 }
 
