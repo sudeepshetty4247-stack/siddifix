@@ -1,0 +1,3 @@
+import { createFileRoute } from '@tanstack/react-router';
+import { PortalLogin } from '@/components/portals/PortalLogin';
+export const Route=createFileRoute('/admin-login')({head:()=>({meta:[{title:'Admin sign in — Siddi'},{name:'description',content:'Secure access to the Siddi Admin Control Centre.'},{property:'og:title',content:'Admin sign in — Siddi'},{property:'og:description',content:'Approved Siddi administrators and application owner.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'},{name:'robots',content:'noindex'}]}),component:()=> <PortalLogin portal="admin"/>});

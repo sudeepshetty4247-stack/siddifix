@@ -1,0 +1,3 @@
+import { createFileRoute } from '@tanstack/react-router';
+import { PortalLogin } from '@/components/portals/PortalLogin';
+export const Route=createFileRoute('/staff-login')({head:()=>({meta:[{title:'Government staff sign in — Siddi'},{name:'description',content:'Secure sign-in for authorized department personnel.'},{property:'og:title',content:'Government staff sign in — Siddi'},{property:'og:description',content:'Department-scoped Siddi operational access.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'},{name:'robots',content:'noindex'}]}),component:()=> <PortalLogin portal="staff"/>});
