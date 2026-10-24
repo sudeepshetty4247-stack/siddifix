@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useRoles } from './staff';
 import { PeopleDirectoryEditor } from '@/components/civic/PeopleDirectoryEditor';
+import { DirectoryAcquisition } from '@/components/civic/DirectoryAcquisition';
 
 export const Route = createFileRoute('/_authenticated/admin/directory')({
   head: () => ({ meta: [{ title: 'Authority directory management — Siddi' }, { name: 'description', content: 'Manage verified ward, department and representative records.' }, { property: 'og:title', content: 'Authority directory management — Siddi' }, { property: 'og:description', content: 'Siddi authority directory management.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: 'robots', content: 'noindex' }] }),
@@ -73,7 +74,7 @@ function DirectoryPage() {
     {query.isError && <p role="alert">Directory could not be loaded.</p>}
     <Tabs defaultValue="wards">
       <TabsList><TabsTrigger value="wards">Wards</TabsTrigger><TabsTrigger value="routes">Departments</TabsTrigger><TabsTrigger value="people">People</TabsTrigger><TabsTrigger value="validation">Validation</TabsTrigger><TabsTrigger value="audit">Change history</TabsTrigger></TabsList>
-      <TabsContent value="people"><PeopleDirectoryEditor/></TabsContent>
+      <TabsContent value="people"><DirectoryAcquisition /><PeopleDirectoryEditor/></TabsContent>
       <TabsContent value="wards" className="space-y-4">
         {wards.length < 369 && <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4"><p className="text-sm">Load the 369 wards from the official GBA delimitation file (notified 19 Nov 2025). Only missing wards are added. Every record starts as “verification required”.</p><Button disabled={busy} onClick={importOfficial}><Download className="h-4 w-4" />{busy ? 'Importing…' : 'Import official wards'}</Button></div>}
         <div className="flex flex-wrap gap-2"><div className="relative min-w-60 flex-1"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><Input className="pl-9" placeholder="Search ward, corporation, constituency" value={search} onChange={e => setSearch(e.target.value)} /></div>
