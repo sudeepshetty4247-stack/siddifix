@@ -35,7 +35,7 @@ describe('Department routing connects case events to scoped recipient notificati
       INSERT INTO staff_profiles VALUES('${worker}',true),('${outsider}',true);`);
     await db.exec(sqlFunction('0031_recipient_notifications','emit_case_notifications'));
     await db.exec(sqlFunction('0031_recipient_notifications','record_issue_notification'));
-    await db.exec(sqlFunction('0034_atomic_evidence_retry_and_safe_routing','route_issue_to_team'));
+    await db.exec(sqlFunction('0037_route_unknown_ownership_to_configured_team','route_issue_to_team'));
     await db.exec('CREATE TRIGGER notify AFTER INSERT ON issue_events FOR EACH ROW EXECUTE FUNCTION record_issue_notification();');
   },30000);
   afterAll(async()=>{await db.exec('TRUNCATE issue_notifications,issue_events,issues,civic_teams,staff_profiles');await db.close();});

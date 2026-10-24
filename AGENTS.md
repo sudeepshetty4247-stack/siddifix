@@ -36,3 +36,4 @@
 - Visit-only assistant streams validated text history/public aggregates without private access or writes; access pauses persist separately from classification.
 
 - Recipient notifications reuse issue_notifications with guarded ownership/current-scope RPCs, event keys and 15-second recovery-safe polling; notification_reads stores read/archive state. Public/internal messages are separate event visibility, and reminder timing is explicitly admin-configured.
+- Unresolved report ownership is null, not a routing department; the legacy review label is treated as unknown so unique category/ward team routing remains possible without inventing ownership.
