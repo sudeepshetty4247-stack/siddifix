@@ -81,16 +81,3 @@ export const setStaffSuspended = createServerFn({ method: "POST" })
       .eq("assigned_to", data.userId).not("status", "in", "(resolved,closed,rejected)");
     return { ok: true, openCases: open.count ?? 0 };
   });
-
-export const sendStaffPasswordReset = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { email: string; redirectTo: string }) =>
-    z.object({ email: z.string().email(), redirectTo: z.string().url() }).parse(input),
-  )
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const res = await supabaseAdmin.auth.resetPasswordForEmail(data.email, { redirectTo: data.redirectTo });
-    if (res.error) throw new Error(res.error.message);
-    return { ok: true };
-  });
