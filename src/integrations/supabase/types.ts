@@ -805,6 +805,50 @@ export type Database = {
           },
         ]
       }
+      issue_feedback: {
+        Row: {
+          comment: string | null
+          id: string
+          issue_id: string
+          rating: number
+          resolution: string
+          response_time: string
+          status_at_submission: Database["public"]["Enums"]["issue_status"]
+          submitted_at: string
+          survey_version: number
+        }
+        Insert: {
+          comment?: string | null
+          id?: string
+          issue_id: string
+          rating: number
+          resolution: string
+          response_time: string
+          status_at_submission: Database["public"]["Enums"]["issue_status"]
+          submitted_at?: string
+          survey_version?: number
+        }
+        Update: {
+          comment?: string | null
+          id?: string
+          issue_id?: string
+          rating?: number
+          resolution?: string
+          response_time?: string
+          status_at_submission?: Database["public"]["Enums"]["issue_status"]
+          submitted_at?: string
+          survey_version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_feedback_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_notifications: {
         Row: {
           actor_id: string | null
@@ -1325,6 +1369,7 @@ export type Database = {
         Args: { _grant: boolean; _role: string; _user: string }
         Returns: undefined
       }
+      admin_feedback_summary: { Args: never; Returns: Json }
       admin_provision_account: {
         Args: { _actor: string; _profile: Json; _role: string; _user: string }
         Returns: undefined
@@ -1423,6 +1468,21 @@ export type Database = {
       citizen_change_issue: {
         Args: { _action: string; _note: string; _ref: string; _token: string }
         Returns: string
+      }
+      citizen_feedback_state: {
+        Args: { _ref: string; _token: string }
+        Returns: Json
+      }
+      citizen_submit_feedback: {
+        Args: {
+          _comment: string
+          _rating: number
+          _ref: string
+          _resolution: string
+          _response_time: string
+          _token: string
+        }
+        Returns: Json
       }
       civic_case_metrics: { Args: never; Returns: Json }
       claim_owner_invitation: { Args: never; Returns: string }
