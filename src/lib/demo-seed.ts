@@ -70,8 +70,10 @@ export function buildDemoDataset(args: {
   datasetId: string; count: number; now?: number;
   wards: DemoWard[]; teams: DemoTeam[]; staff: DemoStaff[]; targets: DemoTarget[];
   categories: { id: string; subs: string[] }[];
+  photos?: string[];
 }): DemoDataset {
   const { datasetId, count, wards, teams, staff, targets, categories } = args;
+  const photos = args.photos ?? [];
   const now = args.now ?? Date.now();
   const rnd = mulberry32(datasetSeed(datasetId));
   const issues: DemoIssue[] = [];
@@ -131,6 +133,7 @@ export function buildDemoDataset(args: {
 
     issues.push({
       id: crypto.randomUUID(),
+      photo_url: photos.length && rnd() < 0.6 ? pick(rnd, photos) : null,
       ref_code: ref, idempotency_key: ref, title: `${sub} near ${ward.name}`, summary: `${sub} reported in ${ward.name}.`,
       description: `Synthetic demonstration report (${datasetId}). ${sub} observed near ${ward.name}; generated for workflow testing only.`,
       category: cat.id, subcategory: sub, severity, status, lat, lng,
