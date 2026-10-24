@@ -35,7 +35,9 @@ function StaffLayout() {
 
   const r = roles.data?.roles ?? [];
   const isAdmin = r.includes("admin");
-  if (!isAdmin && !r.includes("staff")) {
+  const r2 = r as string[];
+  const roleLabel = isAdmin ? "Administrator" : r2.includes("supervisor") || r2.includes("staff") ? "Supervisor" : "Field team";
+  if (!isAdmin && !r2.some(x => ["staff", "supervisor", "field_worker"].includes(x))) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background bg-civic-grid p-6">
         <div className="max-w-md rounded-3xl border bg-card p-8 text-center shadow-lift">
@@ -74,7 +76,7 @@ function StaffLayout() {
         <Link to="/" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"><ExternalLink className="h-4 w-4" /> Citizen site</Link>
         <div className="rounded-xl border border-sidebar-border p-3">
           <p className="truncate text-sm font-medium text-sidebar-accent-foreground">{roles.data?.email}</p>
-          <p className="text-xs capitalize text-sidebar-primary">{isAdmin ? "Administrator" : "Staff"}</p>
+          <p className="text-xs capitalize text-sidebar-primary">{roleLabel}</p>
           <button onClick={signOut} className="mt-2 flex items-center gap-2 text-xs text-sidebar-foreground hover:text-sidebar-accent-foreground"><LogOut className="h-3.5 w-3.5" /> Sign out</button>
         </div>
       </div>

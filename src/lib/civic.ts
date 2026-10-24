@@ -22,7 +22,10 @@ export const STATUSES = [
   "submitted",
   "under_review",
   "assigned",
+  "accepted",
+  "inspection_scheduled",
   "in_progress",
+  "awaiting_verification",
   "resolved",
   "rejected",
   "reopened",
@@ -35,14 +38,33 @@ export const STATUS_META: Record<IssueStatus, { label: string; tone: "neutral" |
   submitted: { label: "Submitted", tone: "neutral" },
   under_review: { label: "Under review", tone: "info" },
   assigned: { label: "Assigned", tone: "info" },
+  accepted: { label: "Acknowledged", tone: "info" },
+  inspection_scheduled: { label: "Inspection scheduled", tone: "info" },
   in_progress: { label: "Work in progress", tone: "progress" },
+  awaiting_verification: { label: "Awaiting verification", tone: "progress" },
   resolved: { label: "Resolved", tone: "success" },
   rejected: { label: "Rejected", tone: "danger" },
   reopened: { label: "Reopened", tone: "warning" },
   closed: { label: "Closed", tone: "neutral" },
 };
 
-export const OPEN_STATUSES: IssueStatus[] = ["needs_classification", "submitted", "under_review", "assigned", "in_progress", "reopened"];
+export const OPEN_STATUSES: IssueStatus[] = ["needs_classification", "submitted", "under_review", "assigned", "accepted", "inspection_scheduled", "in_progress", "awaiting_verification", "reopened"];
+
+/** Citizen-facing journey shown as a progress line. */
+export const JOURNEY: { key: string; label: string; statuses: IssueStatus[] }[] = [
+  { key: "reported", label: "Reported", statuses: ["needs_classification", "submitted", "under_review", "reopened"] },
+  { key: "assigned", label: "Assigned", statuses: ["assigned"] },
+  { key: "acknowledged", label: "Acknowledged", statuses: ["accepted", "inspection_scheduled"] },
+  { key: "work", label: "Work underway", statuses: ["in_progress", "awaiting_verification"] },
+  { key: "fixed", label: "Fixed", statuses: ["resolved", "closed"] },
+];
+export function journeyStep(status: string) {
+  const i = JOURNEY.findIndex(j => j.statuses.includes(status as IssueStatus));
+  return i < 0 ? 0 : i;
+}
+/** Statuses a field worker can move a case to; the rest need a supervisor. */
+export const FIELD_TARGETS: IssueStatus[] = ["accepted", "inspection_scheduled", "in_progress", "awaiting_verification", "resolved"];
+export const ACKNOWLEDGEABLE: IssueStatus[] = ["submitted", "under_review", "assigned", "reopened"];
 
 export const SEVERITIES = ["low", "medium", "high", "critical"] as const;
 export type Severity = (typeof SEVERITIES)[number];

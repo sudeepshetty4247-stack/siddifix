@@ -190,7 +190,9 @@ export const listTeam = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const users = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
     const roles = await supabaseAdmin.from("user_roles").select("user_id, role");
+    const profiles = await supabaseAdmin.from("staff_profiles").select("*");
     return (users.data?.users ?? []).map((u) => ({
+      profile: (profiles.data ?? []).find((p) => p.user_id === u.id) ?? null,
       id: u.id,
       email: u.email ?? "",
       createdAt: u.created_at,
@@ -199,10 +201,12 @@ export const listTeam = createServerFn({ method: "GET" })
     }));
   });
 
+export type TeamRole = "admin" | "staff" | "supervisor" | "field_worker";
+
 export const setRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { userId: string; role: "admin" | "staff"; grant: boolean }) =>
-    z.object({ userId: z.string().uuid(), role: z.enum(["admin", "staff"]), grant: z.boolean() }).parse(input),
+  .inputValidator((input: { userId: string; role: TeamRole; grant: boolean }) =>
+    z.object({ userId: z.string().uuid(), role: z.enum(["admin", "staff", "supervisor", "field_worker"]), grant: z.boolean() }).parse(input),
   )
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });

@@ -39,3 +39,5 @@
 - Ward and routing edge-case fixtures belong in automated tests only, not citizen-facing test controls; this preserves a real citizen experience and genuine case totals.
 
 - Ward MLA/MP come from Election Commission results linked through each ward's official assembly constituency number in civic_wards; corporators are shown as not in office until council elections are held.- Civic Map and the report camera use a live device position (watchPosition) while open: blue dot with accuracy circle, own-ward highlight and 'you are here' ward card; fixes over 100 m are shown as approximate, never auto-confirmed. Automatic location attempts never open dialogs.
+- Staff roles are field_worker (scoped by staff_profiles categories/wards), supervisor (legacy staff counts as supervisor) and admin; acknowledgement, ETA and status RPCs re-check role and scope in the database, never only in the UI.
+- Acknowledgements store message, inspection time and ETA on the issue with an audited event; citizen tracking reads them through public_case_rows, and issue_notifications records only what actually happened (in-app posted, external channel not_configured).

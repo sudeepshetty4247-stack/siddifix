@@ -620,6 +620,47 @@ export type Database = {
           },
         ]
       }
+      issue_notifications: {
+        Row: {
+          attempts: number
+          audience: string
+          channel: string
+          created_at: string
+          detail: string
+          id: string
+          issue_id: string
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          audience: string
+          channel: string
+          created_at?: string
+          detail?: string
+          id?: string
+          issue_id: string
+          status: string
+        }
+        Update: {
+          attempts?: number
+          audience?: string
+          channel?: string
+          created_at?: string
+          detail?: string
+          id?: string
+          issue_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_notifications_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_ownership_reviews: {
         Row: {
           created_at: string
@@ -724,6 +765,9 @@ export type Database = {
       }
       issues: {
         Row: {
+          ack_message: string | null
+          acknowledged_at: string | null
+          acknowledged_by: string | null
           ai_confidence: number | null
           assigned_to: string | null
           assignment_state: string
@@ -735,8 +779,10 @@ export type Database = {
           duplicate_candidate_id: string | null
           duplicate_of: string | null
           escalated_at: string | null
+          eta_at: string | null
           id: string
           idempotency_key: string | null
+          inspection_at: string | null
           landmark: string | null
           lat: number
           lng: number
@@ -755,6 +801,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ack_message?: string | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
           ai_confidence?: number | null
           assigned_to?: string | null
           assignment_state?: string
@@ -766,8 +815,10 @@ export type Database = {
           duplicate_candidate_id?: string | null
           duplicate_of?: string | null
           escalated_at?: string | null
+          eta_at?: string | null
           id?: string
           idempotency_key?: string | null
+          inspection_at?: string | null
           landmark?: string | null
           lat: number
           lng: number
@@ -786,6 +837,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ack_message?: string | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
           ai_confidence?: number | null
           assigned_to?: string | null
           assignment_state?: string
@@ -797,8 +851,10 @@ export type Database = {
           duplicate_candidate_id?: string | null
           duplicate_of?: string | null
           escalated_at?: string | null
+          eta_at?: string | null
           id?: string
           idempotency_key?: string | null
+          inspection_at?: string | null
           landmark?: string | null
           lat?: number
           lng?: number
@@ -840,6 +896,36 @@ export type Database = {
           },
         ]
       }
+      staff_profiles: {
+        Row: {
+          categories: string[]
+          department: string
+          designation: string
+          display_name: string
+          updated_at: string
+          user_id: string
+          wards: string[]
+        }
+        Insert: {
+          categories?: string[]
+          department?: string
+          designation?: string
+          display_name?: string
+          updated_at?: string
+          user_id: string
+          wards?: string[]
+        }
+        Update: {
+          categories?: string[]
+          department?: string
+          designation?: string
+          display_name?: string
+          updated_at?: string
+          user_id?: string
+          wards?: string[]
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -866,6 +952,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_set_staff_profile: {
+        Args: {
+          _categories: string[]
+          _department: string
+          _designation: string
+          _name: string
+          _user: string
+          _wards: string[]
+        }
+        Returns: undefined
+      }
       assign_civic_issue: {
         Args: {
           _action: string
@@ -896,6 +993,7 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_supervisor: { Args: { _user_id: string }; Returns: boolean }
       nearby_case_summary: {
         Args: { _lat: number; _lng: number; _radius_m?: number }
         Returns: Json
@@ -928,6 +1026,21 @@ export type Database = {
         }
         Returns: undefined
       }
+      staff_acknowledge_issue: {
+        Args: {
+          _eta: string
+          _expected: Database["public"]["Enums"]["issue_status"]
+          _id: string
+          _inspection: string
+          _message: string
+        }
+        Returns: undefined
+      }
+      staff_actor_label: { Args: { _user_id: string }; Returns: string }
+      staff_can_work: {
+        Args: { _issue: string; _user_id: string }
+        Returns: boolean
+      }
       staff_change_issue: {
         Args: {
           _expected: Database["public"]["Enums"]["issue_status"]
@@ -950,6 +1063,10 @@ export type Database = {
         Args: { _id: string; _kind: string; _note: string; _path: string }
         Returns: string
       }
+      staff_update_eta: {
+        Args: { _eta: string; _id: string; _reason: string }
+        Returns: undefined
+      }
       verify_reporter_token: {
         Args: { _ref: string; _token: string }
         Returns: boolean
@@ -966,7 +1083,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "staff"
+      app_role: "admin" | "staff" | "supervisor" | "field_worker"
       issue_severity: "low" | "medium" | "high" | "critical"
       issue_status:
         | "needs_classification"
@@ -978,6 +1095,9 @@ export type Database = {
         | "rejected"
         | "reopened"
         | "closed"
+        | "accepted"
+        | "inspection_scheduled"
+        | "awaiting_verification"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1105,7 +1225,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "staff"],
+      app_role: ["admin", "staff", "supervisor", "field_worker"],
       issue_severity: ["low", "medium", "high", "critical"],
       issue_status: [
         "needs_classification",
@@ -1117,6 +1237,9 @@ export const Constants = {
         "rejected",
         "reopened",
         "closed",
+        "accepted",
+        "inspection_scheduled",
+        "awaiting_verification",
       ],
     },
   },

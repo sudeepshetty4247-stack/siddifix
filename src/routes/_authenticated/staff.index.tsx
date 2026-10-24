@@ -15,7 +15,7 @@ function Overview() {
   const q = useQuery({
     queryKey: ["staff-all"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("issues").select("id, ref_code, title, category, severity, status, sla_due_at, created_at, resolved_at").order("created_at", { ascending: false }).limit(1000);
+      const { data, error } = await supabase.from("issues").select("id, ref_code, title, category, severity, status, sla_due_at, created_at, resolved_at, acknowledged_at, eta_at, duplicate_of").order("created_at", { ascending: false }).limit(1000);
       if (error) throw error;
       return data;
     },
@@ -25,14 +25,15 @@ function Overview() {
   const overdue = open.filter(isOverdue);
   const resolved = all.filter((i) => i.resolved_at);
   const avgHrs = resolved.length ? Math.round(resolved.reduce((s, i) => s + (i.resolved_at ? new Date(i.resolved_at).getTime() - new Date(i.created_at).getTime() : 0), 0) / resolved.length / 3600_000) : null;
-  const unclassified = open.filter((i) => i.status === "needs_classification" || i.status === "submitted");
+  const unclassified = open.filter((i) => !i.duplicate_of && !i.acknowledged_at);
+  const etaLate = open.filter((i) => i.eta_at && new Date(i.eta_at).getTime() < Date.now());
   const byCat = CATEGORIES.map((c) => ({ ...c, n: open.filter((i) => i.category === c.id).length })).filter((c) => c.n > 0).sort((a, b) => b.n - a.n);
   const maxCat = Math.max(1, ...byCat.map((c) => c.n));
 
   const stats = [
     { label: "Open issues", value: open.length, icon: Inbox, tone: "text-primary bg-primary-soft" },
-    { label: "Need triage", value: unclassified.length, icon: AlertTriangle, tone: "text-warning-foreground bg-warning-soft" },
-    { label: "Overdue", value: overdue.length, icon: Timer, tone: "text-destructive bg-destructive-soft" },
+    { label: "Awaiting acknowledgement", value: unclassified.length, icon: AlertTriangle, tone: "text-warning-foreground bg-warning-soft" },
+    { label: "Overdue (target or promised date)", value: new Set([...overdue, ...etaLate].map(i => i.id)).size, icon: Timer, tone: "text-destructive bg-destructive-soft" },
     { label: "Avg. resolution", value: avgHrs === null ? "—" : avgHrs < 48 ? `${avgHrs}h` : `${Math.round(avgHrs / 24)}d`, icon: CheckCircle2, tone: "text-success bg-success-soft" },
   ];
 
@@ -56,7 +57,7 @@ function Overview() {
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <div className="rounded-2xl border bg-card shadow-soft">
           <div className="flex items-center justify-between border-b p-5">
-            <h2 className="font-semibold">Triage inbox</h2>
+            <h2 className="font-semibold">New — needs acknowledgement</h2>
             <Link to="/staff/queue" className="flex items-center gap-1 text-sm font-semibold text-primary">Open queue <ArrowRight className="h-4 w-4" /></Link>
           </div>
           {unclassified.length === 0 ? (

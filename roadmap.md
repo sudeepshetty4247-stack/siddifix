@@ -55,3 +55,6 @@
 - [ ] Area notifications (browser push)
 - [ ] Analytics + civic memory and audit log page
 - [x] Live location on Civic Map and report camera (blue dot, own ward, active counts)
+- [x] Staff acknowledgement + promised date shown on citizen tracking page; new stages (Acknowledged, Inspection scheduled, Awaiting verification); field/supervisor/admin roles with category/ward scope; honest notification log.
+- [ ] Signed-in staff end-to-end run — blocked: no staff/admin account exists yet.
+- [ ] External authority notification (email/grievance API) — blocked: no authorized channel or credentials.

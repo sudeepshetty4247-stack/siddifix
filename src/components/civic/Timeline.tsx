@@ -24,6 +24,8 @@ const kindLabel: Record<string, string> = {
   evidence_completion: "Completion evidence recorded",
   evidence_external_action: "External action evidence recorded",
   classification: "Classification updated",
+  acknowledged: "Staff acknowledged the report",
+  eta_changed: "Completion estimate updated",
 };
 
 export function Timeline({ events }: { events: EventRow[] }) {
