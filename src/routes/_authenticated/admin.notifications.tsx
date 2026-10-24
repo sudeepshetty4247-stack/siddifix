@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { useRoles } from "./staff";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, CheckCircle2, CircleOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { timeAgo } from "@/lib/civic";
@@ -22,9 +24,14 @@ function statusBadge(s: string) {
 }
 
 function NotificationsPage() {
+  const access = useRoles();
+  const qc = useQueryClient();
+  const reads = useQuery({queryKey:["notification-reads"],queryFn:async()=>{const r=await supabase.from("notification_reads").select("notification_id");if(r.error)throw r.error;return new Set((r.data??[]).map(n=>n.notification_id));}});
+  async function markRead(id:string){if(!access.data?.userId)return;const r=await supabase.from("notification_reads").insert({notification_id:id,user_id:access.data.userId});if(!r.error)await qc.invalidateQueries({queryKey:["notification-reads"]});}
+
   const q = useQuery({
     queryKey: ["issue-notifications"],
-    refetchInterval: 30000,
+    refetchInterval: 15000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("issue_notifications")
@@ -61,6 +68,7 @@ function NotificationsPage() {
                   · {n.channel} · to {n.audience} · {timeAgo(n.created_at)}{n.attempts > 1 ? ` · ${n.attempts} attempts` : ""}
                 </p>
               </div>
+              {!reads.data?.has(n.id) && <Button variant="outline" size="sm" onClick={()=>markRead(n.id)}>Mark read</Button>}
               <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${b.cls}`}><b.icon className="h-3.5 w-3.5" />{b.label}</span>
             </div>
           );

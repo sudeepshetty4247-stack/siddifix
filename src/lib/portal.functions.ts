@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { z } from 'zod';
+import type { Json } from '@/integrations/supabase/types';
 
 export const getPortalAccess = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const [active, roles, permissions, profile] = await Promise.all([
@@ -35,12 +36,12 @@ export const setAdminDelegation = createServerFn({ method: 'POST' }).middleware(
 export const portalMetrics = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
   const r = await context.supabase.rpc('civic_case_metrics');
   if (r.error) throw new Error('Metrics unavailable.');
-  const metrics = r.data as Record<string, unknown>;
+  const metrics = r.data as Record<string, Json | undefined>;
   const admin = await context.supabase.rpc('has_role', { _user_id: context.userId, _role: 'admin' });
   if (!admin.data) return metrics;
   const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
   const [profiles, roles] = await Promise.all([supabaseAdmin.from('staff_profiles').select('user_id,active'), supabaseAdmin.from('user_roles').select('user_id,role')]);
   if (profiles.error || roles.error) throw new Error('Account totals unavailable.');
   const ids = new Set((roles.data ?? []).filter(r => r.role !== 'admin').map(r => r.user_id));
-  return { ...metrics, active_staff: (profiles.data ?? []).filter(p => ids.has(p.user_id) && p.active).length, suspended_staff: (profiles.data ?? []).filter(p => ids.has(p.user_id) && !p.active).length } as Record<string, unknown>;
+  return { ...metrics, active_staff: (profiles.data ?? []).filter(p => ids.has(p.user_id) && p.active).length, suspended_staff: (profiles.data ?? []).filter(p => ids.has(p.user_id) && !p.active).length } as Record<string, Json | undefined>;
 });
