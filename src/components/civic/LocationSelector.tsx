@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { LazyMap } from './LazyMap';
 
-export function LocationSelector() {
+export function LocationSelector({ hideTrigger = false }: { hideTrigger?: boolean }) {
   const { location, select, open, setOpen, locating, detect, notice, recent } = useLocation();
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [label, setLabel] = useState('');
