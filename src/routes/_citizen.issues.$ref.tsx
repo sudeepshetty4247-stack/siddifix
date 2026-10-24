@@ -99,6 +99,10 @@ function IssuePage() {
   const i = issue.data;
   const cat = categoryById(i.category);
   const overdue = isOverdue(i);
+  const ageDays = Math.max(0, Math.floor((Date.now() - new Date(i.created_at).getTime()) / 86400000));
+  const unresolved = !["resolved", "closed"].includes(i.status);
+  const severityLabel = SEVERITY_META[i.severity as Severity].label.toUpperCase();
+  const statusLabel = unresolved ? (overdue ? "OVERDUE" : "UNRESOLVED") : "RESOLVED";
 
   async function doAction(action: "reopen" | "confirm") {
     if (!token) return;

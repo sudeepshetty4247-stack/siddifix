@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
+import { useQuery } from '@tanstack/react-query';
 import { Camera, ImagePlus, MapPin, Loader2, CheckCircle2, Copy, Pencil, Search, ArrowRight, LocateFixed } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { LazyMap } from '@/components/civic/LazyMap';
 import { CivicInfo } from '@/components/civic/CivicInfo';
+import { getDirectory } from '@/lib/directory.functions';
+import { resolveCivicRouting } from '@/lib/directory';
 import { analyzeIssue, submitIssue } from '@/lib/issues.functions';
 import { prepareOriginalUpload, saveAnnotatedPhoto } from '@/lib/report-media.functions';
 import { reverseGeocode, searchAddress } from '@/lib/geocoding.functions';
