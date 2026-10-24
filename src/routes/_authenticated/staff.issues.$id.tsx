@@ -174,14 +174,14 @@ function StaffIssue() {
               {!nextStatus && <button disabled={busy || note.trim().length < 2} onClick={postNote} className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold disabled:opacity-40"><Send className="h-4 w-4" /> Post update</button>}
               {nextStatus && <button disabled={busy} onClick={applyStatus} className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Confirm: {STATUS_META[nextStatus].label}</button>}
             </div>
-          </div>
+          </div>}
           <div className="rounded-2xl border bg-card p-5 shadow-soft">
             <h2 className="mb-5 font-semibold">Audit trail</h2>
             <Timeline events={events.data ?? []} />
           </div>
-          <DuplicateReview issue={i} />
-          <AssignmentActions id={i.id} authorityId={i.authority_id} state={i.assignment_state} />
-          <IssueEvidence issueId={i.id} staff />
+          {canWork && <DuplicateReview issue={i} />}
+          {canWork && <AssignmentActions id={i.id} authorityId={i.authority_id} state={i.assignment_state} />}
+          {canWork && <IssueEvidence issueId={i.id} staff />}
         </div>
         <aside className="space-y-4">
           {i.photo_url && <img src={i.photo_url} alt="" className="w-full rounded-2xl border object-cover" />}
