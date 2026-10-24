@@ -2,7 +2,8 @@
 
 ## Current priority — simplify and complete the real product
 - [x] Restored the previous map-free Vidhana Soudha Home and its existing photo; latest direct preference overrides map-first brief.
-- [ ] Latest complete correction brief: audit existing behavior, simplify camera/gallery/location/submit, retain originals plus annotated copies, restore map-first Home, improve operational profiles and close staff/security gaps before acceptance verification.
+- [x] Short photo/location/submit flow, private original preservation, separate annotated copy and operational-first verified-profile presentation implemented; anonymous gallery submit and public case read-back verified, 48 regression tests passed. Latest direct request keeps Vidhana Soudha Home map-free.
+- [ ] Full acceptance remains blocked on an explicitly provisioned intended administrator, hosted address service and current verified officer/elected records; physical camera and signed-in staff flows remain unverified.
 - [x] Home and Civic Map show full-dataset nearby canonical active/resolved/overdue/critical totals within 2 km, refreshing every 15 seconds. Kudlu-area GPS/browser read verified with real zero counts, no demo inserts; 43 tests passed. Positive-data aggregate flow remains unverified while reports are empty.
 - [x] Civic Map uses reliable GPS/manual coordinates and actual ward-click points, no interior sample substitution; browser checks passed for GPS, manual confirmation, Mysuru outside coverage, denied-permission callback and weak GPS. 41 tests passed.
 - [ ] Officer/elected separation delivered; names/photos/contacts blocked by missing current official roster and constituency mapping. All 369 ward rows have zero MLA/MP/member names; reference numbers and portraits remain unverified, not copied into live data.
@@ -40,7 +41,7 @@
 - [ ] Address lookup integration: blocked on a suitable anonymous-citizen geocoding service configuration
 - [ ] Official December-2025 ward boundaries imported; current representative names and contacts still need verified sources.
 - [ ] Staff action end-to-end verification: no auth users exist; requesting administrator must create their own account before testing
-- [ ] Evidence original retention and separate annotated derivative, capture/submission timestamp distinction
+- [x] Original retention and separate annotated derivative verified through anonymous submit/read-back; capture metadata remains distinct from report location. Temporary report removed; existing case preserved.
 - [ ] Security release review: bootstrap-admin provisioning, private credential hashing, abuse controls, public-safe projection
 - [ ] Transactional citizen reopen/confirm and audited staff field edits implemented; signed-in end-to-end verification blocked by zero staff accounts
 - [ ] Complete release testing and publish readiness; this milestone is not a completed production certification
