@@ -6,14 +6,13 @@ import { useLocation } from '@/lib/location';
 import { BENGALURU, isInIndia } from '@/lib/civic';
 import { suggestedReportLocation } from '@/lib/report-location';
 import { NEARBY_RADIUS_METRES } from '@/lib/nearby-cases';
-import { getDirectory } from '@/lib/directory.functions';
-import { resolveCivicRouting } from '@/lib/directory';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Logo } from './Logo';
 import { LazyMap } from './LazyMap';
 
 const summarySchema = z.object({ total: z.number(), active: z.number(), resolved: z.number(), overdue: z.number(), critical: z.number(), radius_m: z.number() });
+const wardSchema = z.object({ name: z.string(), ward_number: z.number().nullable(), zone: z.string().nullable(), corporation: z.string().nullable() });
 const KEY = 'civicfix-location-v1';
 
 function hadStoredLocation() {
