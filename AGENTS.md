@@ -34,3 +34,5 @@
 - Ward/routing fixtures stay in tests, never citizen controls.
 - Manifest/icons support installation without a service worker; BrandOpening has a bounded per-load timer and never caches private pages.
 - Visit-only assistant streams validated text history/public aggregates without private access or writes; access pauses persist separately from classification.
+
+- Recipient notifications reuse issue_notifications with guarded ownership/current-scope RPCs, event keys and 15-second recovery-safe polling; notification_reads stores read/archive state. Public/internal messages are separate event visibility, and reminder timing is explicitly admin-configured.

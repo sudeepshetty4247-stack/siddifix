@@ -11,19 +11,11 @@ const toIso = (local: string) => (local ? new Date(local).toISOString() : null);
 const fmt = (iso: string) => new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
 const minLocal = () => { const d = new Date(Date.now() + 5 * 60000); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
 
-const TEMPLATES: Record<string, string> = {
-  roads: "We have acknowledged this road report. Our team will inspect the site and schedule the repair.",
-  waste: "We have acknowledged this waste report. A collection crew will be sent to clear the spot.",
-  electricity: "We have acknowledged this streetlight/electrical report. A maintenance crew will inspect it.",
-  drainage: "We have acknowledged this drainage report. Our team will inspect and clear the blockage.",
-  water: "We have acknowledged this water supply report. Our team will inspect the leak.",
-};
-
 /** Acknowledge + promise a date, change the estimate, and see what was actually notified. */
 export function StaffCommitment({ issue, onDone }: { issue: Issue; onDone: () => void }) {
   const canAck = !issue.duplicate_of && ACKNOWLEDGEABLE.includes(issue.status as IssueStatus);
   const open = !["resolved", "closed", "rejected"].includes(issue.status);
-  const [msg, setMsg] = useState(TEMPLATES[issue.category] ?? "We have acknowledged this report and will inspect the site.");
+  const [msg, setMsg] = useState("We have received this report for review by our authorized team.");
   const [inspection, setInspection] = useState("");
   const [eta, setEta] = useState("");
   const [newEta, setNewEta] = useState("");
