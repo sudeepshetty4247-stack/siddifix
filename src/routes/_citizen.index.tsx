@@ -6,6 +6,7 @@ import { publicCases } from '@/lib/public-cases';
 import { IssueCard } from '@/components/civic/IssueCard';
 import communityCover from '@/assets/siddi-community-cover.png.asset.json';
 import { NearbyCaseSummary } from '@/components/civic/NearbyCaseSummary';
+import { CityOverview } from '@/components/civic/CityOverview';
 export const Route = createFileRoute('/_citizen/')({
   head: () => ({ meta: [
     {title:'Siddi — Report a problem. Track the progress.'},
@@ -23,7 +24,6 @@ function CitizenHome() {
     return (await publicCases()).slice(0, 3);
   }, refetchInterval: 30000 });
   return <div>
-    <NearbyCaseSummary />
     <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
       <img src={communityCover.url} alt="A citizen photographing a damaged Bengaluru pavement near Vidhana Soudha" width={1365} height={768} className="absolute inset-0 -z-20 h-full w-full object-cover object-center" fetchPriority="high" />
       <div className="home-photo-shade absolute inset-0 -z-10" />
@@ -39,6 +39,8 @@ function CitizenHome() {
         <p className="mt-5 flex items-center gap-2 text-xs opacity-90"><ShieldCheck className="h-4 w-4" />No citizen login required · Independent civic platform</p>
       </div>
     </section>
+    <CityOverview />
+    <NearbyCaseSummary />
 
     <section className="border-b bg-card">
       <div className="mx-auto grid max-w-7xl gap-0 px-5 sm:px-6 md:grid-cols-3">
