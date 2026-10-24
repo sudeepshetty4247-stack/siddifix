@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## CivicFix architecture
-- Citizen pages live under the `_citizen` pathless layout; staff pages under `_authenticated/staff*` — two separate interfaces sharing one data model.
+- Citizen pages use `_citizen`; staff use `_authenticated/staff*`, sharing one data model. Read nested AGENTS.md before changes there.
 - Citizens never write tables directly: report submit/confirm/dispute go through public server functions in `src/lib/issues.functions.ts` using the admin client, because anonymous users have no DB write grants.
 - Recovery tokens live in `issue_secrets` (no client grants) so public issue reads can never leak them.
 - Photos bucket is private (workspace blocks public buckets); submit stores a long-lived signed URL.
@@ -35,7 +35,7 @@
 - Nearby citizen totals use a public safe database aggregate over all canonical cases; map-list distance filtering shares its radius, while ward jurisdiction remains independent of the neighbourhood circle.
 - Private original uploads are validated and hashed before atomic issue_photos persistence; display and annotated copies are separate, keeping metadata provenance distinct from corrected report coordinates.
 - Citizens read safe public case/event projections; hashed reporter capabilities and persistent request limits protect public actions without anonymous table-write grants.
-- Verified civic_people profiles use source-backed scope and directory audit; unverified identities stay hidden to avoid guessed operational or elected ward contacts.
+- AuthorityPortrait requires HTTPS photo/source URLs and falls back to initials; verified civic_people are ward-scoped and audited, and unverified identities stay hidden.
 - Ward and routing edge-case fixtures belong in automated tests only, not citizen-facing test controls; this preserves a real citizen experience and genuine case totals.
 
 - Ward MLA/MP come from Election Commission results linked through each ward's official assembly constituency number in civic_wards; corporators are shown as not in office until council elections are held.- Civic Map and the report camera use a live device position (watchPosition) while open: blue dot with accuracy circle, own-ward highlight and 'you are here' ward card; fixes over 100 m are shown as approximate, never auto-confirmed. Automatic location attempts never open dialogs.

@@ -1,0 +1,1 @@
+Photo QA assets and provenance belong in fixtures, never public/ or citizen screens. Run seeded workflows only against a separately attested test backend; never bulk-seed the shared live database.
