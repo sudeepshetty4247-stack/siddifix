@@ -59,6 +59,7 @@ function StaffLayout() {
     { to: "/staff/queue" as const, label: "Issue Queue", icon: ListTodo },
     { to: "/staff/routing" as const, label: "Routing Exceptions", icon: ListTodo },
     { to: "/staff/overdue" as const, label: "Overdue & Escalated", icon: Clock },
+    { to: "/staff/insights" as const, label: "Duplicates & Recurring", icon: Repeat },
     { to: "/staff/map" as const, label: "Map & Hotspots", icon: Map },
     { to: "/staff/notifications" as const, label: "Notifications", icon: Bell },
     ...(isAdmin ? [{ to: "/staff/directory" as const, label: "Routing Setup", icon: ListTodo }] : []),
