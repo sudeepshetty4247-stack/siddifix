@@ -29,7 +29,7 @@ function DirectoryPage() {
     if (!verified || busy) return;
     setBusy(true);
     try {
-      const rows = wardImport.parse(JSON.parse(input));
+      const rows = wardImport.parse(JSON.parse(input)).map(row => ({ ...row, representative: row.representative ?? null, representative_source_url: row.representative_source_url ?? null }));
       const { error } = await supabase.from('civic_wards').upsert(rows, { onConflict: 'coverage_id,identifier' });
       if (error) throw error;
       toast.success(`${rows.length} verified ward records saved.`); setInput(''); setVerified(false);
