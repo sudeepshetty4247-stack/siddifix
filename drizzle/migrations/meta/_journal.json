@@ -92,6 +92,13 @@
       "when": 1792836410493,
       "tag": "0012_verified_operational_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792836856184,
+      "tag": "0013_unique_hashed_reporter_capabilities",
+      "breakpoints": true
     }
   ]
 }
