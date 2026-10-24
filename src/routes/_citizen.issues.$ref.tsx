@@ -11,6 +11,7 @@ import { Timeline, type EventRow } from "@/components/civic/Timeline";
 import { LazyMap } from "@/components/civic/LazyMap";
 import { citizenAction, verifyToken } from "@/lib/issues.functions";
 import { getTracked, isTracked, removeTracked, saveTracked } from "@/lib/tracking";
+import { CivicInfo } from "@/components/civic/CivicInfo";
 
 export const Route = createFileRoute("/_citizen/issues/$ref")({
   head: ({ params }) => ({
@@ -94,7 +95,7 @@ function IssuePage() {
     setBusy(true);
     try {
       await act({ data: { ref, token, action } });
-      toast.success(action === "reopen" ? "Issue reopened. Staff have been notified." : "Thanks for confirming the fix!");
+      toast.success(action === "reopen" ? "Issue reopened for staff review." : "Thanks for confirming the fix!");
       qc.invalidateQueries({ queryKey: ["issue", ref] });
       qc.invalidateQueries({ queryKey: ["issue-events", i.id] });
     } catch (e) {
@@ -169,15 +170,16 @@ function IssuePage() {
           </div>
           <div className="divide-y rounded-2xl border bg-card">
             <Row icon={<MapPin className="h-4 w-4" />} label="Location">{i.landmark || `${i.lat.toFixed(5)}, ${i.lng.toFixed(5)}`}</Row>
-            <Row icon={<Building2 className="h-4 w-4" />} label="Likely authority">{i.department ?? "Pending routing"}<span className="block text-xs text-muted-foreground">Indicative — not an official referral</span></Row>
-            <Row icon={<CalendarClock className="h-4 w-4" />} label="Target resolution">
+            <Row icon={<Building2 className="h-4 w-4" />} label="Recorded ownership">{i.department ?? "Ownership review pending"}<span className="block text-xs text-muted-foreground">Internal record — not an official referral</span></Row>
+            <Row icon={<CalendarClock className="h-4 w-4" />} label="CivicFix review target">
               {i.sla_due_at ? new Date(i.sla_due_at).toLocaleDateString("en-IN", { dateStyle: "medium" }) : "—"}
-              <span className="block text-xs text-muted-foreground">{SEVERITY_META[i.severity as Severity].label} severity target</span>
+              <span className="block text-xs text-muted-foreground">{SEVERITY_META[i.severity as Severity].label} internal target — not a government commitment</span>
             </Row>
             <Row icon={<Users className="h-4 w-4" />} label="Citizens affected">{i.support_count + 1} report{i.support_count ? "s" : ""}</Row>
             <div className="flex items-center justify-between p-4 text-sm"><span className="text-muted-foreground">Severity</span><SeverityTag severity={i.severity} /></div>
             <div className="flex items-center justify-between p-4 text-sm"><span className="text-muted-foreground">Reported</span><span>{new Date(i.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span></div>
           </div>
+          <CivicInfo lat={i.lat} lng={i.lng} category={i.category} subcategory={i.subcategory} />
         </aside>
       </div>
     </div>
