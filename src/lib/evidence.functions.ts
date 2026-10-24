@@ -13,14 +13,22 @@ export const recordEvidence = createServerFn({ method: 'POST' })
     if (!scope.data) throw new Error('This case is outside your authorized scope.');
     const { bytes, mime, extension } = decodeEvidenceImage(data.imageDataUrl);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+    const request=data.requestId??crypto.randomUUID();
+    const existing=await context.supabase.from('issue_evidence').select('id').eq('issue_id',data.issueId).eq('actor_id',context.userId).eq('request_key',request).maybeSingle();
+    if(existing.error)throw new Error('Evidence retry could not be checked.');
+    if(existing.data)return {id:existing.data.id};
     const path = `staff-evidence/${data.issueId}/${crypto.randomUUID()}.${extension}`;
     const uploaded = await supabaseAdmin.storage.from('issue-photos').upload(path, bytes, { contentType: `image/${mime}`, upsert: false });
     if (uploaded.error) throw new Error('Evidence upload failed. Please try again.');
-    const saved = await context.supabase.rpc('staff_record_evidence', { _id: data.issueId, _kind: data.kind, _path: path, _note: data.note });
+    const verified=await supabaseAdmin.storage.from('issue-photos').download(path);
+    if(verified.error||!verified.data||verified.data.size!==bytes.length){await supabaseAdmin.storage.from('issue-photos').remove([path]);throw new Error('Stored evidence could not be verified. Retry upload.');}
+    const saved = await context.supabase.rpc('staff_record_evidence_retry', { _id: data.issueId, _kind: data.kind, _path: path, _note: data.note, _request:request });
     if (saved.error) {
       await supabaseAdmin.storage.from('issue-photos').remove([path]);
       throw new Error(saved.error.message);
     }
+    const persisted=await context.supabase.from('issue_evidence').select('storage_path').eq('id',saved.data).single();
+    if(persisted.data?.storage_path!==path)await supabaseAdmin.storage.from('issue-photos').remove([path]);
     return { id: saved.data };
   });
 
