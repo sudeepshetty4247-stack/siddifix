@@ -17,3 +17,27 @@ describe('Citizen map location', () => {
     expect(citizenMapFocus(directory, {lat:12.2958,lng:76.6394,label:'Mysuru',method:'manual'})).toBeNull();
   });
 });
+import { describeLiveFix } from '@/lib/map-location';
+const twoWards = { wards: [
+  { active: true, identifier: 'a', name: 'A', boundary: {type:'Polygon', coordinates:[[[77.5,12.9],[77.6,12.9],[77.6,13.0],[77.5,13.0],[77.5,12.9]]]} },
+  { active: true, identifier: 'b', name: 'B', boundary: {type:'Polygon', coordinates:[[[77.6,12.9],[77.7,12.9],[77.7,13.0],[77.6,13.0],[77.6,12.9]]]} },
+] } as unknown as Directory;
+describe('Live GPS ward placement', () => {
+  it('locks a precise fix (within 100 m) to the single ward containing it', () => {
+    const r = describeLiveFix(twoWards, {lat:12.95,lng:77.55,accuracy:12});
+    expect(r?.kind).toBe('ward');
+    expect(r && r.kind === 'ward' && r.ward.identifier).toBe('a');
+    expect(r && r.kind === 'ward' && r.precise).toBe(true);
+  });
+  it('labels a 1.5 km fix as approximate but still shows the ward', () => {
+    const r = describeLiveFix(twoWards, {lat:12.95,lng:77.65,accuracy:1500});
+    expect(r && r.kind === 'ward' && r.ward.identifier).toBe('b');
+    expect(r && r.kind === 'ward' && r.precise).toBe(false);
+  });
+  it('flags a point on a shared border instead of guessing a ward', () => {
+    expect(describeLiveFix(twoWards, {lat:12.95,lng:77.6,accuracy:5})?.kind).toBe('boundary');
+  });
+  it('reports Mysuru as outside coverage without clamping', () => {
+    expect(describeLiveFix(twoWards, {lat:12.2958,lng:76.6394,accuracy:5})).toEqual({kind:'outside'});
+  });
+});
