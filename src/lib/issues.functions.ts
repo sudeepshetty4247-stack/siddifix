@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { getDirectory } from "./directory.functions";
 import { resolveCivicRouting } from "./directory";
 import { CATEGORIES, SEVERITY_META, categoryById, isInIndia, isInBengaluru, type Severity } from "./civic";
+import { photoMetadataSchema } from './report-photo';
 
 const MAX_IMAGE_CHARS = 7_500_000; // ~5.5MB binary
 const dataUrlRe = /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$/;
@@ -30,19 +31,24 @@ export const analyzeIssue = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
+    const {consumeRequest}=await import('./civic-security.server');await consumeRequest('analysis',15);
+    const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
     const { analyzeIssueWithAI, fallbackAnalysis, AiError } = await import("./ai.server");
+    const state=await supabaseAdmin.from('civic_ai_state').select('paused,reason').eq('id','classification').maybeSingle();
+    if(state.data?.paused)return {ok:false as const,source:'fallback' as const,analysis:fallbackAnalysis(data.description),notice:state.data.reason??'AI analysis is paused; staff can classify your report.'};
     try {
       const analysis = await analyzeIssueWithAI(data);
       return { ok: true as const, source: "ai" as const, analysis };
     } catch (e) {
       const status = e instanceof AiError ? e.status : 500;
+      if([401,402,403,404].includes(status))await supabaseAdmin.from('civic_ai_state').upsert({id:'classification',paused:true,reason:'AI analysis is paused pending service configuration or access recovery. Reports remain available for staff classification.',updated_at:new Date().toISOString()});
       console.error("AI analysis failed", status, (e as Error).message);
       const notice =
         status === 402 || status === 403
-          ? "AI analysis is paused right now. Please choose the category yourself."
+          ? "AI analysis is paused right now. You can submit for staff classification."
           : status === 429
             ? "AI is busy. We pre-filled a basic guess — please check it."
-            : "AI couldn't analyse this photo. Please choose the category yourself.";
+            : "AI couldn't analyse this photo. You can submit for staff classification.";
       return { ok: false as const, source: "fallback" as const, analysis: fallbackAnalysis(data.description), notice };
     }
   });
@@ -64,11 +70,14 @@ const submitSchema = z.object({
   lng: z.number().min(-180).max(180),
   landmark: z.string().max(200).nullable().optional(),
   duplicateOf: z.string().uuid().nullable().optional(),
+  originalPath:z.string().max(300).optional(),
+  photoMetadata:photoMetadataSchema.optional(),
 });
 
 export const submitIssue = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof submitSchema>) => submitSchema.parse(input))
   .handler(async ({ data }) => {
+    const {consumeRequest}=await import('./civic-security.server');await consumeRequest('submit',10);
     if (!isInIndia(data.lat, data.lng)) throw new Error("CivicFix currently accepts locations within India only.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -80,6 +89,17 @@ export const submitIssue = createServerFn({ method: "POST" })
       .maybeSingle();
     if (existing.error) throw new Error("We couldn't verify this submission. Please try again.");
     if (existing.data) return { ref: existing.data.ref_code, token: null, duplicate: true };
+
+    let originalHash:string|null=null;
+    if(data.originalPath){
+      if(!data.originalPath.startsWith(`originals/${data.idempotencyKey}/`) || !data.photoMetadata)throw new Error('Original photo does not match this report.');
+      const original=await supabaseAdmin.storage.from('issue-photos').download(data.originalPath);
+      if(original.error||!original.data||original.data.size>25*1024*1024)throw new Error('Original photo could not be verified.');
+      const bytes=new Uint8Array(await original.data.arrayBuffer());
+      const valid=bytes[0]===255&&bytes[1]===216 || bytes[0]===137&&bytes[1]===80 || String.fromCharCode(...bytes.slice(0,4))==='RIFF';
+      if(!valid)throw new Error('Original photo format is invalid.');
+      originalHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+    }
 
     // Upload photo
     const match = data.imageDataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
@@ -116,6 +136,8 @@ export const submitIssue = createServerFn({ method: "POST" })
         department: 'Ownership review pending', duplicate_of: data.duplicateOf ?? null,
         sla_due_at: new Date(Date.now() + SEVERITY_META[severity].slaHours * 3600000).toISOString(),
         routing_snapshot: JSON.parse(JSON.stringify(routing)),
+        original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
+        photo_source:data.photoMetadata?.source??'gallery',photo_metadata:data.photoMetadata ? JSON.parse(JSON.stringify(data.photoMetadata)) : null,
       },
     });
     if (error) {
@@ -136,6 +158,7 @@ export const citizenAction = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
+    const {consumeRequest}=await import('./civic-security.server');await consumeRequest('reporter-action',20);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const result = await supabaseAdmin.rpc('citizen_change_issue', { _ref: data.ref, _token: data.token, _action: data.action, _note: data.note ?? '' });
     if (result.error) throw new Error(result.error.message);
@@ -143,12 +166,12 @@ export const citizenAction = createServerFn({ method: "POST" })
   });
 
 export const verifyToken = createServerFn({ method: "POST" })
-  .inputValidator((input: { ref: string; token: string }) => z.object({ ref: z.string().max(20), token: z.string().max(64) }).parse(input))
+  .inputValidator((input: { ref: string; token: string }) => z.object({ ref: z.string().max(20), token: z.string().regex(/^[a-f0-9]{48}$/) }).parse(input))
   .handler(async ({ data }) => {
+    const {consumeRequest}=await import('./civic-security.server');await consumeRequest('tracking-verify',30);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const issue = await supabaseAdmin.from("issues").select("issue_secrets(recovery_token)").eq("ref_code", data.ref).maybeSingle();
-    const sec = issue.data?.issue_secrets as unknown as { recovery_token: string } | null;
-    return { valid: !!sec && sec.recovery_token === data.token };
+    const result=await supabaseAdmin.rpc('verify_reporter_token',{_ref:data.ref,_token:data.token});
+    return {valid:!result.error&&result.data===true};
   });
 
 // ---------- Staff / admin ----------
