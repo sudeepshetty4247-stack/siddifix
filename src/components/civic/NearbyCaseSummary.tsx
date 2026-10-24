@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { MapPin, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocation } from '@/lib/location';
-import { suggestedReportLocation } from '@/lib/report-location';
+import { MAX_SUGGESTED_ACCURACY_METRES } from '@/lib/report-location';
 import { NEARBY_RADIUS_METRES } from '@/lib/nearby-cases';
 import { getDirectory } from '@/lib/directory.functions';
 import { resolveCivicRouting } from '@/lib/directory';
