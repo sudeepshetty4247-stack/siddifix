@@ -71,6 +71,13 @@
       "when": 1792834971506,
       "tag": "0009_nearby_citizen_case_summary",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792836178919,
+      "tag": "0010_secure_report_media_and_public_projections",
+      "breakpoints": true
     }
   ]
 }
