@@ -16,6 +16,7 @@ const dict = {
   transparency: { en: "Public Reports", hi: "सार्वजनिक रिपोर्ट", kn: "ಸಾರ್ವಜನಿಕ ವರದಿಗಳು" },
   assistant: { en: "Ask Siddi", hi: "Siddi से पूछें", kn: "Siddi ಕೇಳಿ" },
   staff: { en: "Staff sign in", hi: "कर्मचारी लॉगिन", kn: "ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್" },
+  admin: { en: "Admin sign in", hi: "एडमिन लॉगिन", kn: "ಆಡಳಿತ ಲಾಗಿನ್" },
   heroTitle: {
     en: "Report once. Track every action.",
     hi: "एक बार रिपोर्ट करें। हर कार्रवाई ट्रैक करें।",

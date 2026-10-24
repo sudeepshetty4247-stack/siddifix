@@ -116,6 +116,7 @@ function CitizenShell() {
             <div className="space-y-2">
               <p className="font-semibold">Officials</p>
               <Link to="/staff" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"><ShieldCheck className="h-4 w-4" />{t("staff")}</Link>
+              <Link to="/auth" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"><ShieldCheck className="h-4 w-4" />{t("admin")}</Link>
             </div>
           </div>
         </div>

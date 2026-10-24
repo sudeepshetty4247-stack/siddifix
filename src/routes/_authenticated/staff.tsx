@@ -63,10 +63,14 @@ function StaffLayout() {
     { to: "/staff/insights" as const, label: "Duplicates & Recurring", icon: Repeat },
     { to: "/staff/map" as const, label: "Map & Hotspots", icon: Map },
     { to: "/staff/notifications" as const, label: "Notifications", icon: Bell },
-    ...(isAdmin ? [{ to: "/staff/directory" as const, label: "Routing Setup", icon: ListTodo }] : []),
-    ...(isAdmin ? [{ to: "/staff/team" as const, label: "Team Management", icon: Users }] : []),
-    ...(isAdmin ? [{ to: "/staff/audit" as const, label: "Audit & Health", icon: ShieldCheck }] : []),
   ];
+
+  const adminNav = [
+    { to: "/staff/directory" as const, label: "Routing Setup", icon: ListTodo },
+    { to: "/staff/team" as const, label: "Team Management", icon: Users },
+    { to: "/staff/audit" as const, label: "Audit & Health", icon: ShieldCheck },
+  ];
+
 
   const sidebar = (
     <div className="flex h-full flex-col gap-6 p-4">
@@ -79,6 +83,18 @@ function StaffLayout() {
           </Link>
         ))}
       </nav>
+      {isAdmin && (
+        <>
+          <p className="-mt-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">Administrator</p>
+          <nav className="-mt-3 flex flex-col gap-1">
+            {adminNav.map((n) => (
+              <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition hover:bg-sidebar-accent" activeProps={{ className: "bg-sidebar-accent !text-sidebar-accent-foreground" }}>
+                <n.icon className="h-4 w-4" />{n.label}
+              </Link>
+            ))}
+          </nav>
+        </>
+      )}
       <div className="mt-auto space-y-1">
         <Link to="/transparency" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"><ExternalLink className="h-4 w-4" />Public transparency</Link>
         <Link to="/assistant" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"><ExternalLink className="h-4 w-4" />Ask Siddi</Link>
