@@ -1,3 +1,4 @@
+// @vitest-environment node
 // Isolated in-memory PostgreSQL: no production connections or fixture writes.
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
