@@ -137,6 +137,7 @@ function IssuePage() {
   const statusText = i.status.replace(/_/g, ' ');
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      {issue.isError&&<p role="alert" className="mb-4 text-sm text-warning-foreground">Updates could not be refreshed. Last successful check: {new Date(issue.dataUpdatedAt).toLocaleString("en-IN")}<Button variant="outline" size="sm" onClick={()=>issue.refetch()}>Retry</Button></p>}
       <div className="mb-4 flex items-center justify-between">
         <Link to="/explore" aria-label="All issues" className="inline-flex h-9 items-center gap-1.5 rounded-full px-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"><ArrowLeft className="h-4 w-4" /> All issues</Link>
         <div className="flex gap-1.5">
