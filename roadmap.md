@@ -107,3 +107,11 @@
 - [x] Audit document docs/FINAL_AUDIT_2026-10-24.md.
 - [ ] Configurable SLA targets per category/severity — not built.
 - [ ] Government handoff, SMS/push, physical device, isolated test backend — blocked on external access.
+
+## Final master prompt — 24 Oct 2026
+- [x] Configurable service targets (category × severity, versioned, audited, admin-only) applied on every new report with stored snapshot; hourly job now escalates missed acknowledgement and resolution targets separately.
+- [x] Coverage: backend rejects reports outside Bengaluru wards; friendly "not in your city yet" screen; explicit, labelled Bengaluru demo that never saves; manual place search; GPS never overwrites a chosen place.
+- [x] Citywide overview (period filter) + compact neighbourhood panel that hides numbers outside coverage.
+- [x] Floating Ask Siddi launcher; assistant knows coverage/demo/location steps.
+- [ ] Portrait review centre with candidate approve/reject — not built this round; 10 MLAs + 1 MP verified photos remain, others initials.
+- [ ] Signed-in staff walkthrough of the demo scenario with isolated test data — needs a separate test backend.
