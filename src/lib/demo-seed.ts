@@ -8,7 +8,7 @@ export type DemoStaff = { id: string; team_id: string; department: string; categ
 export type DemoTarget = { category: string; severity: string; ack_hours: number; resolve_hours: number };
 
 export type DemoIssue = {
-  ref_code: string; idempotency_key: string; title: string; summary: string; description: string;
+  id: string; ref_code: string; idempotency_key: string; title: string; summary: string; description: string;
   category: string; subcategory: string; severity: 'low' | 'medium' | 'high' | 'critical';
   status: string; lat: number; lng: number; landmark: string; department: string | null;
   assigned_to: string | null; team_id: string | null; duplicate_of: string | null;
@@ -124,15 +124,16 @@ export function buildDemoDataset(args: {
     if (bucket === 'overdue') acknowledged_at = hoursAgo(now, createdHoursBack - rnd() * target.ack_hours);
 
     const isDuplicate = bucket !== 'unassigned' && rnd() < 0.05 && (canonicalByCategory.get(cat.id)?.length ?? 0) > 0;
-    const duplicate_of = isDuplicate ? issues[pick(rnd, canonicalByCategory.get(cat.id)!)]!.ref_code : null;
+    const duplicateTarget = isDuplicate ? issues[pick(rnd, canonicalByCategory.get(cat.id)!)]! : null;
 
     issues.push({
+      id: crypto.randomUUID(),
       ref_code: ref, idempotency_key: ref, title: `${sub} near ${ward.name}`, summary: `${sub} reported in ${ward.name}.`,
       description: `Synthetic demonstration report (${datasetId}). ${sub} observed near ${ward.name}; generated for workflow testing only.`,
       category: cat.id, subcategory: sub, severity, status, lat, lng,
       landmark: `Demo landmark ${Math.floor(rnd() * 900) + 100}, ${ward.name}`,
       department, assigned_to: handler?.id ?? null, team_id: team?.id ?? null,
-      duplicate_of: null, support_count: 1 + Math.floor(rnd() * 3),
+      duplicate_of: duplicateTarget?.id ?? null, support_count: 1 + Math.floor(rnd() * 3),
       sla_due_at: new Date(resolveDue).toISOString(), ack_due_at: new Date(ackDue).toISOString(),
       acknowledged_at, acknowledged_by: acknowledged_at ? handler?.id ?? null : null,
       resolved_at, escalated_at, created_at: new Date(created).toISOString(), updated_at: new Date(Math.min(now, created + 3600000)).toISOString(),
