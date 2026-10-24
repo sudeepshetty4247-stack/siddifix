@@ -245,7 +245,7 @@ function ReportPage() {
                 {isInBengaluru(loc.lat, loc.lng)
                   ? `Inside Bengaluru · ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`
                   : isInIndia(loc.lat, loc.lng)
-                    ? "Outside Bengaluru — we'll accept it, but authority routing isn't configured for this area yet."
+                    ? "Community reporting available. Verified local authority information may be incomplete."
                     : "This location is outside India. Please place the pin where the problem is."}
               </p>
             )}

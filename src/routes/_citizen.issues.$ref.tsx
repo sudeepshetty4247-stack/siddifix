@@ -39,6 +39,7 @@ function IssuePage() {
 
   const issue = useQuery({
     queryKey: ["issue", ref],
+    refetchInterval: 30000,
     queryFn: async () => {
       const { data, error } = await supabase.from("issues").select("*").eq("ref_code", ref).maybeSingle();
       if (error) throw error;
@@ -48,8 +49,11 @@ function IssuePage() {
   const events = useQuery({
     queryKey: ["issue-events", issue.data?.id],
     enabled: !!issue.data?.id,
+    refetchInterval: 30000,
     queryFn: async () => {
-      const { data } = await supabase.from("issue_events").select("*").eq("issue_id", issue.data!.id).order("created_at");
+      if (!issue.data?.id) return [];
+      const { data, error } = await supabase.from("issue_events").select("*").eq("issue_id", issue.data.id).order("created_at");
+      if (error) throw error;
       return (data ?? []) as EventRow[];
     },
   });
@@ -70,7 +74,7 @@ function IssuePage() {
       .channel(`issue-${issue.data.id}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "issue_events", filter: `issue_id=eq.${issue.data.id}` }, () => {
         qc.invalidateQueries({ queryKey: ["issue", ref] });
-        qc.invalidateQueries({ queryKey: ["issue-events", issue.data!.id] });
+        qc.invalidateQueries({ queryKey: ["issue-events"] });
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };

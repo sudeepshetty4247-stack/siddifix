@@ -1,21 +1,21 @@
 // Shared, browser-safe civic domain data.
 export const CATEGORIES = [
-  { id: "roads", label: "Roads & Footpaths", emoji: "🛣️", authority: "BBMP – Road Infrastructure", subs: ["Pothole", "Damaged footpath", "Broken divider", "Open manhole", "Road cave-in"] },
-  { id: "electricity", label: "Electricity & Street Lighting", emoji: "💡", authority: "BESCOM / BBMP Electrical", subs: ["Streetlight not working", "Exposed wires", "Fallen pole", "Transformer issue"] },
-  { id: "water", label: "Water Supply", emoji: "🚰", authority: "BWSSB", subs: ["Pipe leakage", "No water supply", "Contaminated water", "Low pressure"] },
-  { id: "drainage", label: "Drainage & Sewage", emoji: "🌊", authority: "BWSSB / BBMP Storm Water Drains", subs: ["Blocked drain", "Sewage overflow", "Waterlogging", "Missing drain cover"] },
-  { id: "waste", label: "Waste Management", emoji: "🗑️", authority: "BBMP – Solid Waste Management", subs: ["Overflowing bin", "Garbage dumping", "Missed collection", "Burning waste"] },
-  { id: "transport", label: "Transport & Traffic", emoji: "🚦", authority: "Bengaluru Traffic Police / BMTC", subs: ["Signal not working", "Damaged bus stop", "Missing signage", "Illegal parking"] },
-  { id: "parks", label: "Parks & Public Spaces", emoji: "🌳", authority: "BBMP – Horticulture", subs: ["Broken equipment", "Unmaintained park", "Damaged bench"] },
-  { id: "sanitation", label: "Public Toilets & Sanitation", emoji: "🚻", authority: "BBMP – Health & Sanitation", subs: ["Unclean toilet", "Toilet locked", "No water in toilet"] },
-  { id: "trees", label: "Trees & Environment", emoji: "🌿", authority: "BBMP – Forest Cell", subs: ["Fallen tree", "Dangerous branch", "Illegal felling"] },
-  { id: "buildings", label: "Public Buildings & Facilities", emoji: "🏛️", authority: "BBMP – Public Works", subs: ["Damaged structure", "Accessibility barrier"] },
-  { id: "other", label: "Other Civic Infrastructure", emoji: "📍", authority: "Needs routing review", subs: ["Other"] },
+  { id: "roads", label: "Roads & Footpaths", emoji: "🛣️", subs: ["Pothole", "Damaged footpath", "Broken divider", "Open manhole", "Road cave-in"] },
+  { id: "electricity", label: "Electricity & Street Lighting", emoji: "💡", subs: ["Streetlight not working", "Exposed wires", "Fallen pole", "Transformer issue"] },
+  { id: "water", label: "Water Supply", emoji: "🚰", subs: ["Pipe leakage", "No water supply", "Contaminated water", "Low pressure"] },
+  { id: "drainage", label: "Drainage & Sewage", emoji: "🌊", subs: ["Blocked drain", "Sewage overflow", "Waterlogging", "Missing drain cover"] },
+  { id: "waste", label: "Waste Management", emoji: "🗑️", subs: ["Overflowing bin", "Garbage dumping", "Missed collection", "Burning waste"] },
+  { id: "transport", label: "Transport & Traffic", emoji: "🚦", subs: ["Signal not working", "Damaged bus stop", "Missing signage", "Illegal parking"] },
+  { id: "parks", label: "Parks & Public Spaces", emoji: "🌳", subs: ["Broken equipment", "Unmaintained park", "Damaged bench"] },
+  { id: "sanitation", label: "Public Toilets & Sanitation", emoji: "🚻", subs: ["Unclean toilet", "Toilet locked", "No water in toilet"] },
+  { id: "trees", label: "Trees & Environment", emoji: "🌿", subs: ["Fallen tree", "Dangerous branch", "Illegal felling"] },
+  { id: "buildings", label: "Public Buildings & Facilities", emoji: "🏛️", subs: ["Damaged structure", "Accessibility barrier"] },
+  { id: "other", label: "Other Civic Infrastructure", emoji: "📍", subs: ["Other"] },
 ] as const;
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];
 export const categoryById = (id: string | null | undefined) =>
-  (CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[CATEGORIES.length - 1])!;
+  CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[10];
 
 export const STATUSES = [
   "needs_classification",
