@@ -8,7 +8,7 @@ import { categoryById, timeAgo } from "@/lib/civic";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/staff/overdue")({
-  head: () => ({ meta: [{ title: "Overdue & escalated cases — CivicFix" }, { name: "description", content: "Cases past their promised completion date and escalated cases needing supervisor attention." }, { property: "og:title", content: "Overdue & escalated cases — CivicFix" }, { property: "og:description", content: "Cases past their promised completion date and escalated cases needing supervisor attention." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Overdue & escalated cases — Siddi" }, { name: "description", content: "Cases past their promised completion date and escalated cases needing supervisor attention." }, { property: "og:title", content: "Overdue & escalated cases — Siddi" }, { property: "og:description", content: "Cases past their promised completion date and escalated cases needing supervisor attention." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: OverduePage,
 });
 
@@ -77,7 +77,7 @@ function OverduePage() {
     <div className="mx-auto max-w-5xl space-y-8 p-4 sm:p-8">
       <div>
         <h1 className="text-3xl font-bold">Overdue & Escalated</h1>
-        <p className="text-muted-foreground">Cases that passed the completion date staff promised citizens, and cases escalated for supervisor attention. Refreshes every 30 seconds. These are CivicFix follow-up targets, not official government deadlines.</p>
+        <p className="text-muted-foreground">Cases that passed the completion date staff promised citizens, and cases escalated for supervisor attention. Refreshes every 30 seconds. These are Siddi follow-up targets, not official government deadlines.</p>
       </div>
       {q.error && <p className="rounded-xl bg-destructive-soft p-4 text-sm text-destructive">{(q.error as Error).message}</p>}
 

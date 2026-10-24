@@ -15,7 +15,7 @@ export function embeddedPhotoMetadata(value: unknown): PhotoMetadata {
   return {source:'gallery',gps,capturedAt,captureTimeSource:capturedAt?'embedded':'unknown'};
 }
 export function annotationLines(meta:PhotoMetadata, point:{lat:number;lng:number}, address?:string|null, ref?:string) {
-  return [ref ? `CivicFix · ${ref}` : 'CivicFix · Report evidence', `Report location: ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`, ...(address?[address]:[]),
+  return [ref ? `Siddi · ${ref}` : 'Siddi · Report evidence', `Report location: ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`, ...(address?[address]:[]),
     meta.capturedAt ? `${meta.captureTimeSource==='embedded'?'Photo metadata time':'Camera-session received time'}: ${meta.capturedAt}` : 'Photo capture time unavailable',
     meta.gps ? `${meta.gps.source==='embedded'?'Embedded photo GPS (unverified)':'Device GPS near capture (suggested)'}: ${meta.gps.lat.toFixed(5)}, ${meta.gps.lng.toFixed(5)}${meta.gps.accuracy!==null?` ±${Math.round(meta.gps.accuracy)} m`:''}` : 'Photo capture location unavailable'];
 }

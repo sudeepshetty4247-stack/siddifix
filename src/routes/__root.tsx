@@ -26,7 +26,7 @@ function NotFoundComponent() {
         <p className="mt-3 text-sm text-muted-foreground">The page you're looking for has moved or never existed.</p>
         <div className="mt-6">
           <Link to="/" className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-            Back to CivicFix
+            Back to Siddi
           </Link>
         </div>
       </div>
@@ -69,7 +69,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CivicFix — Report once. Track every action." },
+      { title: "Siddi — Report once. Track every action." },
       { name: "description", content: "Report potholes, broken streetlights and drainage problems in Bengaluru and track every action until they're fixed." },
       { name: "theme-color", content: "#1b2540" },
     ],

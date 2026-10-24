@@ -26,7 +26,7 @@ export function LocationSelector() {
       const result = await supabase.rpc('ward_at_point', { _lat: pin.lat, _lng: pin.lng });
       const wards = result.error ? [] : (result.data as unknown[]);
       if (wards.length === 0) {
-        setError("We're not in your city yet — CivicFix currently serves Bengaluru, and we'd love to reach you soon. Till then, pick a point inside Bengaluru to explore.");
+        setError("We're not in your city yet — Siddi currently serves Bengaluru, and we'd love to reach you soon. Till then, pick a point inside Bengaluru to explore.");
         return;
       }
       select({ ...pin, label: label.trim() || `${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}`, method: 'manual' });

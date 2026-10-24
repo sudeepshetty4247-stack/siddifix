@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, categoryById, timeAgo } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/staff/team")({
-  head: () => ({ meta: [{ title: "Team access management — CivicFix" }, { name: "description", content: "Manage authorized CivicFix staff roles, designations and work areas." }, { property: "og:title", content: "Team access management — CivicFix" }, { property: "og:description", content: "Manage authorized CivicFix staff roles, designations and work areas." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Team access management — Siddi" }, { name: "description", content: "Manage authorized Siddi staff roles, designations and work areas." }, { property: "og:title", content: "Team access management — Siddi" }, { property: "og:description", content: "Manage authorized Siddi staff roles, designations and work areas." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: Team,
 });
 

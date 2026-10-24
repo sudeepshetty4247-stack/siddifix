@@ -21,9 +21,9 @@ import { getReportPhoto } from '@/lib/report-media.functions';
 export const Route = createFileRoute("/_citizen/issues/$ref")({
   head: ({ params }) => ({
     meta: [
-      { title: `Issue ${params.ref} — CivicFix` },
+      { title: `Issue ${params.ref} — Siddi` },
       { name: "description", content: `Public status, location and full action history for civic issue ${params.ref}.` },
-      { property: "og:title", content: `Civic issue ${params.ref} — CivicFix` },
+      { property: "og:title", content: `Civic issue ${params.ref} — Siddi` },
       { property: "og:description", content: "Follow this infrastructure issue from report to resolution." },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },
@@ -196,7 +196,7 @@ function IssuePage() {
           <div className="divide-y rounded-2xl border bg-card">
             <Row icon={<MapPin className="h-4 w-4" />} label="Location">{i.landmark || `${i.lat.toFixed(5)}, ${i.lng.toFixed(5)}`}</Row>
             <Row icon={<Building2 className="h-4 w-4" />} label="Recorded ownership">{i.department ?? "Ownership review pending"}<span className="block text-xs text-muted-foreground">Internal record — not an official referral</span></Row>
-            <Row icon={<CalendarClock className="h-4 w-4" />} label="CivicFix review target">
+            <Row icon={<CalendarClock className="h-4 w-4" />} label="Siddi review target">
               {i.sla_due_at ? new Date(i.sla_due_at).toLocaleDateString("en-IN", { dateStyle: "medium" }) : "—"}
               <span className="block text-xs text-muted-foreground">{SEVERITY_META[i.severity as Severity].label} internal target — not a government commitment</span>
             </Row>

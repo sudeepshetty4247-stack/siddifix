@@ -9,7 +9,7 @@ import { categoryById, timeAgo } from "@/lib/civic";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/staff/routing")({
-  head: () => ({ meta: [{ title: "Routing exceptions — CivicFix" }, { name: "description", content: "Cases that need a supervisor to choose the responsible team." }, { property: "og:title", content: "Routing exceptions — CivicFix" }, { property: "og:description", content: "Cases that need a supervisor to choose the responsible team." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Routing exceptions — Siddi" }, { name: "description", content: "Cases that need a supervisor to choose the responsible team." }, { property: "og:title", content: "Routing exceptions — Siddi" }, { property: "og:description", content: "Cases that need a supervisor to choose the responsible team." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: RoutingExceptions,
 });
 
