@@ -78,6 +78,13 @@
       "when": 1792836178919,
       "tag": "0010_secure_report_media_and_public_projections",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792836286454,
+      "tag": "0011_atomic_photo_records_and_duplicate_candidates",
+      "breakpoints": true
     }
   ]
 }

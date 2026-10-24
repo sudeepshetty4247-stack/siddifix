@@ -557,6 +557,35 @@ export type Database = {
           },
         ]
       }
+      issue_ownership_reviews: {
+        Row: {
+          created_at: string
+          issue_id: string
+          reason: string
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          issue_id: string
+          reason?: string
+          state?: string
+        }
+        Update: {
+          created_at?: string
+          issue_id?: string
+          reason?: string
+          state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_ownership_reviews_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: true
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_photos: {
         Row: {
           annotated_path: string | null
