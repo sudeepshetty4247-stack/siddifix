@@ -1,10 +1,11 @@
 # CivicFix roadmap
 
 ## Current request — complete staff workflow and recipient notifications
-- [ ] Extend persisted notifications with recipient ownership, event identity and read/unread/archive actions.
-- [ ] Connect case/account/deadline events and recovery-safe refresh; build header bell and notification centre.
-- [ ] Repair queue scope/configuration, case communication privacy, evidence retry and staff dashboard context.
-- [ ] Run regression, isolated transactional integration/security tests and browser acceptance; record exact blockers.
+- [x] Extend persisted notifications with recipient ownership, event identity and read/unread/archive actions.
+- [x] Connect case/account/deadline events and recovery-safe refresh; build header bell and notification centre.
+- [x] Repair queue scope/configuration, case communication privacy, evidence retry and staff dashboard context; preserve queue filters on return.
+- [x] 189 regression tests passed, including isolated SQL acknowledgement→public/private updates→evidence→resolution→reporter confirmation; signed-in admin/staff negative authorization, notification controls, queue return and mobile layouts verified; latest preview build OK. Acceptance: docs/STAFF_NOTIFICATION_ACCEPTANCE.md.
+- [ ] Complete hosted positive staff lifecycle and device/offline acceptance — blocked by zero configured active operational teams and absence of an isolated hosted test backend; physical phone required. No production test complaints/evidence inserted.
 
 ## Current request — separate Admin and Government Staff portals
 - [x] Secure owner designation and explicit administrator delegation; registered owner invitation requested and role verified.
