@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, STATUSES, STATUS_META } from "@/lib/civic";
 import { IssueCard, ISSUE_COLUMNS, type IssueRow } from "@/components/civic/IssueCard";
+import { WardLeaderboard } from "@/components/civic/WardLeaderboard";
 import { publicCases } from '@/lib/public-cases';
 
 export const Route = createFileRoute("/_citizen/explore")({
@@ -66,6 +67,9 @@ function Explore() {
         ) : (
           <p className="rounded-2xl border border-dashed p-12 text-center text-muted-foreground">No issues match your filters.</p>
         )}
+      </div>
+      <div className="mx-auto mt-10 max-w-2xl rounded-2xl border bg-card">
+        <WardLeaderboard />
       </div>
     </div>
   );

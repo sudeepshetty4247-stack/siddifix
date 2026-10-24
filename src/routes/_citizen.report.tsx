@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
+import { useQuery } from '@tanstack/react-query';
 import { Camera, ImagePlus, MapPin, Loader2, CheckCircle2, Copy, Pencil, Search, ArrowRight, LocateFixed } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { LazyMap } from '@/components/civic/LazyMap';
 import { CivicInfo } from '@/components/civic/CivicInfo';
+import { getDirectory } from '@/lib/directory.functions';
+import { resolveCivicRouting } from '@/lib/directory';
 import { analyzeIssue, submitIssue } from '@/lib/issues.functions';
 import { prepareOriginalUpload, saveAnnotatedPhoto } from '@/lib/report-media.functions';
 import { reverseGeocode, searchAddress } from '@/lib/geocoding.functions';
@@ -36,6 +39,8 @@ function ReportPage(){
   const [originalPath,setOriginalPath]=useState<string|null>(null);const [done,setDone]=useState<{ref:string;token:string|null;annotated:boolean}|null>(null);
   const analyze=useServerFn(analyzeIssue);const submit=useServerFn(submitIssue);const prepare=useServerFn(prepareOriginalUpload);const annotate=useServerFn(saveAnnotatedPhoto);
   const geocode=useServerFn(reverseGeocode);const findAddress=useServerFn(searchAddress);
+  const dirQ=useQuery({queryKey:['civic-directory'],queryFn:()=>getDirectory(),staleTime:300000});
+  const lockWard=confirmed&&point&&dirQ.data?resolveCivicRouting(dirQ.data,point.lat,point.lng).ward:null;
 
   async function freshGps():Promise<PhotoMetadata['gps']>{
     if(!navigator.geolocation)return null;
@@ -91,8 +96,22 @@ function ReportPage(){
   return <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6"><h1 className="text-3xl font-bold">Report a problem</h1><p className="mt-2 text-sm text-muted-foreground">A photo. The problem location. Your voice.</p>
     <input ref={camera} aria-label="Camera photo" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="sr-only" onChange={e=>chooseFile(e.target.files?.[0],'camera')}/>
     <input ref={gallery} aria-label="Gallery photo" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={e=>chooseFile(e.target.files?.[0],'gallery')}/>
-    {!image?<div className="mt-8 grid gap-3 sm:grid-cols-2"><Button variant="outline" className="h-44 flex-col gap-3 border-dashed bg-primary-soft" disabled={preparing} onClick={takePhoto}>{preparing?<Loader2 className="h-7 w-7 animate-spin"/>:<Camera className="h-7 w-7 text-primary"/>}Take a photo</Button><Button variant="outline" className="h-44 flex-col gap-3 border-dashed" disabled={preparing} onClick={()=>gallery.current?.click()}><ImagePlus className="h-7 w-7 text-primary"/>Upload from gallery</Button></div>:<div className="mt-6 space-y-5">
-      <div className="relative"><img src={image} alt="Your report photo" className="max-h-96 w-full rounded-lg object-contain bg-muted"/><Button variant="secondary" size="sm" className="absolute right-3 top-3" disabled={busy} onClick={()=>gallery.current?.click()}><ImagePlus className="h-4 w-4"/>Change photo</Button></div>
+    {!image?<div className="mt-8 overflow-hidden rounded-3xl bg-ink px-6 py-14 text-center text-ink-foreground">
+      <p className="text-sm text-ink-foreground/70">Stand close to the spot</p>
+      <button aria-label="Take a photo" disabled={preparing} onClick={takePhoto} className="mx-auto mt-8 grid h-24 w-24 place-items-center rounded-full border-4 border-ink-foreground/80 bg-ink-foreground text-ink shadow-lift transition hover:scale-105 disabled:opacity-60">
+        {preparing?<Loader2 className="h-9 w-9 animate-spin"/>:<Camera className="h-9 w-9"/>}
+      </button>
+      <p className="mt-6 text-lg font-semibold">Take a photo</p>
+      <p className="mt-1 text-sm text-ink-foreground/70">We read your location automatically — no forms.</p>
+      <button onClick={()=>gallery.current?.click()} disabled={preparing} className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-ink-foreground/30 px-4 py-2 text-sm font-medium text-ink-foreground/90 hover:bg-ink-foreground/10"><ImagePlus className="h-4 w-4"/>Upload from gallery instead</button>
+    </div>:<div className="mt-6 space-y-5">
+      <div className="relative"><img src={image} alt="Your report photo" className="max-h-96 w-full rounded-lg object-contain bg-muted"/>
+        {confirmed&&point&&<div className="absolute left-3 top-3 max-w-[70%] rounded-xl bg-card/95 px-4 py-2.5 shadow-lift backdrop-blur">
+          <p className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide text-success"><span className="inline-block h-2 w-2 rounded-full bg-success"/>LOCATION LOCKED{meta.gps?.accuracy?` · ±${Math.round(meta.gps.accuracy)} m`:''}</p>
+          <p className="truncate text-sm font-semibold">{lockWard?lockWard.name:(address??'Report location')}</p>
+          {lockWard&&<p className="text-xs text-muted-foreground">{lockWard.corporation.replace('Bengaluru ','').replace(' City Corporation','')}{lockWard.ward_number?` #${lockWard.ward_number}`:''}</p>}
+        </div>}
+        <Button variant="secondary" size="sm" className="absolute right-3 top-3" disabled={busy} onClick={()=>gallery.current?.click()}><ImagePlus className="h-4 w-4"/>Change photo</Button></div>
       <div className="border-y py-4"><div className="flex items-start justify-between gap-3"><div><p className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4 text-primary"/>{address??(confirmed?'Selected report location':'Where is the problem?')}</p>{point&&<p className="mt-1 font-mono text-xs text-muted-foreground">{point.lat.toFixed(5)}, {point.lng.toFixed(5)}</p>}</div><Button size="sm" variant="outline" onClick={()=>setEditingLocation(!editingLocation)}><Pencil className="h-3 w-3"/>Change</Button></div><p role="status" className="mt-2 text-xs text-muted-foreground">{notice}</p>
       {editingLocation&&<div className="mt-4 space-y-3"><form className="flex gap-2" onSubmit={e=>{e.preventDefault();if(search.trim().length>=3)searchPlace();}}><input aria-label="Search problem address" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search a place, e.g. Kudlu Gate" className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 text-sm"/><Button type="submit" variant="outline" size="icon" aria-label="Search address" disabled={search.trim().length<3||searching}>{searching?<Loader2 className="h-4 w-4 animate-spin"/>:<Search className="h-4 w-4"/>}</Button></form><Button type="button" variant="ghost" size="sm" disabled={locating} onClick={locateMe}>{locating?<Loader2 className="h-4 w-4 animate-spin"/>:<LocateFixed className="h-4 w-4"/>}Use my current location</Button>{results.length>0&&<div className="divide-y rounded-lg border bg-card">{results.map(r=><button type="button" key={`${r.lat}-${r.lng}`} className="flex w-full items-start gap-2 px-3 py-2.5 text-left text-sm hover:bg-secondary" onClick={()=>{setPoint({lat:r.lat,lng:r.lng});setAddress(null);setResults([]);setConfirmed(true);setEditingLocation(false);setNotice('Location set from your search. Change it if the problem is elsewhere.');}}><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary"/><span>{r.label}</span></button>)}</div>}<div className="h-64 overflow-hidden rounded-lg border"><LazyMap center={point??BENGALURU} picked={point} recenter={point?{...point,zoom:16}:null} zoom={point?16:12} onPick={(lat,lng)=>{setPoint({lat,lng});setConfirmed(false);setAddress(null);}}/></div><Button disabled={!point||!isInIndia(point.lat,point.lng)} onClick={()=>{setConfirmed(true);setEditingLocation(false);}}><CheckCircle2 className="h-4 w-4"/>Confirm problem location</Button>{point&&!isInIndia(point.lat,point.lng)&&<p className="text-sm text-destructive">Choose a problem location within India.</p>}</div>}{addressNotice&&<p className="mt-2 text-xs text-muted-foreground">{addressNotice}</p>}</div>
       <label className="block text-sm font-medium">Anything to add? <span className="text-muted-foreground">(optional)</span><textarea aria-label="Optional description" value={description} maxLength={1000} onChange={e=>setDescription(e.target.value)} rows={2} className="mt-2 w-full rounded-lg border bg-card p-3 font-normal"/></label>

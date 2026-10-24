@@ -7,8 +7,20 @@ import type { Ward } from "@/lib/directory";
 import { geometryRings, wardMapBounds } from "@/lib/bengaluru-map";
 
 export type MapMarker = { id: string; lat: number; lng: number; tone?: "open" | "resolved" | "critical" | "overdue"; label?: string; href?: string; sub?: string };
+export type MapCount = { id: string; lat: number; lng: number; count: number; label?: string };
 
 const colorVar = { open: "var(--primary)", resolved: "var(--success)", critical: "var(--destructive)", overdue: "var(--warning)" };
+
+function countBadge(count: number) {
+  const label = count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count);
+  const size = count >= 100 ? 64 : count >= 10 ? 56 : 48;
+  return L.divIcon({
+    className: "",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    html: `<span style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:999px;background:var(--destructive);color:var(--destructive-foreground);font-weight:700;font-size:${count >= 100 ? 17 : 15}px;border:3px solid var(--card);box-shadow:0 4px 14px oklch(0.3 0.1 27 / .45)">${label}</span>`,
+  });
+}
 
 function dot(tone: MapMarker["tone"] = "open") {
   return L.divIcon({
@@ -62,11 +74,13 @@ export default function MapView({
   center,
   zoom = 13,
   markers = [],
+  counts = [],
   picked,
   onPick,
   recenter,
   className,
   onSelect,
+  onCountSelect,
   wards,
   selectedWard,
   onWardSelect,
@@ -74,11 +88,13 @@ export default function MapView({
   center: { lat: number; lng: number };
   zoom?: number;
   markers?: MapMarker[];
+  counts?: MapCount[];
   picked?: { lat: number; lng: number } | null;
   onPick?: (lat: number, lng: number) => void;
   recenter?: { lat: number; lng: number; zoom?: number } | null;
   className?: string | undefined;
   onSelect?: (id: string) => void;
+  onCountSelect?: (id: string) => void;
   wards?: Ward[];
   selectedWard?: string;
   onWardSelect?: (id: string, point: {lat: number; lng: number}) => void;
@@ -100,6 +116,11 @@ export default function MapView({
           eventHandlers={{ dragend: (e) => { const p = (e.target as L.Marker).getLatLng(); onPick?.(p.lat, p.lng); } }}
         />
       )}
+      {counts.map((c) => (
+        <Marker key={`count-${c.id}`} position={[c.lat, c.lng]} icon={countBadge(c.count)} eventHandlers={onCountSelect ? { click: () => onCountSelect(c.id) } : {}}>
+          {c.label && <Popup><div style={{ fontWeight: 600 }}>{c.label}</div><div style={{ fontSize: 12, opacity: 0.7 }}>{c.count} report{c.count === 1 ? "" : "s"}</div></Popup>}
+        </Marker>
+      ))}
       {markers.map((m) => (
         <Marker key={m.id} position={[m.lat, m.lng]} icon={dot(m.tone)} eventHandlers={onSelect ? {click: () => onSelect(m.id)} : {}}>
           {m.label && (
