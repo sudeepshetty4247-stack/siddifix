@@ -1,6 +1,8 @@
 # CivicFix roadmap
 
 ## Current priority — simplify and complete the real product
+- [ ] Remove citizen ward-test controls; replace Home with a distinct, map-free reporting and tracking experience.
+- [ ] Verify official GBA, MLA/MP and ward member identities and photographs; show only source-backed details, never guessed constituency mappings.
 - [x] Bengaluru-focused live ward map and citizen home with separate read-only ward/category test inputs. All five corporation lookups and Mysuru outside-coverage warning passed in the browser; 37 tests passed including interior pins for all 369 wards. No test reports inserted. Hosted address service, verified member contacts and administrator account remain blockers for full operational end-to-end checks.
 - [x] Imported 369 December-2025 GBA ward polygons and zones atomically with publication/check dates and source hash; real Bengaluru UI lookup and shared-edge/manual-review rules verified (29 tests).
 - [ ] Hosted OpenStreetMap/Nominatim reverse-geocoding integration implemented but blocked by missing hosted service URL; donated public endpoint deliberately not used. Department routes remain verification-required, not official assignments. GPS denial callback tested deterministically, real browser permission denial remains unverified.
