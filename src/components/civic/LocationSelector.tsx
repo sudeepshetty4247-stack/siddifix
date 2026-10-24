@@ -1,14 +1,20 @@
 import { useState } from 'react';
-import { MapPin, ChevronDown, LocateFixed, Loader2 } from 'lucide-react';
+import { useServerFn } from '@tanstack/react-start';
+import { MapPin, ChevronDown, LocateFixed, Loader2, PlayCircle, Search } from 'lucide-react';
 import { useLocation } from '@/lib/location';
 import { BENGALURU, isInIndia } from '@/lib/civic';
 import { supabase } from '@/integrations/supabase/client';
+import { searchAddress } from '@/lib/geocoding.functions';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { LazyMap } from './LazyMap';
 
 export function LocationSelector() {
-  const { location, select, open, setOpen, locating, detect, notice, recent } = useLocation();
+  const { location, select, open, setOpen, locating, detect, notice, recent, coverage, enterDemo, exitDemo } = useLocation();
+  const findAddress = useServerFn(searchAddress);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<{ lat: number; lng: number; label: string }[]>([]);
+  const [searching, setSearching] = useState(false);
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [label, setLabel] = useState('');
   const [coordinates, setCoordinates] = useState('');
@@ -37,16 +43,24 @@ export function LocationSelector() {
   return <>
     {<Button variant="ghost" onClick={() => setOpen(true)} className="h-auto min-w-0 justify-start gap-2 px-2 py-2 text-left" aria-label="Change location">
       <MapPin className="h-5 w-5 shrink-0 text-primary" />
-      <span className="min-w-0"><span className="flex items-center gap-1"><span className="max-w-[180px] truncate text-sm font-semibold">{location?.label === 'Current location' ? 'Selected location' : location?.label || 'Choose your location'}</span><ChevronDown className="h-3 w-3 shrink-0" /></span><span className="block text-[11px] font-normal text-muted-foreground">{location ? location.method === 'device' ? `GPS estimate ±${Math.round(location.accuracy??0)} m · Tap to change` : 'Tap to change' : 'Issues and services around you'}</span></span>
+      <span className="min-w-0"><span className="flex items-center gap-1"><span className="max-w-[180px] truncate text-sm font-semibold">{location?.label === 'Current location' ? 'Selected location' : location?.label || 'Choose your location'}</span><ChevronDown className="h-3 w-3 shrink-0" /></span><span className="block text-[11px] font-normal text-muted-foreground">{location ? location.method === 'demo' ? 'Demo location · Tap to change' : coverage === 'outside' ? 'Outside service area · Tap to change' : location.method === 'device' ? `GPS estimate ±${Math.round(location.accuracy??0)} m · Tap to change` : 'Chosen by you · Tap to change' : 'Issues and services around you'}</span></span>
     </Button>}
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-xl overflow-y-auto">
-        <DialogTitle>Your neighbourhood</DialogTitle>
-        <DialogDescription>Choose the area you want to report in. Your preference stays on this device.</DialogDescription>
+        <DialogTitle>Choose your location</DialogTitle>
+        <DialogDescription>Siddi currently serves Bengaluru. Pick the place you want to report in — it stays on this device.</DialogDescription>
         {notice && <p role="status" className="text-sm text-warning-foreground">{notice}</p>}
-        <Button variant="outline" onClick={() => detect()} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}Use current location</Button>
-        <label className="space-y-1 text-sm font-medium">Locality or landmark<input aria-label="Locality or landmark" value={label} onChange={e => setLabel(e.target.value)} maxLength={120} placeholder="e.g. Kudlu Gate, Bengaluru" className="h-10 w-full rounded-lg border bg-card px-3 font-normal" /></label>
-        <p className="text-xs text-muted-foreground">Address lookup is not connected yet. Confirm your location with a map pin or coordinates.</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button variant="outline" onClick={() => detect()} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}Use current location</Button>
+          <Button variant="outline" onClick={enterDemo}><PlayCircle className="h-4 w-4" />Try Bengaluru demo</Button>
+        </div>
+        {location?.method === 'demo' && <Button variant="ghost" onClick={exitDemo}>Exit demo mode</Button>}
+        <form className="flex gap-2" onSubmit={async e => { e.preventDefault(); if (query.trim().length < 3) return; setSearching(true); setError(''); try { const r = await findAddress({ data: { query } }); setResults(r.results); if (!r.results.length && r.notice) setError(r.notice); } catch { setError('Address search is unavailable right now. Place a pin instead.'); } finally { setSearching(false); } }}>
+          <input aria-label="Search a Bengaluru place" value={query} onChange={e => setQuery(e.target.value)} maxLength={160} placeholder="Search a Bengaluru area or landmark" className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 text-sm" />
+          <Button type="submit" variant="outline" disabled={searching}>{searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}Search</Button>
+        </form>
+        {results.length > 0 && <div className="divide-y rounded-lg border">{results.map(r => <button key={`${r.lat},${r.lng}`} onClick={() => { setPin({ lat: r.lat, lng: r.lng }); setLabel(r.label.slice(0, 120)); setResults([]); }} className="block w-full truncate px-3 py-2 text-left text-sm hover:bg-secondary">{r.label}</button>)}</div>}
+        <label className="space-y-1 text-sm font-medium">Name this place (optional)<input aria-label="Locality or landmark" value={label} onChange={e => setLabel(e.target.value)} maxLength={120} placeholder="e.g. Kudlu Gate" className="h-10 w-full rounded-lg border bg-card px-3 font-normal" /></label>
         <div className="h-52 overflow-hidden rounded-lg border"><LazyMap center={pin ?? location ?? BENGALURU} picked={pin ?? location} onPick={(lat, lng) => { setPin({ lat, lng }); setError(''); }} recenter={pin} zoom={13} /></div>
         <div className="flex gap-2"><input aria-label="Latitude, longitude" value={coordinates} onChange={e => setCoordinates(e.target.value)} placeholder="12.9716, 77.5946" className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 text-sm" /><Button variant="outline" onClick={applyCoordinates}>Set pin</Button></div>
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}

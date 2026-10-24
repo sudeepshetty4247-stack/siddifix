@@ -834,6 +834,8 @@ export type Database = {
       }
       issues: {
         Row: {
+          ack_due_at: string | null
+          ack_escalated_at: string | null
           ack_message: string | null
           acknowledged_at: string | null
           acknowledged_by: string | null
@@ -866,11 +868,14 @@ export type Database = {
           subcategory: string | null
           summary: string | null
           support_count: number
+          target_snapshot: Json | null
           team_id: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          ack_due_at?: string | null
+          ack_escalated_at?: string | null
           ack_message?: string | null
           acknowledged_at?: string | null
           acknowledged_by?: string | null
@@ -903,11 +908,14 @@ export type Database = {
           subcategory?: string | null
           summary?: string | null
           support_count?: number
+          target_snapshot?: Json | null
           team_id?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          ack_due_at?: string | null
+          ack_escalated_at?: string | null
           ack_message?: string | null
           acknowledged_at?: string | null
           acknowledged_by?: string | null
@@ -940,6 +948,7 @@ export type Database = {
           subcategory?: string | null
           summary?: string | null
           support_count?: number
+          target_snapshot?: Json | null
           team_id?: string | null
           title?: string
           updated_at?: string
@@ -967,6 +976,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      service_targets: {
+        Row: {
+          ack_hours: number
+          active: boolean
+          category: string
+          effective_from: string
+          id: string
+          notes: string
+          resolve_hours: number
+          severity: Database["public"]["Enums"]["issue_severity"]
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          ack_hours: number
+          active?: boolean
+          category: string
+          effective_from?: string
+          id?: string
+          notes?: string
+          resolve_hours: number
+          severity: Database["public"]["Enums"]["issue_severity"]
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          ack_hours?: number
+          active?: boolean
+          category?: string
+          effective_from?: string
+          id?: string
+          notes?: string
+          resolve_hours?: number
+          severity?: Database["public"]["Enums"]["issue_severity"]
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
       }
       staff_profiles: {
         Row: {
@@ -1032,6 +1083,17 @@ export type Database = {
           _name: string
           _user: string
           _wards: string[]
+        }
+        Returns: undefined
+      }
+      admin_upsert_service_target: {
+        Args: {
+          _ack_hours: number
+          _active: boolean
+          _category: string
+          _notes: string
+          _resolve_hours: number
+          _severity: Database["public"]["Enums"]["issue_severity"]
         }
         Returns: undefined
       }

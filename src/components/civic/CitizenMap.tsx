@@ -65,7 +65,8 @@ export function CitizenMap() {
     if (place.kind === 'outside') return;
     flewToFix.current = true;
     setFly({ lat: gps.fix.lat, lng: gps.fix.lng, zoom: place.precise ? 16 : 14, nonce: Date.now() });
-    if (place.precise && !sharedOnce.current) {
+    // Never silently replace a manually chosen place or the explicit demo point with GPS.
+    if (place.precise && !sharedOnce.current && (!location || location.method === 'device')) {
       sharedOnce.current = true;
       select({ lat: gps.fix.lat, lng: gps.fix.lng, label: 'Current location', method: 'device', accuracy: gps.fix.accuracy });
     }

@@ -104,7 +104,16 @@ export const submitIssue = createServerFn({ method: "POST" })
 
     const severity = data.severity as Severity;
     const routing = resolveCivicRouting(await getDirectory(), data.lat, data.lng, data.category, data.subcategory ?? undefined);
-    const refCode = `${isInBengaluru(data.lat, data.lng) ? "BLR" : "IND"}-${randomString(6)}`;
+    const { coverageFromWardMatches, canAcceptReport } = await import('./coverage');
+    const coverage = coverageFromWardMatches(routing.ward ? 1 : routing.reviewReason?.startsWith('This pin touches') ? 2 : 0);
+    if (!routing.coverage || !canAcceptReport(coverage)) {
+      await supabaseAdmin.storage.from('issue-photos').remove([path]);
+      throw new Error("This location is outside Siddi's current service area. Siddi accepts reports inside Bengaluru's wards only.");
+    }
+    const targetRows = await supabaseAdmin.from('service_targets').select('category,severity,ack_hours,resolve_hours,version,active').eq('active', true);
+    const { computeTargets } = await import('./service-targets');
+    const targets = computeTargets((targetRows.data ?? []) as never, data.category, severity, new Date());
+    const refCode = `BLR-${randomString(6)}`;
     const token = randomToken();
 
     const { data: result, error } = await supabaseAdmin.rpc('create_civic_report', {
@@ -117,7 +126,7 @@ export const submitIssue = createServerFn({ method: "POST" })
         ai_confidence: data.aiConfidence ?? null, safety_warning: data.safetyWarning ?? null,
         lat: data.lat, lng: data.lng, landmark: data.landmark ?? null, photo_url: signed.data.signedUrl,
         department: 'Ownership review pending', duplicate_of: data.duplicateOf ?? null,
-        sla_due_at: new Date(Date.now() + SEVERITY_META[severity].slaHours * 3600000).toISOString(),
+        sla_due_at: targets.resolveDueAt,
         routing_snapshot: JSON.parse(JSON.stringify(routing)),
         original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
         photo_source:data.photoMetadata?.source??'gallery',photo_metadata:data.photoMetadata ? JSON.parse(JSON.stringify(data.photoMetadata)) : null,
@@ -134,6 +143,7 @@ export const submitIssue = createServerFn({ method: "POST" })
       // Route the new case to the matching operational team (category + ward); failures leave it in the exception queue.
       const created = await supabaseAdmin.from('issues').select('id').eq('ref_code', saved.ref).maybeSingle();
       if (created.data?.id) {
+        await supabaseAdmin.from('issues').update({ ack_due_at: targets.ackDueAt, target_snapshot: JSON.parse(JSON.stringify(targets.snapshot)) }).eq('id', created.data.id);
         const routed = await supabaseAdmin.rpc('route_issue_to_team', { _issue: created.data.id });
         if (routed.error) console.error('Team routing failed', saved.ref, routed.error.message);
       }
