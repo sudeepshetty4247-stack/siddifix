@@ -52,7 +52,15 @@ export const staffQueue = createServerFn({ method: "POST" })
     if(data.view==='overdue'||data.overdue) query=query.or(`sla_due_at.lt.${new Date().toISOString()},eta_at.lt.${new Date().toISOString()}`);
     if(data.metric==='routing_exceptions') query=query.eq('assignment_state','routing_exception');
     if(data.metric==='assigned_to_me') query=query.eq('assigned_to',context.userId);
-    if(data.metric==='citizen_confirmed') query=query.eq('status','closed');
+    if(data.metric!=='total_reports'&&data.metric!=='assigned_to_me') query=query.is('duplicate_of',null);
+    if(data.metric==='total_reports'||data.metric==='citizen_confirmed') {
+      query=context.supabase.from('issues').select('id,ref_code,title,category,severity,status,sla_due_at,eta_at,acknowledged_at,escalated_at,created_at,landmark,department,support_count,photo_url,authority_id,assignment_state,duplicate_of,duplicate_candidate_id,team_id,routing_snapshot',{count:'exact'}).order('created_at',{ascending:false});
+      if(data.metric==='citizen_confirmed') {
+        const events=await context.supabase.from('issue_events').select('issue_id').eq('kind','citizen_confirmed');
+        if(events.error)throw new Error('Confirmation records unavailable.');
+        query=query.is('duplicate_of',null).in('id',[...new Set((events.data??[]).map(e=>e.issue_id))]);
+      }
+    }
     const result=await query.range(data.page*50,data.page*50+49);
     if(result.error) throw new Error('Queue could not be loaded.');
     const teams=await context.supabase.from("civic_teams").select("id,name");
