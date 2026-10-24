@@ -88,8 +88,8 @@ function ReportPage() {
 
   async function onFile(file?: File) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) return toast.error("Please choose an image file.");
-    if (file.size > 25 * 1024 * 1024) return toast.error("That image is too large (max 25 MB).");
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image file."); return; }
+    if (file.size > 25 * 1024 * 1024) { toast.error("That image is too large (max 25 MB)."); return; }
     try {
       const url = await compressImage(file);
       setImage(url);
@@ -100,7 +100,7 @@ function ReportPage() {
   }
 
   function locate() {
-    if (!("geolocation" in navigator)) return toast.error("Location isn't available on this device. Tap the map to place a pin.");
+    if (!("geolocation" in navigator)) { toast.error("Location isn't available on this device. Tap the map to place a pin."); return; }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (p) => {
@@ -398,14 +398,14 @@ function DescriptionInput({ value, onChange }: { value: string; onChange: (v: st
     setSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition));
   }, []);
   function toggle() {
-    if (listening) return recRef.current?.stop();
+    if (listening) { recRef.current?.stop(); return; }
     const w = window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec };
     const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!Ctor) return;
     const rec = new Ctor();
     rec.lang = "en-IN";
     rec.interimResults = false;
-    rec.onresult = (e) => onChange((value ? value + " " : "") + Array.from(e.results).map((r) => r[0].transcript).join(" "));
+    rec.onresult = (e) => onChange((value ? value + " " : "") + Array.from(e.results).map((r) => r[0]!.transcript).join(" "));
     rec.onend = () => setListening(false);
     recRef.current = rec;
     rec.start();
