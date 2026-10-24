@@ -49,7 +49,8 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     if(!location||!suggestedReportLocation(location)||location.label!=='Current location')return;
     let cancelled=false;
     reverseGeocode({data:{lat:location.lat,lng:location.lng}}).then(result=>{
-      if(!cancelled&&result.address)setLocation(previous=>previous&&previous.lat===location.lat&&previous.lng===location.lng?{...previous,label:result.address.split(',').slice(0,2).join(',').slice(0,120)}:previous);
+      const address=result.address;
+      if(!cancelled&&address)setLocation(previous=>previous&&previous.lat===location.lat&&previous.lng===location.lng?{...previous,label:address.split(',').slice(0,2).join(',').slice(0,120)}:previous);
     }).catch(()=>{/* coordinates remain available */});
     return()=>{cancelled=true;};
   },[location?.lat,location?.lng,location?.label]);
