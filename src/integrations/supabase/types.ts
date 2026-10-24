@@ -243,6 +243,83 @@ export type Database = {
         }
         Relationships: []
       }
+      civic_directory_jobs: {
+        Row: {
+          attempts: number
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          credit: string | null
+          id: string
+          identity_evidence: string
+          image_url: string | null
+          kind: string
+          last_error: string | null
+          license_url: string | null
+          next_attempt_at: string
+          person_id: string
+          reviewed_by: string | null
+          sha256: string | null
+          source_url: string
+          status: string
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          credit?: string | null
+          id?: string
+          identity_evidence: string
+          image_url?: string | null
+          kind?: string
+          last_error?: string | null
+          license_url?: string | null
+          next_attempt_at?: string
+          person_id: string
+          reviewed_by?: string | null
+          sha256?: string | null
+          source_url: string
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          credit?: string | null
+          id?: string
+          identity_evidence?: string
+          image_url?: string | null
+          kind?: string
+          last_error?: string | null
+          license_url?: string | null
+          next_attempt_at?: string
+          person_id?: string
+          reviewed_by?: string | null
+          sha256?: string | null
+          source_url?: string
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "civic_directory_jobs_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "civic_people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       civic_people: {
         Row: {
           active: boolean
