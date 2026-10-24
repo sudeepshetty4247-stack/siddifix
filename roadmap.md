@@ -1,5 +1,12 @@
 # CivicFix roadmap
 
+## Current priority — simplify and complete the real product
+- [ ] Audit existing citizen reporting, map, staff workflows, directory and tests against the latest uploaded brief.
+- [ ] Make the opening screen map-first; complete reliable photo and confirmed-location reporting with AI/manual fallback.
+- [ ] Complete duplicate review, assignment, status, resolution evidence, public tracking and real-data analytics using existing infrastructure.
+- [ ] Verify restricted directory setup/import and honest missing/out-of-coverage routing.
+- [ ] Run the requested real-data end-to-end workflow and edge cases; report actual results and blockers.
+
 ## Done (phase 1)
 - [x] Citizen site: home, 4-step report with AI photo analysis, duplicate linking, confirmation + private link
 - [x] Civic map, explore, issue page with live timeline, My Tracking, reporter confirm/dispute
