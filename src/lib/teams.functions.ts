@@ -34,12 +34,12 @@ export const upsertTeam = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof teamSchema>) => teamSchema.parse(input))
   .handler(async ({ data, context }) => {
     const result = await context.supabase.rpc("admin_upsert_team", {
-      _id: data.id,
+      _id: data.id as string,
       _name: data.name,
       _department: data.department,
       _categories: data.categories,
       _wards: data.wards,
-      _supervisor: data.supervisorId,
+      _supervisor: data.supervisorId as string,
       _contact_label: data.contactLabel ?? "",
       _contact_phone: data.contactPhone ?? "",
       _fallback: data.isFallback,
