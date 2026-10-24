@@ -253,6 +253,13 @@
       "when": 1792872955624,
       "tag": "0035_scoped_new_and_daily_metrics",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792873061746,
+      "tag": "0036_atomic_report_routing_and_confirmation_guard",
+      "breakpoints": true
     }
   ]
 }
