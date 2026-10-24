@@ -1,5 +1,12 @@
 # CivicFix roadmap
 
+## Current request — cover, clean workspace and transparency
+- [ ] Replace Home cover with the latest supplied community photo; retain Siddi name/slogan and Back-first header.
+- [ ] Remove identified test complaints, dependent activity and test teams; preserve staff accounts and verified directory.
+- [ ] Add a one-conversation, visit-only multilingual assistant with safe public context, streaming and Stop.
+- [ ] Add full-dataset public transparency reports with corporation, ward, MLA/MP constituency totals and downloadable summaries; add case report export.
+- [ ] Verify empty citizen/staff views, assistant multilingual follow-up, report downloads and automated regression tests.
+
 ## Current request — Siddi identity and opening screen
 - [x] Renamed app-facing CivicFix wording and page titles to Siddi; retained official Bengaluru locations and historical records.
 - [x] Centered supplied logo on black opening screen; compact Siddi name/slogan in navigation, updated icons. Desktop/mobile opening and dismissal verified; 128 tests passed, preview validation clean.
