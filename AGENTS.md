@@ -35,7 +35,7 @@
 - Nearby citizen totals use a public safe database aggregate over all canonical cases; map-list distance filtering shares its radius, while ward jurisdiction remains independent of the neighbourhood circle.
 - Private original uploads are validated and hashed before atomic issue_photos persistence; display and annotated copies are separate, keeping metadata provenance distinct from corrected report coordinates.
 - Citizens read safe public case/event projections; hashed reporter capabilities and persistent request limits protect public actions without anonymous table-write grants.
-- AuthorityPortrait requires HTTPS photo/source URLs and falls back to initials; verified civic_people are ward-scoped and audited, and unverified identities stay hidden.
+- AuthorityPortrait requires independent photo verification and source credits; use HTTPS or managed media paths, otherwise initials. Profiles are ward-scoped and audited.
 - Ward and routing edge-case fixtures belong in automated tests only, not citizen-facing test controls; this preserves a real citizen experience and genuine case totals.
 
 - Ward MLA/MP come from Election Commission results linked through each ward's official assembly constituency number in civic_wards; corporators are shown as not in office until council elections are held.- Civic Map and the report camera use a live device position (watchPosition) while open: blue dot with accuracy circle, own-ward highlight and 'you are here' ward card; fixes over 100 m are shown as approximate, never auto-confirmed. Automatic location attempts never open dialogs.
