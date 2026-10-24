@@ -67,6 +67,9 @@ function Explore() {
           <p className="rounded-2xl border border-dashed p-12 text-center text-muted-foreground">No issues match your filters.</p>
         )}
       </div>
+      <div className="mx-auto mt-10 max-w-2xl rounded-2xl border bg-card">
+        <WardLeaderboard />
+      </div>
     </div>
   );
 }
