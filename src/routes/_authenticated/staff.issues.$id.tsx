@@ -67,7 +67,7 @@ function StaffIssue() {
   async function applyStatus() {
     if (!nextStatus || !issue.data) return;
     const requiresNote = nextStatus === "rejected" || nextStatus === "resolved";
-    if (requiresNote && note.trim().length < 5) return toast.error(nextStatus === "rejected" ? "Please give a reason for rejecting." : "Please describe what was done to resolve it.");
+    if (requiresNote && note.trim().length < 5) { toast.error(nextStatus === "rejected" ? "Please give a reason for rejecting." : "Please describe what was done to resolve it."); return; }
     setBusy(true);
     try {
       const from = issue.data.status as IssueStatus;
@@ -101,7 +101,7 @@ function StaffIssue() {
 
   async function updateField(patch: { category?: string; severity?: (typeof SEVERITIES)[number]; department?: string }, label: string) {
     const { error } = await supabase.from("issues").update(patch).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     await logEvent({ kind: patch.department ? "assigned" : "note", note: label }).catch(() => {});
     toast.success("Updated");
     refresh();

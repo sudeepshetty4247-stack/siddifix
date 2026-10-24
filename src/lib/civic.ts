@@ -15,7 +15,7 @@ export const CATEGORIES = [
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];
 export const categoryById = (id: string | null | undefined) =>
-  CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[CATEGORIES.length - 1];
+  (CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[CATEGORIES.length - 1])!;
 
 export const STATUSES = [
   "needs_classification",

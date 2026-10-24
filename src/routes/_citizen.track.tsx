@@ -81,7 +81,7 @@ function Track() {
                 </div>
               </div>
               <button onClick={() => { removeTracked(it.ref); setItems(getTracked()); }} className="rounded-lg p-2 text-muted-foreground hover:bg-secondary" aria-label="Remove"><Trash2 className="h-4 w-4" /></button>
-              <Link to="/issues/$ref" params={{ ref: it.ref }} hash={it.token ? `t=${it.token}` : undefined} className="rounded-lg p-2 hover:bg-secondary" aria-label="Open"><ArrowRight className="h-5 w-5" /></Link>
+              <Link to="/issues/$ref" params={{ ref: it.ref }} {...(it.token ? { hash: `t=${it.token}` } : {})} className="rounded-lg p-2 hover:bg-secondary" aria-label="Open"><ArrowRight className="h-5 w-5" /></Link>
             </div>
           );
         })}

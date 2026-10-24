@@ -46,8 +46,8 @@ export class AiError extends Error {
   }
 }
 
-export async function analyzeIssueWithAI(input: { imageDataUrl?: string | null; description?: string | null }): Promise<Analysis> {
-  const apiKey = process.env.LOVABLE_API_KEY;
+export async function analyzeIssueWithAI(input: { imageDataUrl?: string | null | undefined; description?: string | null | undefined }): Promise<Analysis> {
+  const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new AiError("AI is not configured", 401);
 
   const cats = CATEGORIES.map((c) => `${c.id}: ${c.label} (${c.subs.join(", ")})`).join("\n");
@@ -60,7 +60,7 @@ export async function analyzeIssueWithAI(input: { imageDataUrl?: string | null; 
   if (input.imageDataUrl) content.push({ type: "image", image: new URL(input.imageDataUrl) });
 
   const result = streamText({
-    model: provider(apiKey).responses(MODEL),
+    model: provider(apiKey).responses(MODEL) as never,
     instructions: `You classify civic infrastructure reports for CivicFix, a public issue tracker.
 Categories (use the id):
 ${cats}
