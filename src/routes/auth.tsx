@@ -61,8 +61,8 @@ function AuthPage() {
           <BackButton />
           <div className="lg:hidden"><Logo /></div>
           <div>
-            <h2 className="text-2xl font-bold">Staff sign in</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Citizens don't need an account — <Link to="/report" className="font-medium text-primary">report an issue here</Link>.</p><p className="mt-2 text-xs text-muted-foreground">Accounts require separately granted workspace access. Creating an account never makes you an administrator.</p>
+            <h2 className="text-2xl font-bold">Staff &amp; admin sign in</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Administrators sign in here too — admin pages appear in the menu automatically. Citizens don't need an account — <Link to="/report" className="font-medium text-primary">report an issue here</Link>.</p>
           </div>
           <form onSubmit={submit} className="space-y-3">
             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Work email" className="h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />

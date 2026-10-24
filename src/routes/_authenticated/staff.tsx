@@ -81,6 +81,18 @@ function StaffLayout() {
           </Link>
         ))}
       </nav>
+      {isAdmin && (
+        <>
+          <p className="-mt-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">Administrator</p>
+          <nav className="-mt-3 flex flex-col gap-1">
+            {adminNav.map((n) => (
+              <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition hover:bg-sidebar-accent" activeProps={{ className: "bg-sidebar-accent !text-sidebar-accent-foreground" }}>
+                <n.icon className="h-4 w-4" />{n.label}
+              </Link>
+            ))}
+          </nav>
+        </>
+      )}
       <div className="mt-auto space-y-1">
         <Link to="/transparency" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"><ExternalLink className="h-4 w-4" />Public transparency</Link>
         <Link to="/assistant" className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent"><ExternalLink className="h-4 w-4" />Ask Siddi</Link>
