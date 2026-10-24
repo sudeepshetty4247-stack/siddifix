@@ -17,6 +17,7 @@ import { suggestedReportLocation } from '@/lib/report-location';
 import { CivicInfo } from './CivicInfo';
 import { NearbyCaseSummary } from './NearbyCaseSummary';
 import { distanceMetres, NEARBY_RADIUS_METRES } from '@/lib/nearby-cases';
+import { publicCases } from '@/lib/public-cases';
 
 type MapIssue = IssueRow & { duplicate_of: string | null };
 export function CitizenMap() {
@@ -37,9 +38,7 @@ export function CitizenMap() {
   const [pin, setPin] = useState<{lat: number; lng: number} | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const q = useQuery({ queryKey: ['citizen-map'], refetchInterval: 30000, queryFn: async () => {
-    const result = await supabase.from('issues').select(`${ISSUE_COLUMNS}, duplicate_of`).order('created_at', { ascending: false }).limit(1000);
-    if (result.error) throw result.error;
-    return result.data as MapIssue[];
+    return await publicCases() as MapIssue[];
   }});
   const list = (q.data ?? []).filter(i => (!dir.data || !!resolveCivicRouting(dir.data, i.lat, i.lng).ward) && !i.duplicate_of && (category === 'all' || i.category === category) && (status === 'all' || (status === 'open' ? OPEN_STATUSES.includes(i.status as never) : ['resolved','closed'].includes(i.status))) && (scope === 'all' || !reliableLocation || distanceMetres(reliableLocation,i) <= NEARBY_RADIUS_METRES));
   const active = list.find(i => i.id === selected);

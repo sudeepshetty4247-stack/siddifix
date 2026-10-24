@@ -14,6 +14,7 @@ import { getTracked, isTracked, removeTracked, saveTracked } from "@/lib/trackin
 import { CivicInfo } from "@/components/civic/CivicInfo";
 import { IssueEvidence } from '@/components/civic/IssueEvidence';
 import { Button } from '@/components/ui/button';
+import { publicCases, publicEvents } from '@/lib/public-cases';
 
 export const Route = createFileRoute("/_citizen/issues/$ref")({
   head: ({ params }) => ({
@@ -44,9 +45,7 @@ function IssuePage() {
     queryKey: ["issue", ref],
     refetchInterval: 30000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("issues").select("*").eq("ref_code", ref).maybeSingle();
-      if (error) throw error;
-      return data;
+      return (await publicCases(ref))[0] ?? null;
     },
   });
   const events = useQuery({
@@ -55,16 +54,12 @@ function IssuePage() {
     refetchInterval: 30000,
     queryFn: async () => {
       if (!issue.data?.id) return [];
-      const { data, error } = await supabase.from("issue_events").select("*").eq("issue_id", issue.data.id).order("created_at");
-      if (error) throw error;
-      return (data ?? []) as EventRow[];
+      return await publicEvents(issue.data.id);
     },
   });
   const canonical = useQuery({ queryKey: ['canonical-issue', issue.data?.duplicate_of], enabled: !!issue.data?.duplicate_of, queryFn: async () => {
     if (!issue.data?.duplicate_of) return null;
-    const result = await supabase.from('issues').select('id,ref_code,title,status').eq('id',issue.data.duplicate_of).maybeSingle();
-    if (result.error) throw result.error;
-    return result.data;
+    return (await publicCases()).find(row=>row.id===issue.data?.duplicate_of) ?? null;
   }});
 
   useEffect(() => {
@@ -73,7 +68,7 @@ function IssuePage() {
     setFollowing(isTracked(ref));
     if (t) {
       setToken(t);
-      verify({ data: { ref, token: t } }).then((r) => setTokenValid(r.valid));
+      verify({ data: { ref, token: t } }).then((r) => setTokenValid(r.valid)).catch(()=>setTokenValid(false));
     }
   }, [ref, verify]);
 

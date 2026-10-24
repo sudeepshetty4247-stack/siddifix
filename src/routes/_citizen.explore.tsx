@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, STATUSES, STATUS_META } from "@/lib/civic";
 import { IssueCard, ISSUE_COLUMNS, type IssueRow } from "@/components/civic/IssueCard";
+import { publicCases } from '@/lib/public-cases';
 
 export const Route = createFileRoute("/_citizen/explore")({
   head: () => ({
@@ -28,17 +29,9 @@ function Explore() {
   const q = useQuery({
     queryKey: ["explore", search, cat, status, sort],
     queryFn: async () => {
-      let query = supabase.from("issues").select(ISSUE_COLUMNS).limit(60);
-      if (cat) query = query.eq("category", cat);
-      if (status) query = query.eq("status", status as never);
-      if (search.trim()) {
-        const s = search.trim().replace(/[%,()]/g, "");
-        query = query.or(`title.ilike.%${s}%,landmark.ilike.%${s}%,ref_code.ilike.%${s}%`);
-      }
-      query = sort === "new" ? query.order("created_at", { ascending: false }) : query.order("support_count", { ascending: false });
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as IssueRow[];
+      const rows = await publicCases();
+      const filtered = rows.filter(i=>(!cat || i.category===cat) && (!status || i.status===status) && (!search.trim() || `${i.title} ${i.landmark ?? ''} ${i.ref_code}`.toLowerCase().includes(search.trim().toLowerCase())));
+      return (sort==='support' ? filtered.sort((a,b)=>b.support_count-a.support_count) : filtered).slice(0,60) as IssueRow[];
     },
   });
 
