@@ -1004,6 +1004,32 @@ export type Database = {
           },
         ]
       }
+      notification_reads: {
+        Row: {
+          notification_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          notification_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          notification_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_reads_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "issue_notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_targets: {
         Row: {
           ack_hours: number
@@ -1050,18 +1076,21 @@ export type Database = {
         Row: {
           completed_at: string | null
           id: boolean
+          invitation_started_at: string | null
           owner_email: string
           owner_user_id: string | null
         }
         Insert: {
           completed_at?: string | null
           id?: boolean
+          invitation_started_at?: string | null
           owner_email: string
           owner_user_id?: string | null
         }
         Update: {
           completed_at?: string | null
           id?: boolean
+          invitation_started_at?: string | null
           owner_email?: string
           owner_user_id?: string | null
         }
@@ -1139,6 +1168,14 @@ export type Database = {
     }
     Functions: {
       account_active: { Args: { _user: string }; Returns: boolean }
+      admin_change_role: {
+        Args: { _grant: boolean; _role: string; _user: string }
+        Returns: undefined
+      }
+      admin_provision_account: {
+        Args: { _actor: string; _profile: Json; _role: string; _user: string }
+        Returns: undefined
+      }
       admin_set_account_state: {
         Args: { _active: boolean; _reason: string; _user: string }
         Returns: number
@@ -1156,6 +1193,10 @@ export type Database = {
           _user: string
           _wards: string[]
         }
+        Returns: undefined
+      }
+      admin_set_team_scope: {
+        Args: { _corporations: string[]; _teams: string[]; _user: string }
         Returns: undefined
       }
       admin_upsert_service_target: {
@@ -1200,6 +1241,7 @@ export type Database = {
         Returns: string
       }
       civic_case_metrics: { Args: never; Returns: Json }
+      claim_owner_invitation: { Args: never; Returns: string }
       complete_siddi_owner_setup: {
         Args: { _user: string }
         Returns: undefined
