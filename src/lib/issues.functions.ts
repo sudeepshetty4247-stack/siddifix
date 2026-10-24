@@ -130,7 +130,7 @@ export const submitIssue = createServerFn({ method: "POST" })
         lat: data.lat, lng: data.lng, landmark: data.landmark ?? null, photo_url: signed.data.signedUrl,
         department: null, duplicate_of: data.duplicateOf ?? null,
         sla_due_at: targets.resolveDueAt, ack_due_at:targets.ackDueAt, target_snapshot:JSON.parse(JSON.stringify(targets.snapshot)),
-        routing_snapshot: JSON.parse(JSON.stringify({...routing,incident_location:{original_address:data.incidentLocation?.originalAddress??data.landmark??null,normalized_address:data.incidentLocation?.normalizedAddress??null,source:data.incidentLocation?.source??'map',verification:'supported',checked_at:new Date().toISOString()}})),
+        routing_snapshot: JSON.parse(JSON.stringify({...routing,incident_location:{original_address:data.incidentLocation?.originalAddress??data.landmark??null,normalized_address:data.incidentLocation?.normalizedAddress??null,source:data.incidentLocation?.source??'map',entered_city:data.incidentLocation?.city??null,entered_state:data.incidentLocation?.state??null,entered_pin:data.incidentLocation?.pin??null,directions:data.incidentLocation?.directions??null,verification:'supported',checked_at:new Date().toISOString()}})),
         original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
         photo_source:data.photoMetadata?.source??'gallery',photo_metadata:data.photoMetadata ? JSON.parse(JSON.stringify(data.photoMetadata)) : null,
       },

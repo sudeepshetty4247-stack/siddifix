@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { suggestedReportLocation } from './report-location';
+import { validateIncidentLocation } from './incident-location.functions';
 import { reverseGeocode } from './geocoding.functions';
 import { supabase } from '@/integrations/supabase/client';
 import { coverageFromWardMatches, type CoverageStatus } from './coverage';
@@ -58,9 +59,9 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!location) { setCoverage('unknown'); return; }
     let cancelled = false; setCoverage('checking');
-    Promise.resolve(supabase.rpc('ward_at_point', { _lat: location.lat, _lng: location.lng })).then(r => {
+    validateIncidentLocation({data:{lat:location.lat,lng:location.lng}}).then(r => {
       if (cancelled) return;
-      setCoverage(r.error || !Array.isArray(r.data) ? 'unknown' : coverageFromWardMatches(r.data.length));
+      setCoverage(r.status);
     }).catch(() => { if (!cancelled) setCoverage('unknown'); });
     return () => { cancelled = true; };
   }, [location?.lat, location?.lng]);
