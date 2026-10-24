@@ -57,6 +57,13 @@
       "when": 1792829361618,
       "tag": "0007_report_candidates_and_completion_evidence",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792830191433,
+      "tag": "0008_civic_source_freshness",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,3 @@
+ALTER TABLE public.civic_wards ADD COLUMN IF NOT EXISTS source_published_at date, ADD COLUMN IF NOT EXISTS source_checked_at timestamptz, ADD COLUMN IF NOT EXISTS source_sha256 text;
+ALTER TABLE public.civic_department_routes ADD COLUMN IF NOT EXISTS source_checked_at timestamptz;
+COMMENT ON COLUMN public.civic_wards.verified_at IS 'Date source was checked; source publication date is stored separately.';
