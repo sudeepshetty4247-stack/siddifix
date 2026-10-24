@@ -1,10 +1,12 @@
 # CivicFix roadmap
 
 ## Current request — voice, enterprise reports and officer acquisition
-- [ ] Complete existing voice/text assistant and verify grounding/navigation.
-- [ ] Add stable filtered aggregates, structured downloadable PDF and genuine Excel charts; inspect downloaded files.
-- [ ] Audit all officer profiles and implement secure resumable acquisition/review with source evidence.
-- [ ] Run regression tests and document actual coverage, source failures and external blockers.
+- [x] Existing assistant voice controls and public snapshot grounding; desktop/mobile text flow verified. Physical speech-engine acceptance remains blocked on actual devices.
+- [x] Filtered public snapshots, structured PDF and real Excel/native charts downloaded and inspected; independent totals agree. Detailed authorized premium exports remain outstanding.
+- [x] Audited 781 profiles / 76 roles; added 1 licensed portrait to 14 rows; protected resumable candidate acquisition/review implemented.
+- [x] 230 tests passed, latest harness build OK; evidence and exact limitations: docs/VOICE_REPORTS_DIRECTORY_ACCEPTANCE.md.
+- [ ] Hosted administrator acquisition/approval acceptance — requires an authorized preview session; current requesting user has no mintable account.
+- [ ] Complete directory coverage — requires identity-verified licensed portraits/current public-duty source records; 62 roles still lack verified images.
 
 ## Current request — location search and officer delivery
 - [x] Repair real India-wide autocomplete, manual session drafts, shared enabled-coverage validation and outside-area feedback without erasing report work.
