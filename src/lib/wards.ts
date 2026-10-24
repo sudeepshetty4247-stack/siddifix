@@ -1,41 +1,58 @@
-import { pointInGeometry } from './directory';
-
-export type WardInfo = {
+/**
+ * Official GBA ward file used only as an import source for administrators.
+ * Live case screens read the editable ward records from the database.
+ */
+export type WardFileProps = {
   id: string; no: number; name: string; name_kn: string | null; corporation: string; zone: string | null;
   ac_no: number; ac: string; mla: string; mla_party: string; ls: string; mp: string; population: number;
+  official_name: string | null; flags: string[];
 };
-type WardFeature = { geometry: unknown; properties: WardInfo };
-export type WardData = { source: string; notified: string; representatives_source: string; features: WardFeature[] };
+export type WardFile = { source: string; notified: string; representatives_source: string; features: { geometry: unknown; properties: WardFileProps }[] };
 
-export const WARD_SOURCE_LABEL = 'GBA ward delimitation, notified 19 Nov 2025 (OpenCity)';
+export const WARD_SOURCE_URL = 'https://data.opencity.in/dataset/gba-wards-delimitation-2025';
+export const CORPORATIONS = ['Central', 'East', 'North', 'South', 'West'].map(c => `Bengaluru ${c} City Corporation`);
 
-let cache: Promise<WardData> | null = null;
-export function loadWards(): Promise<WardData> {
-  cache ??= fetch('/data/bengaluru-wards.json').then(r => { if (!r.ok) throw new Error('Ward map unavailable'); return r.json() as Promise<WardData>; }).catch(e => { cache = null; throw e; });
-  return cache;
+export async function loadWardFile(): Promise<WardFile> {
+  const r = await fetch('/data/bengaluru-wards.json');
+  if (!r.ok) throw new Error('The official ward file could not be loaded.');
+  return r.json() as Promise<WardFile>;
 }
 
-export function findWard(data: Pick<WardData, 'features'>, lat: number, lng: number): WardInfo | null {
-  return data.features.find(f => pointInGeometry(lat, lng, f.geometry))?.properties ?? null;
+export type WardIssue = { id: string; message: string };
+/** Structural validation of a ward set. Returns problems; never edits records. */
+export function validateWardSet(rows: { identifier: string; corporation: string; source_url: string | null; boundary: unknown; official_name?: string | null; name: string }[], expected = 369): WardIssue[] {
+  const issues: WardIssue[] = [];
+  if (rows.length !== expected) issues.push({ id: '*', message: `Expected ${expected} wards, found ${rows.length}` });
+  const seen = new Set<string>();
+  for (const r of rows) {
+    if (seen.has(r.identifier)) issues.push({ id: r.identifier, message: 'Duplicate ward ID' });
+    seen.add(r.identifier);
+    if (!CORPORATIONS.includes(r.corporation)) issues.push({ id: r.identifier, message: `Unknown corporation “${r.corporation}”` });
+    if (!r.source_url) issues.push({ id: r.identifier, message: 'Missing source link' });
+    const b = r.boundary as { type?: string; coordinates?: unknown[] } | null;
+    if (!b || !Array.isArray(b.coordinates) || b.coordinates.length === 0) issues.push({ id: r.identifier, message: 'Missing or empty boundary' });
+    if (!r.official_name) issues.push({ id: r.identifier, message: 'Not found in official division list' });
+  }
+  return issues;
 }
 
-/** Role-level responsible office per issue category. Names of individual officers are never invented. */
-export const DEPARTMENT_BY_CATEGORY: Record<string, { office: string; role: string; helpline?: string }> = {
-  roads: { office: 'City Corporation — Roads & Infrastructure', role: 'Ward Assistant Engineer (AE) / AEE', helpline: '1533' },
-  potholes: { office: 'City Corporation — Roads & Infrastructure', role: 'Ward Assistant Engineer (AE) / AEE', helpline: '1533' },
-  footpath: { office: 'City Corporation — Roads & Infrastructure', role: 'Ward Assistant Engineer (AE)', helpline: '1533' },
-  waste: { office: 'Bengaluru Solid Waste Management Ltd (BSWML)', role: 'Ward Health Inspector / Junior Health Inspector', helpline: '1533' },
-  sanitation: { office: 'City Corporation — Health', role: 'Ward Health Inspector', helpline: '1533' },
-  streetlights: { office: 'City Corporation — Electrical', role: 'Electrical Assistant Engineer (zone)', helpline: '1533' },
-  electricity: { office: 'BESCOM — local sub-division', role: 'Section Officer / AEE (Electrical)', helpline: '1912' },
-  water: { office: 'BWSSB — local service station', role: 'Assistant Executive Engineer (service station)', helpline: '1916' },
-  drainage: { office: 'City Corporation — Storm Water Drains / BWSSB (sewage)', role: 'SWD Assistant Engineer / BWSSB AEE', helpline: '1533' },
-  trees: { office: 'City Corporation — Forest Cell', role: 'Range Forest Officer (zone)', helpline: '1533' },
-  parks: { office: 'City Corporation — Horticulture', role: 'Assistant Director, Horticulture (zone)', helpline: '1533' },
-  traffic: { office: 'Bengaluru Traffic Police — jurisdictional station', role: 'Station Inspector', helpline: '112' },
-  transport: { office: 'BMTC — depot / Traffic Police', role: 'Depot Manager', helpline: '080-22952522' },
-  buildings: { office: 'City Corporation — Town Planning', role: 'Assistant Director, Town Planning (zone)', helpline: '1533' },
-};
-export function departmentFor(category?: string) {
-  return (category && DEPARTMENT_BY_CATEGORY[category]) || { office: 'City Corporation — ward office', role: 'Ward Officer', helpline: '1533' };
+export function fileToRows(file: WardFile) {
+  return file.features.map(({ geometry, properties: p }) => ({
+    coverage_id: 'bengaluru', identifier: p.id, name: p.name, name_kn: p.name_kn, official_name: p.official_name,
+    corporation: p.corporation, zone: p.zone, ward_number: p.no, boundary: geometry as never,
+    source_url: file.source, verified_at: '2025-11-19', population: p.population,
+    assembly_no: p.ac_no, assembly: p.ac,
+    // Names are recorded as candidates; they stay "verification required" until staff confirm them against ECI.
+    mla: p.mla, mla_party: p.mla_party, lok_sabha: p.ls, mp: p.mp, representative_source_url: 'https://results.eci.gov.in/',
+    representative_status: 'verification_required',
+    verification_status: p.flags.length ? 'flagged' : 'verification_required',
+    flags: p.flags,
+  }));
+}
+
+export type WardCount = { ward_identifier: string; reports: number; unique_issues: number; unresolved: number; resolved: number };
+export function rankWards(counts: WardCount[], names: Map<string, string>, limit = 10) {
+  return counts.filter(c => names.has(c.ward_identifier))
+    .sort((a, b) => b.unresolved - a.unresolved || b.unique_issues - a.unique_issues)
+    .slice(0, limit).map(c => ({ ...c, name: names.get(c.ward_identifier) ?? c.ward_identifier }));
 }
