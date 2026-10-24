@@ -1,6 +1,7 @@
 # CivicFix roadmap
 
 ## Current priority — simplify and complete the real product
+- [ ] Automatic confirmed-coordinate address lookup, source-backed 369-ward import and conservative department resolution; verify real coordinates and permission/coverage edge cases.
 - [x] Audit existing citizen reporting, map, staff workflows, directory and tests against the latest uploaded brief.
 - [x] Map-first opening screen, explicit report-location confirmation, manual pin correction and AI network-failure fallback; anonymous submit/photo/history/map read-back verified, temporary reports removed (zero reports).
 - [ ] Duplicate review, assignment, status, completion evidence requirement, public tracking and full-dataset analytics implemented; signed-in transaction/evidence/reporter-resolution verification blocked by zero staff accounts.
