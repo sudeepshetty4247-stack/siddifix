@@ -85,6 +85,13 @@
       "when": 1792836286454,
       "tag": "0011_atomic_photo_records_and_duplicate_candidates",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792836410493,
+      "tag": "0012_verified_operational_profiles",
+      "breakpoints": true
     }
   ]
 }

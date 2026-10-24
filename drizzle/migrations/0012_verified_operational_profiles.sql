@@ -1,0 +1,11 @@
+CREATE TABLE public.civic_people(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),full_name text NOT NULL,designation text NOT NULL,kind text NOT NULL DEFAULT 'operational',corporation text,ward_identifier text,category text,zone text,photo_url text,photo_source_url text,contact_phone text,contact_email text,source_url text NOT NULL,checked_at timestamptz NOT NULL DEFAULT now(),verification_status text NOT NULL DEFAULT 'verification_required',active boolean NOT NULL DEFAULT true,updated_at timestamptz NOT NULL DEFAULT now(),updated_by uuid);
+GRANT SELECT,INSERT,UPDATE ON public.civic_people TO authenticated;
+GRANT SELECT ON public.civic_people TO anon;
+GRANT ALL ON public.civic_people TO service_role;
+ALTER TABLE public.civic_people ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "verified public people" ON public.civic_people FOR SELECT TO anon,authenticated USING((active AND verification_status='verified') OR public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins create people" ON public.civic_people FOR INSERT TO authenticated WITH CHECK(public.has_role(auth.uid(),'admin'));
+CREATE POLICY "admins edit people" ON public.civic_people FOR UPDATE TO authenticated USING(public.has_role(auth.uid(),'admin')) WITH CHECK(public.has_role(auth.uid(),'admin'));
+CREATE TRIGGER audit_civic_people BEFORE INSERT OR UPDATE ON public.civic_people FOR EACH ROW EXECUTE FUNCTION public.audit_civic_directory();
+CREATE OR REPLACE FUNCTION public.validate_civic_person() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF NEW.kind NOT IN ('operational','leadership','mla','mp','corporator') OR NEW.source_url NOT LIKE 'https://%' THEN RAISE EXCEPTION 'A valid profile role and source URL are required'; END IF; IF NEW.verification_status='verified' AND NEW.kind IN ('mla','mp','corporator') AND NEW.ward_identifier IS NULL THEN RAISE EXCEPTION 'Verified elected profiles require an explicitly verified ward linkage'; END IF; IF NEW.photo_url IS NOT NULL AND (NEW.photo_source_url IS NULL OR NEW.photo_source_url NOT LIKE 'https://%') THEN RAISE EXCEPTION 'Official photographs require their source URL'; END IF; RETURN NEW; END $$;
+CREATE TRIGGER validate_civic_person BEFORE INSERT OR UPDATE ON public.civic_people FOR EACH ROW EXECUTE FUNCTION public.validate_civic_person();

@@ -216,6 +216,69 @@ export type Database = {
         }
         Relationships: []
       }
+      civic_people: {
+        Row: {
+          active: boolean
+          category: string | null
+          checked_at: string
+          contact_email: string | null
+          contact_phone: string | null
+          corporation: string | null
+          designation: string
+          full_name: string
+          id: string
+          kind: string
+          photo_source_url: string | null
+          photo_url: string | null
+          source_url: string
+          updated_at: string
+          updated_by: string | null
+          verification_status: string
+          ward_identifier: string | null
+          zone: string | null
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          checked_at?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          corporation?: string | null
+          designation: string
+          full_name: string
+          id?: string
+          kind?: string
+          photo_source_url?: string | null
+          photo_url?: string | null
+          source_url: string
+          updated_at?: string
+          updated_by?: string | null
+          verification_status?: string
+          ward_identifier?: string | null
+          zone?: string | null
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          checked_at?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          corporation?: string | null
+          designation?: string
+          full_name?: string
+          id?: string
+          kind?: string
+          photo_source_url?: string | null
+          photo_url?: string | null
+          source_url?: string
+          updated_at?: string
+          updated_by?: string | null
+          verification_status?: string
+          ward_identifier?: string | null
+          zone?: string | null
+        }
+        Relationships: []
+      }
       civic_request_limits: {
         Row: {
           hits: number
