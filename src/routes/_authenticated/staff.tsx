@@ -63,6 +63,8 @@ function StaffLayout() {
     { to: "/staff/insights" as const, label: "Duplicates & Recurring", icon: Repeat },
     { to: "/staff/map" as const, label: "Map & Hotspots", icon: Map },
     { to: "/staff/notifications" as const, label: "Notifications", icon: Bell },
+  ];
+
   const adminNav = [
     { to: "/staff/directory" as const, label: "Routing Setup", icon: ListTodo },
     { to: "/staff/team" as const, label: "Team Management", icon: Users },
