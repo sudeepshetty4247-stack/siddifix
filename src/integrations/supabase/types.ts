@@ -714,6 +714,10 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      nearby_case_summary: {
+        Args: { _lat: number; _lng: number; _radius_m?: number }
+        Returns: Json
+      }
       nearby_issues: {
         Args: {
           _category: string

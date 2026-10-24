@@ -32,4 +32,5 @@
 - Ward, department-route and representative records are admin-editable rows in civic_wards / civic_department_routes with trigger-written civic_directory_audit; public/data/bengaluru-wards.json is only the official import source. Cases keep the ward recorded at submission in routing_snapshot.
 - Citizen map boundaries and browsing limits derive from live directory ward polygons; optional map props keep report/staff maps unrestricted for honest out-of-coverage handling.
 - Civic Map focuses reliable GPS or manual coordinates without replacing them with ward interior samples; boundary clicks retain their actual coordinates and outside-city points are never clamped into a ward.
+- Nearby citizen totals use a public security-invoker database aggregate over all canonical cases; map-list distance filtering shares its radius, while ward jurisdiction remains independent of the neighbourhood circle.
 - Ward and routing edge-case fixtures belong in automated tests only, not citizen-facing test controls; this preserves a real citizen experience and genuine case totals.
