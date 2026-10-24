@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Logo } from './Logo';
 import { LazyMap } from './LazyMap';
+import { BackButton } from './BackButton';
 
 const summarySchema = z.object({ total: z.number(), active: z.number(), resolved: z.number(), overdue: z.number(), critical: z.number(), radius_m: z.number() });
 const wardSchema = z.object({ name: z.string(), ward_number: z.number().nullable(), zone: z.string().nullable(), corporation: z.string().nullable() });
@@ -72,6 +73,7 @@ export function LocationGate() {
     return (
       <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-background p-4">
         <div className="w-full max-w-md rounded-2xl border bg-card p-6 shadow-soft sm:p-8">
+          <BackButton beforeBack={() => setDismissed(true)} />
           <Logo />
           <div className="mt-6 flex items-start gap-3">
             <span className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-soft"><MapPin className="h-5 w-5 text-primary" /></span>
@@ -100,6 +102,7 @@ export function LocationGate() {
   return (
     <div className="fixed inset-0 z-[2000] overflow-y-auto bg-background">
       <div className="mx-auto flex min-h-full w-full max-w-lg flex-col px-4 py-8 sm:py-12">
+        <BackButton beforeBack={() => setDismissed(true)} />
         <Logo />
         <h1 className="mt-8 text-2xl font-bold sm:text-3xl">Where in Bengaluru are you?</h1>
         <p className="mt-2 text-sm text-muted-foreground">We use your location once to show active cases near you and to place your reports in the right ward. It stays on this device.</p>

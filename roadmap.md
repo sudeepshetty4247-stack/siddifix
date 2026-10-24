@@ -1,5 +1,9 @@
 # CivicFix roadmap
 
+## Current request — supplied logo and Back fix
+- [x] Applied supplied Siddi logo/slogan and complete-logo favicon/install icons; existing workflow copy remains unchanged.
+- [x] Fixed Back for location overlay and same-page/redirect history; staff Back now above content. Browser verified overlay → sign-in and direct sign-in → Home; logo decoded, no page errors, 128 tests passed and preview validation clean.
+
 ## Current request — staff testing and Back navigation
 - [x] Added shared Back controls to citizen, sign-in and staff interfaces; browser verified direct sign-in → Home fallback and Report → sign-in history return after location setup.
 - [x] Signed-in administrator verified loaded Overview, Queue, Routing Exceptions, Overdue, Notifications, Team Management, Audit/Health and existing case read-back. 128 tests pass; complete testing guide delivered. No fake live complaint or repair inserted.
