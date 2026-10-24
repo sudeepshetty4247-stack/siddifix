@@ -27,7 +27,7 @@ describe('Department routing connects case events to scoped recipient notificati
       CREATE FUNCTION is_staff(uuid) RETURNS boolean LANGUAGE sql AS $$ SELECT EXISTS(SELECT 1 FROM staff_profiles WHERE user_id=$1 AND active) $$;
       CREATE FUNCTION is_supervisor(uuid) RETURNS boolean LANGUAGE sql AS $$ SELECT false $$;
       CREATE TABLE civic_teams(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),name text,department text,categories text[],wards text[],active boolean,is_fallback boolean);
-      CREATE TABLE issues(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),category text,department text,status text,team_id uuid,assignment_state text,routing_snapshot jsonb,updated_at timestamptz);
+      CREATE TABLE issues(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),category text,department text,status text,team_id uuid,assignment_state text,routing_snapshot jsonb,updated_at timestamptz,acknowledged_at timestamptz,ack_due_at timestamptz);
       CREATE FUNCTION staff_can_work(uuid,uuid) RETURNS boolean LANGUAGE sql AS $$ SELECT is_staff($1) AND $1='${worker}'::uuid AND EXISTS(SELECT 1 FROM issues i JOIN civic_teams t ON t.id=i.team_id WHERE i.id=$2 AND t.department='Isolated department') $$;
       CREATE TABLE issue_events(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),issue_id uuid,kind text,note text,actor_label text,actor_id uuid,to_status text,visibility text DEFAULT 'public');
       CREATE TABLE issue_notifications(id uuid DEFAULT gen_random_uuid(),issue_id uuid,audience text,channel text,status text,detail text,attempts int,recipient_user_id uuid,event_id uuid,event_key text,notification_type text,title text,priority text,actor_id uuid,created_at timestamptz DEFAULT now());
