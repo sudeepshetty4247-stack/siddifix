@@ -1,11 +1,11 @@
 # CivicFix roadmap
 
 ## Current priority — simplify and complete the real product
-- [ ] Audit existing citizen reporting, map, staff workflows, directory and tests against the latest uploaded brief.
-- [ ] Make the opening screen map-first; complete reliable photo and confirmed-location reporting with AI/manual fallback.
-- [ ] Complete duplicate review, assignment, status, resolution evidence, public tracking and real-data analytics using existing infrastructure.
-- [ ] Verify restricted directory setup/import and honest missing/out-of-coverage routing.
-- [ ] Run the requested real-data end-to-end workflow and edge cases; report actual results and blockers.
+- [x] Audit existing citizen reporting, map, staff workflows, directory and tests against the latest uploaded brief.
+- [x] Map-first opening screen, explicit report-location confirmation, manual pin correction and AI network-failure fallback; anonymous submit/photo/history/map read-back verified, temporary reports removed (zero reports).
+- [ ] Duplicate review, assignment, status, completion evidence requirement, public tracking and full-dataset analytics implemented; signed-in transaction/evidence/reporter-resolution verification blocked by zero staff accounts.
+- [ ] Restricted directory setup/import verification blocked by zero admin accounts; zero loaded wards, missing-ward and out-of-city notices verified.
+- [ ] Finish end-to-end staff resolution and reporter decisions after administrator signup; browser GPS-denial feedback remains unverified (test timed out). 28 unit tests passed and latest preview validation passed.
 
 ## Done (phase 1)
 - [x] Citizen site: home, 4-step report with AI photo analysis, duplicate linking, confirmation + private link
@@ -25,19 +25,19 @@
 - [x] Audit mandatory workflows completed; confirmed gaps recorded in approved plan
 - [x] Standalone authority module removed; official portal CTAs removed; map has in-place case information/history
 - [ ] New staff duplicate merge/reject/reverse, internal assignment/reassignment/accept/reject/escalation, atomic classification/reporter actions and full-dataset analytics implemented; signed-in operation verification BLOCKED on intended administrator account (zero accounts)
-- [ ] Remaining approved stages: resolution evidence, notification persistence/delivery, duplicate candidate queue/history refinements and end-to-end release checks; continue after staff workflow verification
+- [ ] Remaining approved stages: signed-in resolution evidence verification, notification persistence/delivery and end-to-end release checks; candidate queue/history refinements implemented
 - [x] Current request: public Bengaluru authority directory, searchable service contacts, GBA chief commissioner and 1533 official contact, responsibility chain; CivicFix-only case totals retained; search/filter and phone layout verified
 - [ ] Address lookup integration: blocked on a suitable anonymous-citizen geocoding service configuration
 - [ ] Current official ward boundaries and representative sources: not obtained; no legal jurisdiction claim until verified/imported
 - [ ] Staff action end-to-end verification: no auth users exist; requesting administrator must create their own account before testing
 - [ ] Evidence original retention and separate annotated derivative, capture/submission timestamp distinction
 - [ ] Security release review: bootstrap-admin provisioning, private credential hashing, abuse controls, public-safe projection
-- [ ] Transactional citizen reopen/confirm and audited staff field edits
+- [ ] Transactional citizen reopen/confirm and audited staff field edits implemented; signed-in end-to-end verification blocked by zero staff accounts
 - [ ] Complete release testing and publish readiness; this milestone is not a completed production certification
 - [ ] Full Hindi/Kannada translation of every screen
 - [ ] Ask CivicFix assistant (grounded in real records)
 - [ ] Community threads
 - [ ] Escalations page + automatic overdue escalation
-- [ ] Resolution evidence photos from staff
+- [ ] Resolution evidence photos and backend resolution prerequisite implemented; signed-in upload/resolution verification blocked by zero staff accounts
 - [ ] Area notifications (browser push)
 - [ ] Analytics + civic memory and audit log page
