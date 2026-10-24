@@ -55,6 +55,7 @@ function StaffLayout() {
     { to: "/staff" as const, label: "Overview", icon: LayoutDashboard, exact: true },
     { to: "/staff/queue" as const, label: "Issue Queue", icon: ListTodo },
     { to: "/staff/map" as const, label: "Map & Hotspots", icon: Map },
+    ...(isAdmin ? [{ to: "/staff/directory" as const, label: "Authority Directory", icon: ListTodo }] : []),
     ...(isAdmin ? [{ to: "/staff/team" as const, label: "Team Management", icon: Users }] : []),
   ];
 
