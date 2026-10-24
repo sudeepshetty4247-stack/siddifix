@@ -645,6 +645,7 @@ export type Database = {
           kind: string
           note: string | null
           to_status: Database["public"]["Enums"]["issue_status"] | null
+          visibility: string
         }
         Insert: {
           actor_id?: string | null
@@ -656,6 +657,7 @@ export type Database = {
           kind: string
           note?: string | null
           to_status?: Database["public"]["Enums"]["issue_status"] | null
+          visibility?: string
         }
         Update: {
           actor_id?: string | null
@@ -667,6 +669,7 @@ export type Database = {
           kind?: string
           note?: string | null
           to_status?: Database["public"]["Enums"]["issue_status"] | null
+          visibility?: string
         }
         Relationships: [
           {
@@ -718,36 +721,64 @@ export type Database = {
       }
       issue_notifications: {
         Row: {
+          actor_id: string | null
           attempts: number
           audience: string
           channel: string
           created_at: string
           detail: string
+          event_id: string | null
+          event_key: string | null
           id: string
-          issue_id: string
+          issue_id: string | null
+          notification_type: string
+          priority: string
+          recipient_user_id: string | null
           status: string
+          title: string
         }
         Insert: {
+          actor_id?: string | null
           attempts?: number
           audience: string
           channel: string
           created_at?: string
           detail?: string
+          event_id?: string | null
+          event_key?: string | null
           id?: string
-          issue_id: string
+          issue_id?: string | null
+          notification_type?: string
+          priority?: string
+          recipient_user_id?: string | null
           status: string
+          title?: string
         }
         Update: {
+          actor_id?: string | null
           attempts?: number
           audience?: string
           channel?: string
           created_at?: string
           detail?: string
+          event_id?: string | null
+          event_key?: string | null
           id?: string
-          issue_id?: string
+          issue_id?: string | null
+          notification_type?: string
+          priority?: string
+          recipient_user_id?: string | null
           status?: string
+          title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "issue_notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "issue_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "issue_notifications_issue_id_fkey"
             columns: ["issue_id"]
@@ -1006,18 +1037,21 @@ export type Database = {
       }
       notification_reads: {
         Row: {
+          archived_at: string | null
           notification_id: string
-          read_at: string
+          read_at: string | null
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           notification_id: string
-          read_at?: string
+          read_at?: string | null
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           notification_id?: string
-          read_at?: string
+          read_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1275,6 +1309,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      emit_case_notifications: {
+        Args: {
+          _detail: string
+          _event: string
+          _supervisor_only?: boolean
+          _title: string
+          _type: string
+        }
+        Returns: undefined
+      }
       escalate_overdue_issues: { Args: never; Returns: number }
       has_role: {
         Args: {
@@ -1306,6 +1350,20 @@ export type Database = {
           title: string
         }[]
       }
+      notification_access: {
+        Args: { _issue: string; _recipient: string }
+        Returns: boolean
+      }
+      notification_page: {
+        Args: {
+          _page?: number
+          _priority?: string
+          _search?: string
+          _state?: string
+          _type?: string
+        }
+        Returns: Json
+      }
       public_case_events: { Args: { _id: string }; Returns: Json }
       public_case_rows: { Args: { _ref?: string }; Returns: Json }
       public_transparency_metrics: { Args: { _days?: number }; Returns: Json }
@@ -1319,6 +1377,10 @@ export type Database = {
         Returns: undefined
       }
       route_issue_to_team: { Args: { _issue: string }; Returns: string }
+      set_notification_state: {
+        Args: { _action: string; _id: string }
+        Returns: number
+      }
       staff_acknowledge_issue: {
         Args: {
           _eta: string
