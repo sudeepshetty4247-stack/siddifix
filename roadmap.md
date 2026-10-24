@@ -1,5 +1,13 @@
 # CivicFix roadmap
 
+## Current request — separate Admin and Government Staff portals
+- [ ] Secure owner designation and explicit administrator delegation.
+- [ ] Separate protected portals and sign-in entry points; preserve existing modules.
+- [ ] Enforce active accounts and department/category/team/ward scope in database reads and actions.
+- [ ] Secure account invitations, suspension/reactivation and recovery with audit history.
+- [ ] Scoped persisted metrics and notifications with timely queue updates.
+- [ ] Run regression and direct authorization checks; document unverified live-write scenarios.
+
 ## Current request — cover, clean workspace and transparency
 - [x] Replace Home cover with the latest supplied community photo; retain Siddi name/slogan and Back-first header.
 - [x] Remove identified test complaints, dependent activity and test teams; preserve staff accounts and verified directory.
