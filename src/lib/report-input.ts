@@ -17,6 +17,7 @@ export const reportInputSchema = z.object({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   landmark: z.string().max(200).nullable().optional(),
+  incidentLocation:z.object({originalAddress:z.string().max(500),normalizedAddress:z.string().max(1500).optional(),source:z.enum(['manual','autocomplete','gps','map'])}).optional(),
   duplicateOf: z.string().uuid().nullable().optional(),
   originalPath: z.string().max(300).optional(),
   photoMetadata: photoMetadataSchema.optional(),

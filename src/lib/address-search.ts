@@ -1,4 +1,4 @@
-export type AddressResult = { lat:number; lng:number; label:string; city?:string; state?:string; district?:string };
+export type AddressResult = { lat:number; lng:number; label:string; city?:string|undefined; state?:string|undefined; district?:string|undefined };
 export function photonResults(input:unknown):AddressResult[] {
   const features=(input as {features?:unknown[]})?.features;
   if(!Array.isArray(features))throw new Error('Invalid location response');
