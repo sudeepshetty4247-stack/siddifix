@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { validateImageContainer } from './image-format';
 export const evidenceInput = z.object({
   issueId: z.string().uuid(),
+  requestId:z.string().uuid().optional(),
   kind: z.enum(['inspection', 'completion', 'external_action']),
   note: z.string().trim().min(5).max(1000),
   imageDataUrl: z.string().max(7_500_000).regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/),

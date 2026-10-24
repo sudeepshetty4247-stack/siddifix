@@ -16,6 +16,8 @@ import { AssignmentActions } from '@/components/civic/AssignmentActions';
 import { IssueEvidence } from '@/components/civic/IssueEvidence';
 import { StaffCommitment } from '@/components/civic/StaffCommitment';
 import { CaseHandlerAssignment } from "@/components/portals/CaseHandlerAssignment";
+import { CaseCommunication } from "@/components/portals/CaseCommunication";
+import { Button } from "@/components/ui/button";
 import { FIELD_TARGETS } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/staff/issues/$id")({
@@ -33,7 +35,7 @@ const TRANSITIONS: Record<IssueStatus, IssueStatus[]> = {
   inspection_scheduled: ["in_progress", "assigned"],
   in_progress: ["awaiting_verification", "resolved", "assigned"],
   awaiting_verification: ["resolved", "in_progress"],
-  resolved: ["closed", "reopened"],
+  resolved: ["reopened"],
   rejected: ["reopened"],
   reopened: ["under_review", "assigned", "in_progress"],
   closed: ["reopened"],
@@ -59,7 +61,8 @@ function StaffIssue() {
   const events = useQuery({
     queryKey: ["staff-events", id], refetchInterval:15000,
     queryFn: async () => {
-      const { data } = await supabase.from("issue_events").select("*").eq("issue_id", id).order("created_at");
+      const { data, error } = await supabase.from("issue_events").select("*").eq("issue_id", id).order("created_at");
+      if(error)throw error;
       return (data ?? []) as EventRow[];
     },
   });
@@ -132,8 +135,8 @@ function StaffIssue() {
   const i = issue.data;
   const myRoles = (roles.data?.roles ?? []) as string[];
   const supervisor = myRoles.some(r => r === "admin" || r === "supervisor" || r === "staff");
-  const canWork = supervisor || scope.data === true;
-  const options = (TRANSITIONS[i.status as IssueStatus] ?? []).filter(s => supervisor || FIELD_TARGETS.includes(s));
+  const canWork = scope.data === true;
+  const options = i.duplicate_of?[]:(TRANSITIONS[i.status as IssueStatus] ?? []).filter(s => supervisor || FIELD_TARGETS.includes(s));
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-8">
@@ -170,35 +173,36 @@ function StaffIssue() {
                 </button>
               ))}
             </div>
-            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={1000} placeholder={nextStatus === "rejected" ? "Reason for rejection (visible to the public)" : nextStatus === "resolved" || nextStatus === "awaiting_verification" ? "What was done? (visible to the public) — add a completion photo below first" : "Add a public update or note…"} className="mt-4 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={1000} placeholder={nextStatus === "rejected" ? "Reason for rejection (visible to the public)" : nextStatus === "resolved" || nextStatus === "awaiting_verification" ? "What was done? (visible to the public) — add a completion photo below first" : "Public explanation for this status change"} className="mt-4 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
             <div className="mt-3 flex justify-end gap-2">
-              {!nextStatus && <button disabled={busy || note.trim().length < 2} onClick={postNote} className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold disabled:opacity-40"><Send className="h-4 w-4" /> Post update</button>}
+              {false && !nextStatus && <button disabled={busy || note.trim().length < 2} onClick={postNote} className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-semibold disabled:opacity-40"><Send className="h-4 w-4" /> Post update</button>}
               {nextStatus && <button disabled={busy} onClick={applyStatus} className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy && <Loader2 className="h-4 w-4 animate-spin" />} Confirm: {STATUS_META[nextStatus].label}</button>}
             </div>
           </div>}
           <div className="rounded-2xl border bg-card p-5 shadow-soft">
             <h2 className="mb-5 font-semibold">Audit trail</h2>
-            <Timeline events={events.data ?? []} />
+            {events.isError?<div role="alert"><p>Audit history could not be refreshed.</p><Button variant="outline" onClick={()=>events.refetch()}>Retry history</Button></div>:<Timeline events={events.data ?? []} />}
           </div>
-          {canWork && <DuplicateReview issue={i} />}
+          {canWork && <CaseCommunication issueId={i.id} status={i.status} supervisor={supervisor}/>}
+          {canWork && supervisor && <DuplicateReview issue={i} />}
           {canWork && roles.data?.roles.some(r=>["admin","staff","supervisor"].includes(r)) && <CaseHandlerAssignment issueId={i.id} current={i.assigned_to}/>}
           {canWork && roles.data?.roles.some(r=>["admin","staff","supervisor"].includes(r)) && <AssignmentActions id={i.id} authorityId={i.authority_id} state={i.assignment_state} />}
           {canWork && <IssueEvidence issueId={i.id} staff />}
         </div>
         <aside className="space-y-4">
-          {i.photo_url && <img src={i.photo_url} alt="" className="w-full rounded-2xl border object-cover" />}
+          {i.photo_url && <section><h2 className="mb-2 text-sm font-semibold">Original citizen report</h2><img src={i.photo_url} alt="Original citizen evidence" className="w-full rounded-lg border object-contain" /></section>}
           <div className="space-y-4 rounded-2xl border bg-card p-5 shadow-soft">
             <h2 className="font-semibold">Classification</h2>
             {i.ai_confidence !== null && <p className="text-xs text-muted-foreground">AI suggestion confidence: {Math.round((i.ai_confidence ?? 0) * 100)}%</p>}
             <label className="block text-sm">
               <span className="text-muted-foreground">Category</span>
-              <select value={i.category} disabled={!canWork} onChange={(e) => updateField({ category: e.target.value }, `Reclassified as ${categoryById(e.target.value).label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
+              <select value={i.category} disabled={!canWork||!supervisor} onChange={(e) => updateField({ category: e.target.value }, `Reclassified as ${categoryById(e.target.value).label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
                 {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </label>
             <label className="block text-sm">
               <span className="text-muted-foreground">Severity</span>
-              <select value={i.severity} disabled={!canWork} onChange={(e) => updateField({ severity: e.target.value as "low" }, `Severity set to ${SEVERITY_META[e.target.value as "low"].label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
+              <select value={i.severity} disabled={!canWork||!supervisor} onChange={(e) => updateField({ severity: e.target.value as "low" }, `Severity set to ${SEVERITY_META[e.target.value as "low"].label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
                 {SEVERITIES.map((s) => <option key={s} value={s}>{SEVERITY_META[s].label}</option>)}
               </select>
             </label>
@@ -208,7 +212,7 @@ function StaffIssue() {
             {i.summary && <p>{i.summary}</p>}
             {i.description && <p className="mt-2 italic text-muted-foreground">"{i.description}"</p>}
             {i.landmark && <p className="mt-3"><span className="text-muted-foreground">Landmark:</span> {i.landmark}</p>}
-            <p className="mt-1"><span className="text-muted-foreground">Due:</span> {i.sla_due_at ? new Date(i.sla_due_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—"}</p>
+            <p className="mt-1">Coordinates: {i.lat}, {i.lng}</p><p className="mt-1">Submitted: {new Date(i.created_at).toLocaleString("en-IN")}</p><p className="mt-1">Acknowledgement target: {i.ack_due_at?new Date(i.ack_due_at).toLocaleString("en-IN"):"Not configured"}</p><p className="mt-1"><span className="text-muted-foreground">Resolution target:</span> {i.sla_due_at ? new Date(i.sla_due_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "—"}</p>
             <p className="mt-1"><span className="text-muted-foreground">Linked reports:</span> {i.support_count}</p>
           </div>
           <div className="h-56 overflow-hidden rounded-2xl border"><LazyMap center={{ lat: i.lat, lng: i.lng }} zoom={16} picked={{ lat: i.lat, lng: i.lng }} /></div>

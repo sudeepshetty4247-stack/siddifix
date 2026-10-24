@@ -1,0 +1,4 @@
+DO $$ DECLARE d text; BEGIN SELECT pg_get_functiondef(p.oid) INTO d FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname='civic_case_metrics';
+ d:=replace(d,'(sla_due_at<now() OR eta_at<now())','coalesce(eta_at,sla_due_at)<now()');
+ d:=replace(d,'''total_reports'',count(*)','''new_reports'',count(*) FILTER(WHERE duplicate_of IS NULL AND status::text IN (''submitted'',''needs_classification'')),''resolved_today'',count(*) FILTER(WHERE duplicate_of IS NULL AND status::text IN (''resolved'',''closed'') AND (resolved_at AT TIME ZONE ''Asia/Kolkata'')::date=(now() AT TIME ZONE ''Asia/Kolkata'')::date),''total_reports'',count(*)'); EXECUTE d;
+END $$;

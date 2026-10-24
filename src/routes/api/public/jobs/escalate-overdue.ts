@@ -11,12 +11,14 @@ export const Route = createFileRoute("/api/public/jobs/escalate-overdue")({
         if (authFailure) return authFailure;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const reminders=await supabaseAdmin.rpc('process_deadline_reminders');
+        if(reminders.error)return Response.json({success:false},{status:500});
         const result = await supabaseAdmin.rpc("escalate_overdue_issues");
         if (result.error) {
           console.error("Overdue escalation job failed", result.error.message);
           return Response.json({ success: false }, { status: 500 });
         }
-        return Response.json({ success: true, escalated: result.data ?? 0 });
+        return Response.json({ success: true, escalated: result.data ?? 0, reminders:reminders.data??0 });
       },
     },
   },

@@ -639,34 +639,43 @@ export type Database = {
           actor_id: string | null
           actor_label: string | null
           created_at: string
+          event_key: string | null
           from_status: Database["public"]["Enums"]["issue_status"] | null
           id: string
           issue_id: string
           kind: string
           note: string | null
+          request_key: string | null
           to_status: Database["public"]["Enums"]["issue_status"] | null
+          visibility: string
         }
         Insert: {
           actor_id?: string | null
           actor_label?: string | null
           created_at?: string
+          event_key?: string | null
           from_status?: Database["public"]["Enums"]["issue_status"] | null
           id?: string
           issue_id: string
           kind: string
           note?: string | null
+          request_key?: string | null
           to_status?: Database["public"]["Enums"]["issue_status"] | null
+          visibility?: string
         }
         Update: {
           actor_id?: string | null
           actor_label?: string | null
           created_at?: string
+          event_key?: string | null
           from_status?: Database["public"]["Enums"]["issue_status"] | null
           id?: string
           issue_id?: string
           kind?: string
           note?: string | null
+          request_key?: string | null
           to_status?: Database["public"]["Enums"]["issue_status"] | null
+          visibility?: string
         }
         Relationships: [
           {
@@ -686,6 +695,7 @@ export type Database = {
           kind: string
           note: string
           recorded_at: string
+          request_key: string | null
           storage_path: string
         }
         Insert: {
@@ -695,6 +705,7 @@ export type Database = {
           kind: string
           note: string
           recorded_at?: string
+          request_key?: string | null
           storage_path: string
         }
         Update: {
@@ -704,6 +715,7 @@ export type Database = {
           kind?: string
           note?: string
           recorded_at?: string
+          request_key?: string | null
           storage_path?: string
         }
         Relationships: [
@@ -718,36 +730,64 @@ export type Database = {
       }
       issue_notifications: {
         Row: {
+          actor_id: string | null
           attempts: number
           audience: string
           channel: string
           created_at: string
           detail: string
+          event_id: string | null
+          event_key: string | null
           id: string
-          issue_id: string
+          issue_id: string | null
+          notification_type: string
+          priority: string
+          recipient_user_id: string | null
           status: string
+          title: string
         }
         Insert: {
+          actor_id?: string | null
           attempts?: number
           audience: string
           channel: string
           created_at?: string
           detail?: string
+          event_id?: string | null
+          event_key?: string | null
           id?: string
-          issue_id: string
+          issue_id?: string | null
+          notification_type?: string
+          priority?: string
+          recipient_user_id?: string | null
           status: string
+          title?: string
         }
         Update: {
+          actor_id?: string | null
           attempts?: number
           audience?: string
           channel?: string
           created_at?: string
           detail?: string
+          event_id?: string | null
+          event_key?: string | null
           id?: string
-          issue_id?: string
+          issue_id?: string | null
+          notification_type?: string
+          priority?: string
+          recipient_user_id?: string | null
           status?: string
+          title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "issue_notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "issue_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "issue_notifications_issue_id_fkey"
             columns: ["issue_id"]
@@ -1006,18 +1046,21 @@ export type Database = {
       }
       notification_reads: {
         Row: {
+          archived_at: string | null
           notification_id: string
-          read_at: string
+          read_at: string | null
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           notification_id: string
-          read_at?: string
+          read_at?: string | null
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           notification_id?: string
-          read_at?: string
+          read_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1038,6 +1081,7 @@ export type Database = {
           effective_from: string
           id: string
           notes: string
+          reminder_hours: number
           resolve_hours: number
           severity: Database["public"]["Enums"]["issue_severity"]
           updated_at: string
@@ -1051,6 +1095,7 @@ export type Database = {
           effective_from?: string
           id?: string
           notes?: string
+          reminder_hours?: number
           resolve_hours: number
           severity: Database["public"]["Enums"]["issue_severity"]
           updated_at?: string
@@ -1064,6 +1109,7 @@ export type Database = {
           effective_from?: string
           id?: string
           notes?: string
+          reminder_hours?: number
           resolve_hours?: number
           severity?: Database["public"]["Enums"]["issue_severity"]
           updated_at?: string
@@ -1141,6 +1187,36 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_response_templates: {
+        Row: {
+          active: boolean
+          body: string
+          id: string
+          name: string
+          statuses: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          id?: string
+          name: string
+          statuses?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          id?: string
+          name?: string
+          statuses?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1176,6 +1252,16 @@ export type Database = {
         Args: { _actor: string; _profile: Json; _role: string; _user: string }
         Returns: undefined
       }
+      admin_save_response_template: {
+        Args: {
+          _active: boolean
+          _body: string
+          _id: string
+          _name: string
+          _statuses: string[]
+        }
+        Returns: string
+      }
       admin_set_account_state: {
         Args: { _active: boolean; _reason: string; _user: string }
         Returns: number
@@ -1194,6 +1280,14 @@ export type Database = {
           _teams: string[]
           _user: string
           _wards: string[]
+        }
+        Returns: undefined
+      }
+      admin_set_reminder_hours: {
+        Args: {
+          _category: string
+          _hours: number
+          _severity: Database["public"]["Enums"]["issue_severity"]
         }
         Returns: undefined
       }
@@ -1275,6 +1369,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      emit_case_notifications: {
+        Args: {
+          _detail: string
+          _event: string
+          _supervisor_only?: boolean
+          _title: string
+          _type: string
+        }
+        Returns: undefined
+      }
       escalate_overdue_issues: { Args: never; Returns: number }
       has_role: {
         Args: {
@@ -1306,6 +1410,21 @@ export type Database = {
           title: string
         }[]
       }
+      notification_access: {
+        Args: { _issue: string; _recipient: string }
+        Returns: boolean
+      }
+      notification_page: {
+        Args: {
+          _page?: number
+          _priority?: string
+          _search?: string
+          _state?: string
+          _type?: string
+        }
+        Returns: Json
+      }
+      process_deadline_reminders: { Args: never; Returns: number }
       public_case_events: { Args: { _id: string }; Returns: Json }
       public_case_rows: { Args: { _ref?: string }; Returns: Json }
       public_transparency_metrics: { Args: { _days?: number }; Returns: Json }
@@ -1319,6 +1438,14 @@ export type Database = {
         Returns: undefined
       }
       route_issue_to_team: { Args: { _issue: string }; Returns: string }
+      set_notification_state: {
+        Args: { _action: string; _id?: string }
+        Returns: number
+      }
+      set_notification_state_required: {
+        Args: { _action: string; _id: string }
+        Returns: number
+      }
       staff_acknowledge_issue: {
         Args: {
           _eta: string
@@ -1346,6 +1473,16 @@ export type Database = {
         Args: { _issue: string; _user_id: string }
         Returns: boolean
       }
+      staff_case_message: {
+        Args: {
+          _issue: string
+          _note: string
+          _request: string
+          _template?: string
+          _visibility: string
+        }
+        Returns: string
+      }
       staff_change_issue: {
         Args: {
           _expected: Database["public"]["Enums"]["issue_status"]
@@ -1355,6 +1492,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      staff_configuration_valid: { Args: { _user: string }; Returns: boolean }
       staff_edit_classification: {
         Args: {
           _category: string
@@ -1403,6 +1541,16 @@ export type Database = {
       }
       staff_record_evidence: {
         Args: { _id: string; _kind: string; _note: string; _path: string }
+        Returns: string
+      }
+      staff_record_evidence_retry: {
+        Args: {
+          _id: string
+          _kind: string
+          _note: string
+          _path: string
+          _request: string
+        }
         Returns: string
       }
       staff_scope_matches: {

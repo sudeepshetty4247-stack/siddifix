@@ -218,6 +218,48 @@
       "when": 1792871964950,
       "tag": "0030_validate_all_staff_scope_paths",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1792872601810,
+      "tag": "0031_recipient_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1792872686447,
+      "tag": "0032_staff_communication_and_reminders",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1792872725662,
+      "tag": "0033_notification_nullable_bulk_and_retry_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1792872826205,
+      "tag": "0034_atomic_evidence_retry_and_safe_routing",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792872955624,
+      "tag": "0035_scoped_new_and_daily_metrics",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1792873061746,
+      "tag": "0036_atomic_report_routing_and_confirmation_guard",
+      "breakpoints": true
     }
   ]
 }

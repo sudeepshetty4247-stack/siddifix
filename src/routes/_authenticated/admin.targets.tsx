@@ -14,17 +14,17 @@ export const Route = createFileRoute("/_authenticated/admin/targets")({
 });
 
 const SEVERITIES: Severity[] = ["critical", "high", "medium", "low"];
-type Row = { category: string; severity: Severity; ack_hours: number; resolve_hours: number; version: number; active: boolean; updated_at: string };
+type Row = { category: string; severity: Severity; ack_hours: number; resolve_hours: number; version: number; active: boolean; updated_at: string; reminder_hours:number };
 
 function TargetsPage() {
   const roles = useRoles();
   const isAdmin = roles.data?.roles.includes("admin") ?? false;
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["service-targets"], queryFn: async () => {
-    const r = await supabase.from("service_targets").select("category,severity,ack_hours,resolve_hours,version,active,updated_at").order("category");
+    const r = await supabase.from("service_targets").select("category,severity,ack_hours,resolve_hours,version,active,updated_at,reminder_hours").order("category");
     if (r.error) throw r.error; return r.data as Row[];
   } });
-  const [edit, setEdit] = useState<Record<string, { ack: string; res: string; active: boolean }>>({});
+  const [edit, setEdit] = useState<Record<string, { ack: string; res: string; active: boolean; reminder:string }>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const categories = [...new Set((q.data ?? []).map(r => r.category))];
 
@@ -32,6 +32,7 @@ function TargetsPage() {
     const k = `${row.category}:${row.severity}`; const e = edit[k]; if (!e) return;
     setSaving(k);
     const r = await supabase.rpc("admin_upsert_service_target", { _category: row.category, _severity: row.severity, _ack_hours: Number(e.ack), _resolve_hours: Number(e.res), _active: e.active, _notes: "Internal Siddi target; not an official government commitment." });
+    if(!r.error){const reminder=await supabase.rpc("admin_set_reminder_hours",{_category:row.category,_severity:row.severity,_hours:Number(e.reminder)});if(reminder.error){setSaving(null);toast.error("Targets saved, reminder was not saved: "+reminder.error.message);return;}}
     setSaving(null);
     if (r.error) { toast.error(r.error.message); return; }
     toast.success(`Saved ${row.category} · ${row.severity}. Applies to new reports.`);
@@ -50,17 +51,18 @@ function TargetsPage() {
       </div>
       <div className="overflow-x-auto rounded-xl border bg-card">
         <table className="w-full text-sm">
-          <thead className="bg-secondary text-left text-xs text-muted-foreground"><tr><th className="px-3 py-2">Category</th><th className="px-3 py-2">Severity</th><th className="px-3 py-2">Acknowledge within (h)</th><th className="px-3 py-2">Resolve within (h)</th><th className="px-3 py-2">Active</th><th className="px-3 py-2">Version</th><th className="px-3 py-2" /></tr></thead>
+          <thead className="bg-secondary text-left text-xs text-muted-foreground"><tr><th className="px-3 py-2">Category</th><th className="px-3 py-2">Severity</th><th className="px-3 py-2">Acknowledge within (h)</th><th className="px-3 py-2">Resolve within (h)</th><th className="px-3 py-2">Remind before (h; 0 off)</th><th className="px-3 py-2">Active</th><th className="px-3 py-2">Version</th><th className="px-3 py-2" /></tr></thead>
           <tbody>
             {categories.flatMap(c => SEVERITIES.map(s => (q.data ?? []).find(r => r.category === c && r.severity === s)).filter((r): r is Row => !!r)).map(row => {
               const k = `${row.category}:${row.severity}`; const e = edit[k];
-              const cur = e ?? { ack: String(row.ack_hours), res: String(row.resolve_hours), active: row.active };
+              const cur = e ?? { ack: String(row.ack_hours), res: String(row.resolve_hours), active: row.active,reminder:String(row.reminder_hours) };
               const set = (p: Partial<typeof cur>) => setEdit(prev => ({ ...prev, [k]: { ...cur, ...p } }));
               return <tr key={k} className="border-t">
                 <td className="px-3 py-2 font-medium capitalize">{row.category}</td>
                 <td className="px-3 py-2 capitalize">{row.severity}</td>
                 <td className="px-3 py-2"><input aria-label={`${k} acknowledgement hours`} disabled={!isAdmin} type="number" min={1} value={cur.ack} onChange={ev => set({ ack: ev.target.value })} className="h-9 w-24 rounded-md border bg-background px-2" /></td>
                 <td className="px-3 py-2"><input aria-label={`${k} resolution hours`} disabled={!isAdmin} type="number" min={1} value={cur.res} onChange={ev => set({ res: ev.target.value })} className="h-9 w-24 rounded-md border bg-background px-2" /></td>
+                <td className="px-3 py-2"><input aria-label={`${k} reminder hours`} disabled={!isAdmin} type="number" min={0} max={Number(cur.ack)} value={cur.reminder} onChange={ev=>set({reminder:ev.target.value})} className="h-9 w-24 rounded-md border bg-background px-2"/></td>
                 <td className="px-3 py-2"><input aria-label={`${k} active`} disabled={!isAdmin} type="checkbox" checked={cur.active} onChange={ev => set({ active: ev.target.checked })} className="h-4 w-4" /></td>
                 <td className="px-3 py-2 text-muted-foreground">v{row.version}</td>
                 <td className="px-3 py-2 text-right">{isAdmin && e && <Button size="sm" disabled={saving === k} onClick={() => save(row)}>Save</Button>}</td>

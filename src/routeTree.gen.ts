@@ -33,6 +33,7 @@ import { Route as AuthenticatedAdminInsightsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin.notifications'
 import { Route as AuthenticatedAdminOverdueRouteImport } from './routes/_authenticated/admin.overdue'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
+import { Route as AuthenticatedAdminResponsesRouteImport } from './routes/_authenticated/admin.responses'
 import { Route as AuthenticatedAdminRoutingRouteImport } from './routes/_authenticated/admin.routing'
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
 import { Route as AuthenticatedAdminTargetsRouteImport } from './routes/_authenticated/admin.targets'
@@ -176,6 +177,12 @@ const AuthenticatedAdminReportsRoute =
     path: '/reports',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminResponsesRoute =
+  AuthenticatedAdminResponsesRouteImport.update({
+    id: '/responses',
+    path: '/responses',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminRoutingRoute =
   AuthenticatedAdminRoutingRouteImport.update({
     id: '/routing',
@@ -300,6 +307,7 @@ export interface FileRoutesByFullPath {
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/overdue': typeof AuthenticatedAdminOverdueRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/admin/responses': typeof AuthenticatedAdminResponsesRoute
   '/admin/routing': typeof AuthenticatedAdminRoutingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/targets': typeof AuthenticatedAdminTargetsRoute
@@ -340,6 +348,7 @@ export interface FileRoutesByTo {
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/overdue': typeof AuthenticatedAdminOverdueRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/admin/responses': typeof AuthenticatedAdminResponsesRoute
   '/admin/routing': typeof AuthenticatedAdminRoutingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/targets': typeof AuthenticatedAdminTargetsRoute
@@ -385,6 +394,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/_authenticated/admin/overdue': typeof AuthenticatedAdminOverdueRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/_authenticated/admin/responses': typeof AuthenticatedAdminResponsesRoute
   '/_authenticated/admin/routing': typeof AuthenticatedAdminRoutingRoute
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/_authenticated/admin/targets': typeof AuthenticatedAdminTargetsRoute
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/admin/notifications'
     | '/admin/overdue'
     | '/admin/reports'
+    | '/admin/responses'
     | '/admin/routing'
     | '/admin/staff'
     | '/admin/targets'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/admin/notifications'
     | '/admin/overdue'
     | '/admin/reports'
+    | '/admin/responses'
     | '/admin/routing'
     | '/admin/staff'
     | '/admin/targets'
@@ -513,6 +525,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/notifications'
     | '/_authenticated/admin/overdue'
     | '/_authenticated/admin/reports'
+    | '/_authenticated/admin/responses'
     | '/_authenticated/admin/routing'
     | '/_authenticated/admin/staff'
     | '/_authenticated/admin/targets'
@@ -715,6 +728,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/responses': {
+      id: '/_authenticated/admin/responses'
+      path: '/responses'
+      fullPath: '/admin/responses'
+      preLoaderRoute: typeof AuthenticatedAdminResponsesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/routing': {
       id: '/_authenticated/admin/routing'
       path: '/routing'
@@ -852,6 +872,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
   AuthenticatedAdminOverdueRoute: typeof AuthenticatedAdminOverdueRoute
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
+  AuthenticatedAdminResponsesRoute: typeof AuthenticatedAdminResponsesRoute
   AuthenticatedAdminRoutingRoute: typeof AuthenticatedAdminRoutingRoute
   AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
   AuthenticatedAdminTargetsRoute: typeof AuthenticatedAdminTargetsRoute
@@ -867,6 +888,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
   AuthenticatedAdminOverdueRoute: AuthenticatedAdminOverdueRoute,
   AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
+  AuthenticatedAdminResponsesRoute: AuthenticatedAdminResponsesRoute,
   AuthenticatedAdminRoutingRoute: AuthenticatedAdminRoutingRoute,
   AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
   AuthenticatedAdminTargetsRoute: AuthenticatedAdminTargetsRoute,
