@@ -52,7 +52,7 @@ function WardLayer({ wards, selectedWard, onWardSelect, focused }: { wards: Ward
   const holes = wards.flatMap(w => geometryRings(w.boundary)).map(r => r.map(p => [p[1] ?? 0, p[0] ?? 0]));
   return <>
     <GeoJSON data={{ type: 'Polygon', coordinates: [outer.map(p => [p[1], p[0]]), ...holes.map(r => r.map(p => [p[1], p[0]]))] } as GeoJSON.GeoJsonObject} style={{ fillColor: 'var(--map-mask)', fillOpacity: 0.7, weight: 0 }} interactive={false} />
-    {wards.map(w => <GeoJSON key={`${w.id}-${w.identifier === selectedWard}`} data={w.boundary as unknown as GeoJSON.GeoJsonObject}
+    {wards.map(w => <GeoJSON key={`${w.id}-${w.identifier === selectedWard}-${!!onWardSelect}`} data={w.boundary as unknown as GeoJSON.GeoJsonObject}
       style={{ color: w.identifier === selectedWard ? 'var(--ink)' : 'var(--primary)', weight: w.identifier === selectedWard ? 2.5 : 0.7, fillColor: 'var(--primary)', fillOpacity: w.identifier === selectedWard ? 0.25 : 0.055 }}
       onEachFeature={(_, layer) => { layer.bindTooltip(`${w.ward_number ?? ''} · ${w.name}`); layer.on('click', (event: L.LeafletMouseEvent) => { if (onWardSelect) L.DomEvent.stopPropagation(event); onWardSelect?.(w.identifier, {lat: event.latlng.lat, lng: event.latlng.lng}); }); }} />)}
   </>;
