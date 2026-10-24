@@ -1,8 +1,9 @@
 # CivicFix roadmap
 
 ## Current request — recheck automatic department pipeline
-- [ ] Exercise department routing and notification linkage with isolated disposable test rows, then rerun the workflow suite.
-- [ ] Confirm real-data setup and report exact limits; preserve the existing genuine complaint and leave no new test rows in production.
+- [x] Exercised all eleven supported categories plus unknown/ambiguous/unclassified routing with disposable SQL rows; corrected ownership-review placeholder blocking team matching; 204 tests passed and preview validation OK.
+- [x] Confirmed atomic creation/routing and acknowledgement targets in the deployed database; production stayed at one pre-existing complaint, zero active teams and zero evidence. No new test rows created in production.
+- [ ] Real department operation remains blocked by absent active configured teams; external government messaging is unconfigured. Confirm whether the pre-existing streetlight complaint should be removed before clearing it.
 
 ## Current request — complete staff workflow and recipient notifications
 - [x] Extend persisted notifications with recipient ownership, event identity and read/unread/archive actions.
