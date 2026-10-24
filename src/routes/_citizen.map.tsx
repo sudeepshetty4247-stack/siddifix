@@ -11,6 +11,7 @@ import { useLocation } from "@/lib/location";
 import { CivicInfo } from '@/components/civic/CivicInfo';
 import { Button } from '@/components/ui/button';
 import { Timeline } from '@/components/civic/Timeline';
+import { WardLeaderboard } from '@/components/civic/WardLeaderboard';
 
 export const Route = createFileRoute("/_citizen/map")({
   head: () => ({
@@ -99,6 +100,7 @@ function MapPage() {
               </div>
             </Button>
           ))}
+          {!active && <WardLeaderboard issues={q.data ?? []} />}
         </div>
       </aside>
       <div className="order-1 h-[50vh] lg:order-2 lg:h-auto">

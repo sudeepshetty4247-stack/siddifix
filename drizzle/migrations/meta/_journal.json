@@ -36,6 +36,13 @@
       "when": 1792827603854,
       "tag": "0004_internal_authority_assignment_lifecycle",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792827963214,
+      "tag": "0005_ward_civic_details",
+      "breakpoints": true
     }
   ]
 }
