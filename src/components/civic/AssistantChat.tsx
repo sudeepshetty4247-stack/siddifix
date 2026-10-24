@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAssistantVoice } from '@/lib/use-assistant-voice';
 import { Shimmer } from '@/components/ai-elements/shimmer';
 import { Button } from '@/components/ui/button';
-import brand from '@/assets/siddi-opening-logo.png.asset.json';
+import brand from '@/assets/siddhi-mark.png.asset.json';
 import { useI18n } from '@/lib/i18n';
 
 const TEXT = {
