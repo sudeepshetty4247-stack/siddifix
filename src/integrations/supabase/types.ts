@@ -1424,6 +1424,10 @@ export type Database = {
         Args: { _eta: string; _id: string; _reason: string }
         Returns: undefined
       }
+      validate_provisioned_staff_scope: {
+        Args: { _user: string }
+        Returns: undefined
+      }
       verify_reporter_token: {
         Args: { _ref: string; _token: string }
         Returns: boolean
