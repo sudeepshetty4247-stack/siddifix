@@ -33,7 +33,7 @@
 - MLA/MP mapping uses Election Commission results and each ward's official assembly constituency number. Corporators remain not in office until council elections. AuthorityPortrait requires independent verified photos and credits, HTTPS/managed media or initials; profiles are ward-scoped and audited.
 - Ward/routing fixtures stay in tests, never citizen controls.
 - Manifest/icons support installation without a service worker; BrandOpening has a bounded per-load timer and never caches private pages.
-- Visit-only assistant streams validated text history/public aggregates without private access or writes; access pauses persist separately from classification.
+- Visit-only assistant uses editable opt-in browser speech and public aggregates; no reasoning/private access/writes. Exports share one filtered aggregate snapshot. Directory candidates use protected resumable claims and independent identity/rights review before public portrait serving.
 
 - Recipient notifications reuse issue_notifications with guarded ownership/current-scope RPCs, event keys and 15-second recovery-safe polling; notification_reads stores read/archive state. Public/internal messages are separate event visibility, and reminder timing is explicitly admin-configured.
 - Unresolved report ownership is null, not a routing department; the legacy review label is treated as unknown so unique category/ward team routing remains possible without inventing ownership.

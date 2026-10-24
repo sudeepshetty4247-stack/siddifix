@@ -52,6 +52,7 @@ import { Route as CitizenIssuesRefRouteImport } from './routes/_citizen.issues.$
 import { Route as AuthenticatedAdminIssuesIdRouteImport } from './routes/_authenticated/admin.issues.$id'
 import { Route as AuthenticatedStaffIssuesIdRouteImport } from './routes/_authenticated/staff.issues.$id'
 import { Route as ApiPublicJobsEscalateOverdueRouteImport } from './routes/api/public/jobs/escalate-overdue'
+import { Route as ApiPublicOfficerPortraitFileRouteImport } from './routes/api/public/officer-portrait.$file'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -284,6 +285,12 @@ const ApiPublicJobsEscalateOverdueRoute =
     path: '/api/public/jobs/escalate-overdue',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicOfficerPortraitFileRoute =
+  ApiPublicOfficerPortraitFileRouteImport.update({
+    id: '/api/public/officer-portrait/$file',
+    path: '/api/public/officer-portrait/$file',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof CitizenIndexRoute
@@ -327,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/admin/issues/$id': typeof AuthenticatedAdminIssuesIdRoute
   '/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
   '/api/public/jobs/escalate-overdue': typeof ApiPublicJobsEscalateOverdueRoute
+  '/api/public/officer-portrait/$file': typeof ApiPublicOfficerPortraitFileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof CitizenIndexRoute
@@ -368,6 +376,7 @@ export interface FileRoutesByTo {
   '/admin/issues/$id': typeof AuthenticatedAdminIssuesIdRoute
   '/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
   '/api/public/jobs/escalate-overdue': typeof ApiPublicJobsEscalateOverdueRoute
+  '/api/public/officer-portrait/$file': typeof ApiPublicOfficerPortraitFileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -414,6 +423,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/issues/$id': typeof AuthenticatedAdminIssuesIdRoute
   '/_authenticated/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
   '/api/public/jobs/escalate-overdue': typeof ApiPublicJobsEscalateOverdueRoute
+  '/api/public/officer-portrait/$file': typeof ApiPublicOfficerPortraitFileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -459,6 +469,7 @@ export interface FileRouteTypes {
     | '/admin/issues/$id'
     | '/staff/issues/$id'
     | '/api/public/jobs/escalate-overdue'
+    | '/api/public/officer-portrait/$file'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -500,6 +511,7 @@ export interface FileRouteTypes {
     | '/admin/issues/$id'
     | '/staff/issues/$id'
     | '/api/public/jobs/escalate-overdue'
+    | '/api/public/officer-portrait/$file'
   id:
     | '__root__'
     | '/_authenticated'
@@ -545,6 +557,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/issues/$id'
     | '/_authenticated/staff/issues/$id'
     | '/api/public/jobs/escalate-overdue'
+    | '/api/public/officer-portrait/$file'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -556,6 +569,7 @@ export interface RootRouteChildren {
   StaffLoginRoute: typeof StaffLoginRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
   ApiPublicJobsEscalateOverdueRoute: typeof ApiPublicJobsEscalateOverdueRoute
+  ApiPublicOfficerPortraitFileRoute: typeof ApiPublicOfficerPortraitFileRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -861,6 +875,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicJobsEscalateOverdueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/officer-portrait/$file': {
+      id: '/api/public/officer-portrait/$file'
+      path: '/api/public/officer-portrait/$file'
+      fullPath: '/api/public/officer-portrait/$file'
+      preLoaderRoute: typeof ApiPublicOfficerPortraitFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -979,6 +1000,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaffLoginRoute: StaffLoginRoute,
   ApiAssistantRoute: ApiAssistantRoute,
   ApiPublicJobsEscalateOverdueRoute: ApiPublicJobsEscalateOverdueRoute,
+  ApiPublicOfficerPortraitFileRoute: ApiPublicOfficerPortraitFileRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

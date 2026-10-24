@@ -51,6 +51,6 @@ export function createResponsesCall(
   return {
     result,
     response: () =>
-      withLovableAiGatewayRunIdHeader(result.toUIMessageStreamResponse({ ...(originalMessages ? { originalMessages } : {}), sendReasoning: true, onFinish: () => {}, onError: (error) => error instanceof Error ? error.message : 'The assistant could not answer. Please try again later.' }), runIdFetch, { 'Cache-Control': 'no-store' }),
+      withLovableAiGatewayRunIdHeader(result.toUIMessageStreamResponse({ ...(originalMessages ? { originalMessages } : {}), sendReasoning: false, onFinish: () => {}, onError: (error) => error instanceof Error ? error.message : 'The assistant could not answer. Please try again later.' }), runIdFetch, { 'Cache-Control': 'no-store' }),
   };
 }
