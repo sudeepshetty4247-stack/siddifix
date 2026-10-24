@@ -47,7 +47,7 @@ export const getDemoDatasetStatus = createServerFn({ method: 'GET' })
       supabaseAdmin.from('civic_teams').select('demo_dataset_id').not('demo_dataset_id', 'is', null),
       supabaseAdmin.from('staff_profiles').select('demo_dataset_id').not('demo_dataset_id', 'is', null),
     ]);
-    const tally = (rows: { demo_dataset_id: string }[] | null) => {
+    const tally = (rows: { demo_dataset_id: string | null }[] | null) => {
       const m = new Map<string, number>();
       for (const r of rows ?? []) m.set(r.demo_dataset_id, (m.get(r.demo_dataset_id) ?? 0) + 1);
       return m;
