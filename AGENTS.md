@@ -20,7 +20,7 @@
 - Directory coverage, authorities, category mappings and ward boundaries live in protected civic_* tables; directory availability rectangles are not jurisdiction proof, and ownership remains review-required without asset rules.
 - Citizen location preferences are provided by LocationProvider across the citizen layout and stored locally, not continuously tracked.
 - Anonymous submission persists the report, recovery secret and creation event through the service-only create_civic_report transaction; retries never return existing recovery credentials.
-- Home-screen installability uses a manifest and icons only; no app-shell service worker is registered, preserving fresh previews.
+- Manifest/icons support installation without a service worker; BrandOpening has a bounded per-load timer and never caches private pages.
 - Case-local civic information reads the protected civic directory; the standalone citizen authority directory has been removed to keep reporting and case work integrated.
 - Duplicate review, assignment lifecycle, classification and reporter resolution decisions use atomic database operations with durable events; ordinary staff clients cannot directly update issue fields.
 - Staff analytics use full-dataset database aggregates, not the capped triage sample; Home keeps its photo-led actions and recent real reports while CitizenMap owns geographic browsing.
