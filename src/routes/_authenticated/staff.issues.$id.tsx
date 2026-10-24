@@ -69,10 +69,9 @@ function StaffIssue() {
     qc.invalidateQueries({ queryKey: ["staff-queue"] });
     qc.invalidateQueries({ queryKey: ["staff-all"] });
   };
-  const actor = () => ({ actor_id: roles.data?.userId ?? null, actor_label: roles.data?.roles.includes("admin") ? "CivicFix administrator" : "CivicFix staff" });
-
-  async function logEvent(e: { kind: string; note?: string | null; from_status?: IssueStatus | null; to_status?: IssueStatus | null }) {
-    const { error } = await supabase.from("issue_events").insert({ issue_id: id, ...actor(), ...e });
+  async function logEvent(e: { kind: string; note?: string | null }) {
+    if (e.kind !== "note" || !e.note) throw new Error("Unsupported event.");
+    const { error } = await supabase.rpc("staff_add_note", { _issue: id, _note: e.note });
     if (error) throw error;
   }
 
