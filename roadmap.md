@@ -1,5 +1,11 @@
 # CivicFix roadmap
 
+## Current request — voice, enterprise reports and officer acquisition
+- [ ] Complete existing voice/text assistant and verify grounding/navigation.
+- [ ] Add stable filtered aggregates, structured downloadable PDF and genuine Excel charts; inspect downloaded files.
+- [ ] Audit all officer profiles and implement secure resumable acquisition/review with source evidence.
+- [ ] Run regression tests and document actual coverage, source failures and external blockers.
+
 ## Current request — location search and officer delivery
 - [x] Repair real India-wide autocomplete, manual session drafts, shared enabled-coverage validation and outside-area feedback without erasing report work.
 - [x] Real Photon Hyderabad/Kudlu Gate responses, keyboard/desktop and mobile photo-preserving correction verified; 215 tests passed, preview validation OK. Provider scale limits and remaining checks: docs/LOCATION_SEARCH_ACCEPTANCE.md.
