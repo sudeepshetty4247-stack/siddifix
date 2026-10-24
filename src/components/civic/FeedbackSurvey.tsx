@@ -26,7 +26,7 @@ export function FeedbackSurvey({ caseRef, token, onReopened }: { caseRef: string
     if (!rating || !resolution || !speed) return;
     setBusy(true);
     try {
-      const r = await send({ data: { ref: caseRef, token, rating, resolution, responseTime: speed, comment: comment || undefined } });
+      const r = await send({ data: { ref: caseRef, token, rating, resolution, responseTime: speed, ...(comment.trim() ? { comment } : {}) } });
       toast.success(r.reopened ? 'Feedback saved. The case was reopened for staff review.' : 'Thank you — your feedback was saved.');
       await qc.invalidateQueries({ queryKey: ['feedback-state', caseRef] });
       if (r.reopened) onReopened();
