@@ -335,6 +335,57 @@ export type Database = {
           },
         ]
       }
+      civic_teams: {
+        Row: {
+          active: boolean
+          categories: string[]
+          contact_label: string | null
+          contact_phone: string | null
+          created_at: string
+          department: string
+          id: string
+          is_fallback: boolean
+          name: string
+          notes: string
+          supervisor_id: string | null
+          updated_at: string
+          updated_by: string | null
+          wards: string[]
+        }
+        Insert: {
+          active?: boolean
+          categories?: string[]
+          contact_label?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          department: string
+          id?: string
+          is_fallback?: boolean
+          name: string
+          notes?: string
+          supervisor_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          wards?: string[]
+        }
+        Update: {
+          active?: boolean
+          categories?: string[]
+          contact_label?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          department?: string
+          id?: string
+          is_fallback?: boolean
+          name?: string
+          notes?: string
+          supervisor_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          wards?: string[]
+        }
+        Relationships: []
+      }
       civic_wards: {
         Row: {
           active: boolean
@@ -797,6 +848,7 @@ export type Database = {
           subcategory: string | null
           summary: string | null
           support_count: number
+          team_id: string | null
           title: string
           updated_at: string
         }
@@ -833,6 +885,7 @@ export type Database = {
           subcategory?: string | null
           summary?: string | null
           support_count?: number
+          team_id?: string | null
           title: string
           updated_at?: string
         }
@@ -869,6 +922,7 @@ export type Database = {
           subcategory?: string | null
           summary?: string | null
           support_count?: number
+          team_id?: string | null
           title?: string
           updated_at?: string
         }
@@ -963,6 +1017,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_upsert_team: {
+        Args: {
+          _active: boolean
+          _categories: string[]
+          _contact_label: string
+          _contact_phone: string
+          _department: string
+          _fallback: boolean
+          _id: string
+          _name: string
+          _notes: string
+          _supervisor: string
+          _wards: string[]
+        }
+        Returns: string
+      }
       assign_civic_issue: {
         Args: {
           _action: string
@@ -1026,6 +1096,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      route_issue_to_team: { Args: { _issue: string }; Returns: string }
       staff_acknowledge_issue: {
         Args: {
           _eta: string
@@ -1037,6 +1108,10 @@ export type Database = {
         Returns: undefined
       }
       staff_actor_label: { Args: { _user_id: string }; Returns: string }
+      staff_assign_team: {
+        Args: { _issue: string; _reason: string; _team: string }
+        Returns: undefined
+      }
       staff_can_work: {
         Args: { _issue: string; _user_id: string }
         Returns: boolean

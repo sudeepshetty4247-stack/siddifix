@@ -1,6 +1,9 @@
 # CivicFix roadmap
 
 ## Current priority — simplify and complete the real product
+- [x] Operational teams model (master prompt §3): civic_teams table (name, department, categories, wards, supervisor, fallback, active, audit), automatic category+ward routing on every new report, routing-exception queue page for supervisors, admin team manager in Team Management; both routing paths verified in the database (assigned + exception), test rows removed.
+- [ ] Team-scoped staff queue filtering, overdue/escalated queue page, notifications page, audit/system-health page (master prompt §5 nav) — next increment.
+- [ ] Signed-in staff end-to-end run still blocked: no staff/admin account exists yet.
 - [x] NammaKasa-style simplicity rebuild (Home kept as Vidhana Soudha photo page): full-screen map-first Civic Map with floating Active/Reports pill, severity/status/category filters, Map/List toggle, per-ward red count bubbles, ward bottom sheet with Know-your-ward, bottom Report-a-Problem bar; camera-first report entry with LOCATION LOCKED ward overlay; issue page severity·status header with age line; Explore gained resolution-bar ward leaderboard. 48 tests passed, build OK, browser-checked.
 - [x] Address search (e.g. Kudlu Gate) and place names work; every ward shows assembly/Lok Sabha constituency, MLA (2023) and MP (2024) from Election Commission results; corporator shown as not in office. Officer names/photos still need a current official roster.
 - [x] Restored the previous map-free Vidhana Soudha Home and its existing photo; latest direct preference overrides map-first brief.

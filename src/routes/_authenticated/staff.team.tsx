@@ -4,8 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { listTeam, setRole, type TeamRole } from "@/lib/issues.functions";
+import { listTeams, upsertTeam } from "@/lib/teams.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES, timeAgo } from "@/lib/civic";
+import { CATEGORIES, categoryById, timeAgo } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/staff/team")({
   head: () => ({ meta: [{ title: "Team access management — CivicFix" }, { name: "description", content: "Manage authorized CivicFix staff roles, designations and work areas." }, { property: "og:title", content: "Team access management — CivicFix" }, { property: "og:description", content: "Manage authorized CivicFix staff roles, designations and work areas." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -69,6 +70,119 @@ function Team() {
           </div>
         ))}
         {q.isLoading && <p className="p-6 text-center text-sm text-muted-foreground">Loading team…</p>}
+      </div>
+      <TeamsSection members={q.data ?? []} />
+    </div>
+  );
+}
+
+type TeamRow = Awaited<ReturnType<typeof listTeams>>[number];
+
+function TeamsSection({ members }: { members: Member[] }) {
+  const list = useServerFn(listTeams);
+  const save = useServerFn(upsertTeam);
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["teams"], queryFn: () => list() });
+  const [editing, setEditing] = useState<TeamRow | "new" | null>(null);
+  const supervisors = members.filter((m) => m.roles.includes("supervisor") || m.roles.includes("admin"));
+
+  async function submit(form: TeamFormState) {
+    try {
+      await save({
+        data: {
+          id: editing && editing !== "new" ? editing.id : null,
+          name: form.name, department: form.department, categories: form.categories,
+          wards: form.wards.split(",").map((w) => w.trim()).filter(Boolean),
+          supervisorId: form.supervisorId || null,
+          contactLabel: form.contactLabel || null, contactPhone: form.contactPhone || null,
+          isFallback: form.isFallback, active: form.active, notes: form.notes,
+        },
+      });
+      toast.success("Team saved");
+      setEditing(null);
+      qc.invalidateQueries({ queryKey: ["teams"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  return (
+    <section className="space-y-4 border-t pt-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold">Operational teams</h2>
+          <p className="text-sm text-muted-foreground">New reports are routed to a team by category and ward. Teams with no ward list serve every ward; one fallback team catches anything unmatched.</p>
+        </div>
+        <button onClick={() => setEditing("new")} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">New team</button>
+      </div>
+      {q.error && <p className="rounded-xl bg-destructive-soft p-4 text-sm text-destructive">{(q.error as Error).message}</p>}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {(q.data ?? []).map((t) => (
+          <div key={t.id} className={`rounded-2xl border bg-card p-4 shadow-soft ${t.active ? "" : "opacity-60"}`}>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="font-semibold">{t.name}{t.is_fallback ? " · fallback" : ""}{t.active ? "" : " · inactive"}</p>
+                <p className="text-xs text-muted-foreground">{t.department}</p>
+              </div>
+              <button onClick={() => setEditing(t)} className="rounded-full border px-3 py-1 text-xs font-semibold hover:bg-secondary">Edit</button>
+            </div>
+            <p className="mt-2 text-xs">{t.categories.length ? t.categories.map((c) => categoryById(c)?.label ?? c).join(", ") : "All categories"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t.wards.length ? `${t.wards.length} ward(s)` : "All wards"}{t.contact_label ? ` · ${t.contact_label}` : ""}{t.contact_phone ? ` ${t.contact_phone}` : ""}</p>
+          </div>
+        ))}
+        {q.data?.length === 0 && <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground sm:col-span-2">No teams yet. Create one so incoming reports can be routed automatically.</p>}
+      </div>
+      {editing && <TeamForm team={editing === "new" ? null : editing} supervisors={supervisors} onCancel={() => setEditing(null)} onSubmit={submit} />}
+    </section>
+  );
+}
+
+type TeamFormState = { name: string; department: string; categories: string[]; wards: string; supervisorId: string; contactLabel: string; contactPhone: string; isFallback: boolean; active: boolean; notes: string };
+
+function TeamForm({ team, supervisors, onCancel, onSubmit }: { team: TeamRow | null; supervisors: Member[]; onCancel: () => void; onSubmit: (f: TeamFormState) => Promise<void> }) {
+  const [name, setName] = useState(team?.name ?? "");
+  const [department, setDepartment] = useState(team?.department ?? "");
+  const [cats, setCats] = useState<string[]>(team?.categories ?? []);
+  const [wards, setWards] = useState((team?.wards ?? []).join(", "));
+  const [supervisorId, setSupervisorId] = useState(team?.supervisor_id ?? "");
+  const [contactLabel, setContactLabel] = useState(team?.contact_label ?? "");
+  const [contactPhone, setContactPhone] = useState(team?.contact_phone ?? "");
+  const [isFallback, setIsFallback] = useState(team?.is_fallback ?? false);
+  const [active, setActive] = useState(team?.active ?? true);
+  const [notes, setNotes] = useState(team?.notes ?? "");
+  const [busy, setBusy] = useState(false);
+  const field = "mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm";
+  return (
+    <div className="grid gap-3 rounded-2xl border bg-card p-4 shadow-soft sm:grid-cols-2">
+      <label className="text-sm"><span className="text-muted-foreground">Team name</span><input value={name} maxLength={120} placeholder="e.g. Roads & Potholes — South" onChange={(e) => setName(e.target.value)} className={field} /></label>
+      <label className="text-sm"><span className="text-muted-foreground">Department / service</span><input value={department} maxLength={160} placeholder="e.g. Road infrastructure" onChange={(e) => setDepartment(e.target.value)} className={field} /></label>
+      <fieldset className="sm:col-span-2">
+        <legend className="text-sm text-muted-foreground">Categories this team handles</legend>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {CATEGORIES.map((c) => (
+            <label key={c.id} className={`inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs ${cats.includes(c.id) ? "border-primary bg-primary-soft text-primary" : ""}`}>
+              <input type="checkbox" className="sr-only" checked={cats.includes(c.id)} onChange={(e) => setCats(e.target.checked ? [...cats, c.id] : cats.filter((x) => x !== c.id))} />{c.emoji} {c.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <label className="text-sm"><span className="text-muted-foreground">Ward identifiers (comma separated, empty = all wards)</span><input value={wards} onChange={(e) => setWards(e.target.value)} className={field} /></label>
+      <label className="text-sm"><span className="text-muted-foreground">Responsible supervisor</span>
+        <select value={supervisorId} onChange={(e) => setSupervisorId(e.target.value)} className={field}>
+          <option value="">None selected</option>
+          {supervisors.map((m) => <option key={m.id} value={m.id}>{m.profile?.display_name || m.email}</option>)}
+        </select>
+      </label>
+      <label className="text-sm"><span className="text-muted-foreground">Contact label (verified only)</span><input value={contactLabel} maxLength={120} placeholder="e.g. Team control room" onChange={(e) => setContactLabel(e.target.value)} className={field} /></label>
+      <label className="text-sm"><span className="text-muted-foreground">Contact phone (verified only)</span><input value={contactPhone} maxLength={40} onChange={(e) => setContactPhone(e.target.value)} className={field} /></label>
+      <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
+        <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={isFallback} onChange={(e) => setIsFallback(e.target.checked)} className="h-4 w-4 accent-primary" /> Fallback team (catches unmatched reports)</label>
+        <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="h-4 w-4 accent-primary" /> Active</label>
+      </div>
+      <label className="text-sm sm:col-span-2"><span className="text-muted-foreground">Notes</span><input value={notes} maxLength={500} onChange={(e) => setNotes(e.target.value)} className={field} /></label>
+      <div className="flex justify-end gap-2 sm:col-span-2">
+        <button onClick={onCancel} className="rounded-lg border px-4 py-2 text-sm font-semibold">Cancel</button>
+        <button disabled={busy || name.trim().length < 3 || department.trim().length < 2} onClick={async () => { setBusy(true); await onSubmit({ name: name.trim(), department: department.trim(), categories: cats, wards, supervisorId, contactLabel: contactLabel.trim(), contactPhone: contactPhone.trim(), isFallback, active, notes: notes.trim() }); setBusy(false); }} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">Save team</button>
       </div>
     </div>
   );
