@@ -1,12 +1,14 @@
 # CivicFix roadmap
 
 ## Current request — separate Admin and Government Staff portals
-- [ ] Secure owner designation and explicit administrator delegation.
-- [ ] Separate protected portals and sign-in entry points; preserve existing modules.
-- [ ] Enforce active accounts and department/category/team/ward scope in database reads and actions.
-- [ ] Secure account invitations, suspension/reactivation and recovery with audit history.
-- [ ] Scoped persisted metrics and notifications with timely queue updates.
-- [ ] Run regression and direct authorization checks; document unverified live-write scenarios.
+- [x] Secure owner designation and explicit administrator delegation; registered owner invitation requested and role verified.
+- [x] Separate protected portals and sign-in entry points; citizen footer links corrected.
+- [x] Active accounts and department/category/team/ward/corporation scope enforced in database reads and actions; direct staff privilege escalation checks rejected.
+- [x] Invitations, atomic scope edits, suspension/reactivation, recovery requests and eligible handler assignment with audit history.
+- [x] Scoped persisted metrics, pagination and notification read records; dashboard/queue refresh every 15 seconds.
+- [x] 170 regression tests passed; latest preview build OK; signed-in staff portal, denied admin entry, direct negative permission checks, empty queue, metric navigation and sign-out verified.
+- [ ] Configure verified active operational teams before staff invitations — requires owner-supplied real department/team/jurisdiction details; none currently configured.
+- [ ] New invitation email consumption, suspension/reactivation and complete positive case lifecycle acceptance — requires isolated test backend or authorized genuine staff accounts/case work; no synthetic production cases created.
 
 ## Current request — cover, clean workspace and transparency
 - [x] Replace Home cover with the latest supplied community photo; retain Siddi name/slogan and Back-first header.
