@@ -1,0 +1,15 @@
+{
+  "id": "/",
+  "name": "CivicFix",
+  "short_name": "CivicFix",
+  "description": "Report civic issues and track every recorded action.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#147d7e",
+  "background_color": "#ffffff",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
