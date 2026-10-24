@@ -47,7 +47,7 @@ function IssuePage() {
 
   const issue = useQuery({
     queryKey: ["issue", ref],
-    refetchInterval: 30000,
+    refetchInterval: 15000, refetchOnReconnect:"always",
     queryFn: async () => {
       return (await publicCases(ref))[0] ?? null;
     },
@@ -55,7 +55,7 @@ function IssuePage() {
   const events = useQuery({
     queryKey: ["issue-events", issue.data?.id],
     enabled: !!issue.data?.id,
-    refetchInterval: 30000,
+    refetchInterval: 15000, refetchOnReconnect:"always",
     queryFn: async () => {
       if (!issue.data?.id) return [];
       return await publicEvents(issue.data.id);
@@ -90,6 +90,7 @@ function IssuePage() {
   }, [issue.data?.id, ref, qc]);
 
   if (issue.isLoading) return <div className="mx-auto max-w-6xl px-4 py-10"><div className="h-96 animate-pulse rounded-3xl bg-muted" /></div>;
+  if (issue.isError && !issue.data) return <section className="mx-auto max-w-md space-y-4 px-4 py-24" role="alert"><h1 className="text-2xl font-bold">Case temporarily unavailable</h1><p>Your report was not changed. Please try again.</p><Button onClick={()=>issue.refetch()}>Retry</Button></section>;
   if (!issue.data)
     return (
       <div className="mx-auto max-w-md px-4 py-24 text-center">

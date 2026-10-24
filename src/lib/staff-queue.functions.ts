@@ -140,7 +140,7 @@ export const listAuditLog = createServerFn({ method: "GET" })
         action: n.status === "failed" ? "delivery failed" : n.status,
         detail: `${n.channel} → ${n.audience}: ${n.detail}`,
         actor: "CivicFix",
-        ref: refById.get(n.issue_id) ?? null,
+        ref: n.issue_id ? refById.get(n.issue_id) ?? null : null,
       });
     }
     for (const d of directory.data ?? []) {

@@ -4,14 +4,15 @@ import { z } from 'zod';
 import type { Json } from '@/integrations/supabase/types';
 
 export const getPortalAccess = createServerFn({ method: 'GET' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {
-  const [active, roles, permissions, profile] = await Promise.all([
+  const [active, roles, permissions, profile, configuration] = await Promise.all([
     context.supabase.rpc('account_active', { _user: context.userId }),
     context.supabase.from('user_roles').select('role').eq('user_id', context.userId),
     context.supabase.from('admin_permissions').select('is_super_admin,can_manage_admins').eq('user_id', context.userId).maybeSingle(),
     context.supabase.from('staff_profiles').select('*').eq('user_id', context.userId).maybeSingle(),
+    context.supabase.rpc('staff_configuration_valid',{_user:context.userId}),
   ]);
   if (active.error || roles.error || permissions.error || profile.error) throw new Error('Could not verify portal access.');
-  return { active: active.data === true, roles: active.data ? (roles.data ?? []).map(r => r.role) : [], isSuperAdmin: permissions.data?.is_super_admin ?? false, canManageAdmins: permissions.data?.can_manage_admins ?? false, profile: profile.data, userId: context.userId, email: String(context.claims.email ?? '') };
+  return { configured:configuration.data===true, active: active.data === true, roles: active.data ? (roles.data ?? []).map(r => r.role) : [], isSuperAdmin: permissions.data?.is_super_admin ?? false, canManageAdmins: permissions.data?.can_manage_admins ?? false, profile: profile.data, userId: context.userId, email: String(context.claims.email ?? '') };
 });
 
 export const startOwnerInvitation = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).handler(async ({ context }) => {

@@ -21,7 +21,7 @@ export const changeNotification = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: z.input<typeof notificationAction>) => notificationAction.parse(input))
   .handler(async ({ data, context }) => {
-    const r = await context.supabase.rpc('set_notification_state', { _id: data.id, _action: data.action });
+    const r = await context.supabase.rpc('set_notification_state', { _action: data.action, ...data.id ? { _id: data.id } : {} });
     if (r.error) throw new Error('Notification state was not saved. Please retry.');
     return { changed: r.data };
   });
