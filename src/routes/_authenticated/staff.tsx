@@ -63,10 +63,12 @@ function StaffLayout() {
     { to: "/staff/insights" as const, label: "Duplicates & Recurring", icon: Repeat },
     { to: "/staff/map" as const, label: "Map & Hotspots", icon: Map },
     { to: "/staff/notifications" as const, label: "Notifications", icon: Bell },
-    ...(isAdmin ? [{ to: "/staff/directory" as const, label: "Routing Setup", icon: ListTodo }] : []),
-    ...(isAdmin ? [{ to: "/staff/team" as const, label: "Team Management", icon: Users }] : []),
-    ...(isAdmin ? [{ to: "/staff/audit" as const, label: "Audit & Health", icon: ShieldCheck }] : []),
+  const adminNav = [
+    { to: "/staff/directory" as const, label: "Routing Setup", icon: ListTodo },
+    { to: "/staff/team" as const, label: "Team Management", icon: Users },
+    { to: "/staff/audit" as const, label: "Audit & Health", icon: ShieldCheck },
   ];
+
 
   const sidebar = (
     <div className="flex h-full flex-col gap-6 p-4">
