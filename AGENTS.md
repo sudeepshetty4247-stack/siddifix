@@ -20,3 +20,4 @@
 - Directory coverage, authorities, category mappings and ward boundaries live in protected civic_* tables; directory availability rectangles are not jurisdiction proof, and ownership remains review-required without asset rules.
 - Citizen location preferences are provided by LocationProvider across the citizen layout and stored locally, not continuously tracked.
 - Anonymous submission persists the report, recovery secret and creation event through the service-only create_civic_report transaction; retries never return existing recovery credentials.
+- Home-screen installability uses a manifest and icons only; no app-shell service worker is registered, preserving fresh previews.

@@ -6,6 +6,7 @@ import { listTeam, setRole } from "@/lib/issues.functions";
 import { timeAgo } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/staff/team")({
+  head: () => ({ meta: [{ title: "Team access management — CivicFix" }, { name: "description", content: "Manage authorized CivicFix staff and administrator access." }, { property: "og:title", content: "Team access management — CivicFix" }, { property: "og:description", content: "Manage authorized CivicFix staff and administrator access." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: Team,
 });
 

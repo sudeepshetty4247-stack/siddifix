@@ -13,6 +13,7 @@ import { CivicInfo } from "@/components/civic/CivicInfo";
 import { getDirectory } from "@/lib/directory.functions";
 
 export const Route = createFileRoute("/_authenticated/staff/issues/$id")({
+  head: () => ({ meta: [{ title: "Staff issue actions — CivicFix" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Staff issue actions — CivicFix" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: StaffIssue,
 });
 

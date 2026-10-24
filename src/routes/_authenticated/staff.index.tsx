@@ -6,6 +6,7 @@ import { CATEGORIES, OPEN_STATUSES, isOverdue, timeAgo, categoryById } from "@/l
 import { StatusBadge, SeverityTag } from "@/components/civic/StatusBadge";
 
 export const Route = createFileRoute("/_authenticated/staff/")({
+  head: () => ({ meta: [{ title: "Staff overview — CivicFix" }, { name: "description", content: "Review actual civic report counts and triage priorities." }, { property: "og:title", content: "Staff overview — CivicFix" }, { property: "og:description", content: "Review actual civic report counts and triage priorities." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: Overview,
 });
 
