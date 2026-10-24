@@ -1,8 +1,8 @@
 # CivicFix roadmap
 
 ## Current priority — simplify and complete the real product
-- [ ] Fix Civic Map GPS/manual-point centering and exact-click ward lookup; verify permission denial, weak accuracy and outside coverage.
-- [ ] Match the reference's officer/elected separation with honest missing-data states; verify official names, portraits and contacts before publishing them.
+- [x] Civic Map uses reliable GPS/manual coordinates and actual ward-click points, no interior sample substitution; browser checks passed for GPS, manual confirmation, Mysuru outside coverage, denied-permission callback and weak GPS. 41 tests passed.
+- [ ] Officer/elected separation delivered; names/photos/contacts blocked by missing current official roster and constituency mapping. All 369 ward rows have zero MLA/MP/member names; reference numbers and portraits remain unverified, not copied into live data.
 - [x] Removed citizen ward-test controls and unused screen; Home is now map-free with reporting, tracking and recent real reports. 37 regression tests passed; home/map and phone-width layout verified.
 - [ ] Official GBA/MLA/MP/ward names and photographs: official Karnataka MP list located, but current official portraits, GBA roster and ward-to-constituency mappings remain unverified; no guessed identities published.
 - [x] Bengaluru-focused live ward map and citizen home with separate read-only ward/category test inputs. All five corporation lookups and Mysuru outside-coverage warning passed in the browser; 37 tests passed including interior pins for all 369 wards. No test reports inserted. Hosted address service, verified member contacts and administrator account remain blockers for full operational end-to-end checks.
