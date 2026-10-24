@@ -47,7 +47,8 @@ function WardLayer({ wards, selectedWard, onWardSelect }: { wards: Ward[]; selec
     map.fitBounds(bounds, { padding: [18, 18], animate: false });
     return () => { map.setMaxBounds([]); map.setMinZoom(0); };
   }, [wards, map]);
-  const outer = [[-90, -180], [90, -180], [90, 180], [-90, 180], [-90, -180]];
+  // A local outer ring avoids the antimeridian wrapping of a world-sized mask.
+  const outer = [[10, 74], [16, 74], [16, 81], [10, 81], [10, 74]];
   const holes = wards.flatMap(w => geometryRings(w.boundary)).map(r => r.map(p => [p[1] ?? 0, p[0] ?? 0]));
   return <>
     <GeoJSON data={{ type: 'Polygon', coordinates: [outer.map(p => [p[1], p[0]]), ...holes.map(r => r.map(p => [p[1], p[0]]))] } as GeoJSON.GeoJsonObject} style={{ fillColor: 'var(--map-mask)', fillOpacity: 0.7, weight: 0 }} interactive={false} />

@@ -45,7 +45,7 @@ export function CitizenMap() {
   return <div className="relative flex min-h-[80dvh] flex-col">
     <div className="border-b bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-5">
-        <div><p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-primary"><MapPin className="h-3.5 w-3.5" />Bengaluru · Citizen workspace</p><h1 className="text-3xl font-bold sm:text-4xl">Your neighbourhood. Better.</h1><p className="mt-2 text-sm text-muted-foreground">CivicFix · Real reports, local responsibility, visible progress.</p></div>
+        <div><p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-primary"><MapPin className="h-3.5 w-3.5" />Bengaluru · Citizen workspace</p><h1 className="text-3xl font-bold sm:text-4xl">CivicFix Bengaluru</h1><p className="mt-2 text-sm text-muted-foreground">Your neighbourhood. Better. Real reports, visible progress.</p></div>
         <div className="flex flex-wrap gap-2"><Button asChild size="lg"><Link to="/report"><Camera className="h-4 w-4"/>Report a problem<ArrowRight className="h-4 w-4"/></Link></Button><Button variant="outline" onClick={()=>setTesting(!testing)}><FlaskConical className="h-4 w-4"/>Test ward lookup</Button></div>
       </div>
     </div>
