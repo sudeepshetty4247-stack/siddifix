@@ -1,5 +1,9 @@
 # CivicFix roadmap
 
+## Current request — recheck automatic department pipeline
+- [ ] Exercise department routing and notification linkage with isolated disposable test rows, then rerun the workflow suite.
+- [ ] Confirm real-data setup and report exact limits; preserve the existing genuine complaint and leave no new test rows in production.
+
 ## Current request — complete staff workflow and recipient notifications
 - [x] Extend persisted notifications with recipient ownership, event identity and read/unread/archive actions.
 - [x] Connect case/account/deadline events and recovery-safe refresh; build header bell and notification centre.
