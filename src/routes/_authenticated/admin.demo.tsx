@@ -128,11 +128,11 @@ function DemoPage() {
 
         {preview && (
           <div className="space-y-2 rounded-lg border p-4 text-sm">
-            <p className="font-semibold">Cleanup preview — {String(preview.dataset)}</p>
-            <p className="text-muted-foreground">Removes {String(preview.issues)} reports, {String(preview.events)} timeline events, {String(preview.notifications)} notifications, {String(preview.feedback)} feedback entries, {String(preview.photos)} photos, {String(preview.secrets)} tracking secrets, {String(preview.teams)} teams and {String(preview.staff_profiles)} staff profiles.</p>
-            {preview.safe_to_purge
+            <p className="font-semibold">Cleanup preview — {String(preview['dataset'])}</p>
+            <p className="text-muted-foreground">Removes {String(preview['issues'])} reports, {String(preview['events'])} timeline events, {String(preview['notifications'])} notifications, {String(preview['feedback'])} feedback entries, {String(preview['photos'])} photos, {String(preview['secrets'])} tracking secrets, {String(preview['teams'])} teams and {String(preview['staff_profiles'])} staff profiles.</p>
+            {preview['safe_to_purge']
               ? <p className="text-primary">Safe: no genuine record references this dataset.</p>
-              : <p className="text-destructive">Blocked: {String(preview.genuine_records_blocked)} genuine record(s) reference this dataset. Purge will refuse to run.</p>}
+              : <p className="text-destructive">Blocked: {String(preview['genuine_records_blocked'])} genuine record(s) reference this dataset. Purge will refuse to run.</p>}
           </div>
         )}
 
