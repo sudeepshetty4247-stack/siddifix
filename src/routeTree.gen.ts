@@ -28,6 +28,7 @@ import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAdministratorsRouteImport } from './routes/_authenticated/admin.administrators'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
+import { Route as AuthenticatedAdminDemoRouteImport } from './routes/_authenticated/admin.demo'
 import { Route as AuthenticatedAdminDirectoryRouteImport } from './routes/_authenticated/admin.directory'
 import { Route as AuthenticatedAdminFeedbackRouteImport } from './routes/_authenticated/admin.feedback'
 import { Route as AuthenticatedAdminInsightsRouteImport } from './routes/_authenticated/admin.insights'
@@ -147,6 +148,11 @@ const AuthenticatedAdminAdministratorsRoute =
 const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminDemoRoute = AuthenticatedAdminDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const AuthenticatedAdminDirectoryRoute =
@@ -316,6 +322,7 @@ export interface FileRoutesByFullPath {
   '/api/assistant': typeof ApiAssistantRoute
   '/admin/administrators': typeof AuthenticatedAdminAdministratorsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/demo': typeof AuthenticatedAdminDemoRoute
   '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/insights': typeof AuthenticatedAdminInsightsRoute
@@ -359,6 +366,7 @@ export interface FileRoutesByTo {
   '/api/assistant': typeof ApiAssistantRoute
   '/admin/administrators': typeof AuthenticatedAdminAdministratorsRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/demo': typeof AuthenticatedAdminDemoRoute
   '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
   '/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/admin/insights': typeof AuthenticatedAdminInsightsRoute
@@ -407,6 +415,7 @@ export interface FileRoutesById {
   '/_citizen/': typeof CitizenIndexRoute
   '/_authenticated/admin/administrators': typeof AuthenticatedAdminAdministratorsRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/demo': typeof AuthenticatedAdminDemoRoute
   '/_authenticated/admin/directory': typeof AuthenticatedAdminDirectoryRoute
   '/_authenticated/admin/feedback': typeof AuthenticatedAdminFeedbackRoute
   '/_authenticated/admin/insights': typeof AuthenticatedAdminInsightsRoute
@@ -454,6 +463,7 @@ export interface FileRouteTypes {
     | '/api/assistant'
     | '/admin/administrators'
     | '/admin/audit'
+    | '/admin/demo'
     | '/admin/directory'
     | '/admin/feedback'
     | '/admin/insights'
@@ -497,6 +507,7 @@ export interface FileRouteTypes {
     | '/api/assistant'
     | '/admin/administrators'
     | '/admin/audit'
+    | '/admin/demo'
     | '/admin/directory'
     | '/admin/feedback'
     | '/admin/insights'
@@ -544,6 +555,7 @@ export interface FileRouteTypes {
     | '/_citizen/'
     | '/_authenticated/admin/administrators'
     | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/demo'
     | '/_authenticated/admin/directory'
     | '/_authenticated/admin/feedback'
     | '/_authenticated/admin/insights'
@@ -718,6 +730,13 @@ declare module '@tanstack/react-router' {
       path: '/audit'
       fullPath: '/admin/audit'
       preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/demo': {
+      id: '/_authenticated/admin/demo'
+      path: '/demo'
+      fullPath: '/admin/demo'
+      preLoaderRoute: typeof AuthenticatedAdminDemoRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/directory': {
@@ -908,6 +927,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAdministratorsRoute: typeof AuthenticatedAdminAdministratorsRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminDemoRoute: typeof AuthenticatedAdminDemoRoute
   AuthenticatedAdminDirectoryRoute: typeof AuthenticatedAdminDirectoryRoute
   AuthenticatedAdminFeedbackRoute: typeof AuthenticatedAdminFeedbackRoute
   AuthenticatedAdminInsightsRoute: typeof AuthenticatedAdminInsightsRoute
@@ -925,6 +945,7 @@ interface AuthenticatedAdminRouteChildren {
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAdministratorsRoute: AuthenticatedAdminAdministratorsRoute,
   AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+  AuthenticatedAdminDemoRoute: AuthenticatedAdminDemoRoute,
   AuthenticatedAdminDirectoryRoute: AuthenticatedAdminDirectoryRoute,
   AuthenticatedAdminFeedbackRoute: AuthenticatedAdminFeedbackRoute,
   AuthenticatedAdminInsightsRoute: AuthenticatedAdminInsightsRoute,

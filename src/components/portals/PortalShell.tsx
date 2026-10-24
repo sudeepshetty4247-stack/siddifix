@@ -2,7 +2,7 @@ import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-route
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useServerFn } from '@tanstack/react-start';
 import { useState } from 'react';
-import { LayoutDashboard, ListTodo, Users, ShieldCheck, Bell, Timer, Repeat, Map, Menu, LogOut, ExternalLink, Settings2 } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Users, ShieldCheck, Bell, Timer, Repeat, Map, Menu, LogOut, ExternalLink, Settings2, Database } from 'lucide-react';
 import { Logo } from '@/components/civic/Logo';
 import { BackButton } from '@/components/civic/BackButton';
 import { Button } from '@/components/ui/button';
