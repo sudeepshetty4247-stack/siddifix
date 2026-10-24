@@ -4,21 +4,22 @@ import { getLocalDirectory } from '@/lib/directory.functions';
 import { resolveCivicRouting, type CivicRouting, type Ward } from '@/lib/directory';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { AuthorityPortrait } from '@/components/civic/AuthorityPortrait';
+import { AuthorityPortrait, PortraitCredit } from '@/components/civic/AuthorityPortrait';
 
 const MP_SOURCE = 'https://results.eci.gov.in/PcResultGenJune2024/index.htm';
 const MLA_SOURCE = 'https://results.eci.gov.in/ResultAcGenMay2023/partywiseresult-S10.htm';
 
-type PortraitProfile = { kind: string; full_name: string; photo_url: string | null; photo_source_url: string | null };
+type PortraitProfile = { kind: string; full_name: string; photo_url: string | null; photo_source_url: string | null; photo_verified: boolean; photo_credit: string | null; photo_license_url: string | null };
 
 function Elected({ role, name, party, area, source, portrait }: { role: string; name: string; party?: string | null; area?: string | null; source: string; portrait?: PortraitProfile | undefined }) {
   return <article className="flex items-center gap-3 rounded-xl border bg-card p-3">
-    <AuthorityPortrait name={name} role={role} url={portrait?.photo_url} source={portrait?.photo_source_url} />
+    <AuthorityPortrait name={name} role={role} url={portrait?.photo_url} source={portrait?.photo_source_url} verified={portrait?.photo_verified} />
     <div className="min-w-0">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{role}</p>
       <h4 className="truncate text-sm font-semibold">{name}</h4>
       <p className="text-xs text-muted-foreground">{[party, area].filter(Boolean).join(' · ')}</p>
       <a href={source} target="_blank" rel="noopener noreferrer" className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-primary">Election Commission result<ExternalLink className="h-3 w-3" /></a>
+      {portrait && <PortraitCredit source={portrait.photo_source_url} credit={portrait.photo_credit} license={portrait.photo_license_url} verified={portrait.photo_verified} />}
     </div>
   </article>;
 }
@@ -57,7 +58,7 @@ export function WardSummary({ ward, portraits = [] }: { ward: Omit<Ward, 'bounda
 export function CivicInfo({lat,lng,category,subcategory,snapshot}:{lat:number;lng:number;category?:string;subcategory?:string|null;snapshot?:unknown}){
   const directory=useQuery({queryKey:['civic-directory',lat,lng],queryFn:()=>getLocalDirectory({data:{lat,lng}}),staleTime:300000});
   const localWard = directory.data ? resolveCivicRouting(directory.data,lat,lng,category,subcategory??undefined).ward : null;
-  const people=useQuery({queryKey:['verified-civic-people',localWard?.identifier],enabled:!!localWard,queryFn:async()=>{if(!localWard)return [];const r=await supabase.from('civic_people').select('id,full_name,designation,kind,corporation,ward_identifier,category,zone,photo_url,photo_source_url,contact_phone,contact_email,source_url,checked_at').eq('verification_status','verified').eq('active',true).or(`ward_identifier.eq.${localWard.identifier},ward_identifier.is.null`);if(r.error)throw r.error;return r.data;},staleTime:300000});
+  const people=useQuery({queryKey:['verified-civic-people',localWard?.identifier],enabled:!!localWard,queryFn:async()=>{if(!localWard)return [];const r=await supabase.from('civic_people').select('id,full_name,designation,kind,corporation,ward_identifier,category,zone,photo_url,photo_source_url,photo_verified,photo_credit,photo_license_url,contact_phone,contact_email,source_url,checked_at').eq('verification_status','verified').eq('active',true).or(`ward_identifier.eq.${localWard.identifier},ward_identifier.is.null`);if(r.error)throw r.error;return r.data;},staleTime:300000});
   if(directory.isPending)return <p className="py-4 text-sm text-muted-foreground">Finding your ward and representatives…</p>;
   if(!directory.data)return <div className="py-4"><p className="text-sm">Local information is unavailable.</p><Button variant="outline" onClick={()=>directory.refetch()}>Try again</Button></div>;
   const routing=resolveCivicRouting(directory.data,lat,lng,category,subcategory??undefined);const {ward,route}=routing;
@@ -67,7 +68,7 @@ export function CivicInfo({lat,lng,category,subcategory,snapshot}:{lat:number;ln
   const gba=directory.data.authorities.filter(a=>a.phone&&/Greater Bengaluru/i.test(a.name));
   const city=[...routing.candidates.filter(a=>a.phone),...gba].filter((a,i,all)=>all.findIndex(o=>o.id===a.id)===i).slice(0,3);
   const recorded=(snapshot as Partial<CivicRouting>|null)?.ward;
-  function profile(p:(typeof relevant)[number]){return <article key={p.id} className="flex gap-3 rounded-xl border bg-card p-3"><AuthorityPortrait name={p.full_name} role={p.designation} url={p.photo_url} source={p.photo_source_url}/><div className="min-w-0"><p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{p.designation}</p><h4 className="text-sm font-semibold">{p.full_name}</h4><div className="mt-2 flex flex-wrap gap-2">{p.contact_phone&&<Button asChild size="sm" variant="outline"><a href={`tel:${p.contact_phone}`}><Phone className="h-3 w-3"/>{p.contact_phone}</a></Button>}{p.contact_email&&<Button asChild size="sm" variant="outline"><a href={`mailto:${p.contact_email}`}><Mail className="h-3 w-3"/>Email</a></Button>}</div><a href={p.source_url} target="_blank" rel="noopener noreferrer" className="mt-1 block text-[11px] text-primary">Official source · checked {p.checked_at.slice(0,10)}</a></div></article>;}
+  function profile(p:(typeof relevant)[number]){return <article key={p.id} className="flex gap-3 rounded-xl border bg-card p-3"><AuthorityPortrait name={p.full_name} role={p.designation} url={p.photo_url} source={p.photo_source_url} verified={p.photo_verified}/><div className="min-w-0"><p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{p.designation}</p><h4 className="text-sm font-semibold">{p.full_name}</h4><div className="mt-2 flex flex-wrap gap-2">{p.contact_phone&&<Button asChild size="sm" variant="outline"><a href={`tel:${p.contact_phone}`}><Phone className="h-3 w-3"/>{p.contact_phone}</a></Button>}{p.contact_email&&<Button asChild size="sm" variant="outline"><a href={`mailto:${p.contact_email}`}><Mail className="h-3 w-3"/>Email</a></Button>}</div><a href={p.source_url} target="_blank" rel="noopener noreferrer" className="mt-1 block text-[11px] text-primary">Official source · checked {p.checked_at.slice(0,10)}</a><PortraitCredit source={p.photo_source_url} credit={p.photo_credit} license={p.photo_license_url} verified={p.photo_verified}/></div></article>;}
   return <section className="space-y-5 border-t py-5">
     <h2 className="flex items-center gap-2 text-lg font-semibold"><MapPin className="h-5 w-5 text-primary"/>Know your ward</h2>
     {recorded&&recorded.identifier!==ward.identifier&&<p className="text-xs text-muted-foreground">This case originally recorded ward {recorded.name}. Showing the latest directory.</p>}
