@@ -62,7 +62,7 @@ function OverduePage() {
   async function escalate(id: string) {
     if (reason.trim().length < 5) { toast.error("Give a reason of at least 5 characters"); return; }
     setBusy(true);
-    const { error } = await supabase.rpc("assign_civic_issue", { _id: id, _authority: null, _action: "escalate", _reason: reason.trim() });
+    const { error } = await supabase.rpc("assign_civic_issue", { _id: id, _authority: null as unknown as string, _action: "escalate", _reason: reason.trim() });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Case escalated");
