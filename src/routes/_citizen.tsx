@@ -9,7 +9,7 @@ import { LocationGate } from "@/components/civic/LocationGate";
 import { LocationSelector } from "@/components/civic/LocationSelector";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/civic/BackButton";
-import { CoverageNotice, DemoBanner } from "@/components/civic/CoverageNotice";
+import { CoverageNotice } from "@/components/civic/CoverageNotice";
 import { AskSiddiLauncher } from "@/components/civic/AskSiddiLauncher";
 
 
@@ -96,7 +96,6 @@ function CitizenShell() {
           </nav>
         </div>
       </header>
-      <DemoBanner />
       <main className="flex-1">
         <Outlet />
       </main>

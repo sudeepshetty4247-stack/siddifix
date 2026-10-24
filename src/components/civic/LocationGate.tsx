@@ -31,7 +31,7 @@ function hadStoredLocation() {
  * confirms the ward and nearby active cases, then lets the citizen in.
  */
 export function LocationGate() {
-  const { location, select, locating, detect, notice, coverage, enterDemo } = useLocation();
+  const { location, select, locating, detect, notice, coverage } = useLocation();
   const [mounted, setMounted] = useState(false);
   const [returning] = useState(hadStoredLocation);
   const [dismissed, setDismissed] = useState(false);
@@ -70,7 +70,7 @@ export function LocationGate() {
 
   // Confirmation step: the citizen just picked a location — show ward + active cases before entering.
   // Outside coverage, the friendly coverage screen takes over instead of local numbers.
-  if (location && (coverage === 'outside' || location.method === 'demo')) return null;
+  if (location && coverage === 'outside') return null;
   if (location && wasEmpty.current) {
     return (
       <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-background p-4">
@@ -124,7 +124,6 @@ export function LocationGate() {
         <Button className="mt-4 w-full" size="lg" variant="outline" disabled={!pin || !isInIndia(pin.lat, pin.lng)} onClick={() => { if (pin) select({ ...pin, label: label.trim() || `${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}`, method: 'manual' }); }}>
           Confirm this location
         </Button>
-        <Button className="mt-3 w-full" variant="ghost" onClick={enterDemo}>Not in Bengaluru? Try the Bengaluru demo</Button>
         {pin && !isInIndia(pin.lat, pin.lng) && <p role="alert" className="mt-2 text-sm text-destructive">Siddi currently serves Bengaluru, India. Pick a point inside the city.</p>}
       </div>
     </div>

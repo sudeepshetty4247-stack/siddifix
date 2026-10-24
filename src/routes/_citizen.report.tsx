@@ -10,7 +10,6 @@ import { CivicInfo } from '@/components/civic/CivicInfo';
 import { getDirectory } from '@/lib/directory.functions';
 import { resolveCivicRouting } from '@/lib/directory';
 import { analyzeIssue, submitIssue } from '@/lib/issues.functions';
-import { useLocation } from '@/lib/location';
 import { prepareOriginalUpload, saveAnnotatedPhoto } from '@/lib/report-media.functions';
 import { reverseGeocode, searchAddress } from '@/lib/geocoding.functions';
 import { annotationLines, annotatedPhoto, embeddedPhotoMetadata, processedPhoto, type PhotoMetadata } from '@/lib/report-photo';
@@ -41,7 +40,6 @@ function ReportPage(){
   const [matches,setMatches]=useState<{id:string;title:string;ref_code:string;distance_m:number}[]>([]);const [candidate,setCandidate]=useState<string|null>(null);
   const [originalPath,setOriginalPath]=useState<string|null>(null);const [done,setDone]=useState<{ref:string;token:string|null;annotated:boolean}|null>(null);
   const analyze=useServerFn(analyzeIssue);const submit=useServerFn(submitIssue);const prepare=useServerFn(prepareOriginalUpload);const annotate=useServerFn(saveAnnotatedPhoto);
-  const demoMode=useLocation().location?.method==='demo';
   const geocode=useServerFn(reverseGeocode);const findAddress=useServerFn(searchAddress);
   const dirQ=useQuery({queryKey:['civic-directory'],queryFn:()=>getDirectory(),staleTime:300000});
   const lockWard=confirmed&&point&&dirQ.data?resolveCivicRouting(dirQ.data,point.lat,point.lng).ward:null;
@@ -87,7 +85,6 @@ function ReportPage(){
   async function locateMe(){setLocating(true);const gps=liveGps()??await freshGps();setLocating(false);if(!gps){setNotice('Location permission was denied or unavailable. Search a place or tap the map.');return;}if((gps.accuracy??Infinity)>150){setPoint({lat:gps.lat,lng:gps.lng});setConfirmed(false);setNotice(`Your location is approximate (±${Math.round(gps.accuracy??0)} m). Drag the map pin to the exact spot, then confirm.`);return;}setPoint({lat:gps.lat,lng:gps.lng});setAddress(null);setConfirmed(true);setEditingLocation(false);setNotice(`Using your current location (±${Math.round(gps.accuracy??0)} m). Change it if the problem is elsewhere.`);}
   async function submitReport(){
     if(!file||!image||!point||!confirmed||busy)return;
-    if(demoMode){toast.info('Demo mode: this run stopped before saving. Nothing was submitted and public numbers are unchanged.');return;}
     setBusy(true);
     try{
       let path=originalPath;
@@ -101,7 +98,7 @@ function ReportPage(){
     }catch(e){toast.error(e instanceof Error?e.message:'Report could not be saved.');}finally{setBusy(false);}
   }
   if(done)return <div className="mx-auto max-w-xl px-4 py-12"><CheckCircle2 className="h-12 w-12 text-success"/><h1 className="mt-4 text-3xl font-bold">Report received</h1><p className="mt-3 font-mono text-2xl">{done.ref}</p><p className="mt-3 text-sm text-muted-foreground">Your original photo is retained privately.{done.annotated?' A separate annotated copy is ready.':''} No government delivery has been recorded.</p>{done.token&&<div className="mt-6 border-y py-5"><p className="text-sm font-semibold">Keep your private tracking link safe</p><Button variant="outline" className="mt-3" onClick={()=>{navigator.clipboard.writeText(`${window.location.origin}/issues/${done.ref}#t=${done.token}`);toast.success('Private link copied');}}><Copy className="h-4 w-4"/>Copy private link</Button></div>}<Button asChild className="mt-6"><Link to="/issues/$ref" params={{ref:done.ref}} {...(done.token?{hash:`t=${done.token}`}:{})}>Track report<ArrowRight className="h-4 w-4"/></Link></Button></div>;
-  return <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6"><h1 className="text-3xl font-bold">Report a problem</h1><p className="mt-2 text-sm text-muted-foreground">A photo. The problem location. Your voice.</p>{demoMode&&<p role="status" className="mt-4 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-sm">Bengaluru demo mode — try every step; the final submit is simulated and nothing is saved.</p>}
+  return <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6"><h1 className="text-3xl font-bold">Report a problem</h1><p className="mt-2 text-sm text-muted-foreground">A photo. The problem location. Your voice.</p>
     <input ref={camera} aria-label="Camera photo" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="sr-only" onChange={e=>chooseFile(e.target.files?.[0],'camera')}/>
     <input ref={gallery} aria-label="Gallery photo" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={e=>chooseFile(e.target.files?.[0],'gallery')}/>
     {!image?<div className="mt-8 overflow-hidden rounded-3xl bg-ink px-6 py-10 text-center text-ink-foreground">
