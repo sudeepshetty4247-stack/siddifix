@@ -1,0 +1,2 @@
+ALTER TABLE public.civic_people ADD COLUMN IF NOT EXISTS photo_verified boolean NOT NULL DEFAULT false, ADD COLUMN IF NOT EXISTS photo_verified_at date, ADD COLUMN IF NOT EXISTS photo_source_type text, ADD COLUMN IF NOT EXISTS photo_usage_notes text, ADD COLUMN IF NOT EXISTS photo_credit text, ADD COLUMN IF NOT EXISTS photo_license_url text;
+COMMENT ON COLUMN public.civic_people.photo_verified IS 'Portrait identity and source checked independently of profile verification; does not imply official endorsement.';
