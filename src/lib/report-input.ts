@@ -20,4 +20,10 @@ export const reportInputSchema = z.object({
   duplicateOf: z.string().uuid().nullable().optional(),
   originalPath: z.string().max(300).optional(),
   photoMetadata: photoMetadataSchema.optional(),
+}).superRefine((input, context) => {
+  if (!input.subcategory) return;
+  const category = CATEGORIES.find(item => item.id === input.category);
+  if (!category?.subs.some(sub => sub === input.subcategory)) {
+    context.addIssue({ code: 'custom', path: ['subcategory'], message: 'Choose a subcategory belonging to this category.' });
+  }
 });

@@ -1,10 +1,10 @@
 # CivicFix roadmap
 
 ## Authority portraits and photo QA — 24 October 2026
-- [x] Diagnose directory photo fields and elected-card rendering; all 781 profiles currently have no photo URL/source, and elected cards previously never consumed profile photos.
+- [x] Diagnose directory photo fields and elected-card rendering; initially all 781 profiles lacked photo URL/source. Elected profiles were also wrongly filtered by constituency versus city zone.
 - [x] Shared source-backed portrait display with fixed dimensions, loading state and initials fallback; scope case-page people reads to the relevant ward.
-- [ ] Research and integrate genuine portraits only where identity and reuse are established.
-- [ ] Build licensed photo fixtures and deterministic scenario manifest; run photo validation and regression tests.
+- [x] Integrate three licensed Commons portraits with independent verification, credits and licence links across 235 existing ward-linked profiles; other 546 profiles retain initials. No official-hosted portraits or guessed officer photos claimed.
+- [x] Build 40 licensed local photo fixtures covering 20 subjects, with per-file provenance, hash and independent scenario coordinates; 126 tests passed before final category-pair tests. Real case portrait decoded at desktop and 390px; fixed case-page horizontal overflow.
 - [ ] Bulk persisted photo E2E tests — blocked until a separate test backend is available; preview and published app share the live database. Do not seed public sample complaints.
 
 ## Current priority — simplify and complete the real product

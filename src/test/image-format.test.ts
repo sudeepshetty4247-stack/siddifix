@@ -34,4 +34,10 @@ describe('Photo upload failures', () => {
   it('rejects an unknown classification', () => {
     expect(reportInputSchema.safeParse({...valid,category:'invented-department'}).success).toBe(false);
   });
+  it('rejects a subcategory belonging to a different category', () => {
+    expect(reportInputSchema.safeParse({...valid,subcategory:'Sewage overflow'}).success).toBe(false);
+  });
+  it('accepts the roads pothole subcategory', () => {
+    expect(reportInputSchema.safeParse({...valid,subcategory:'Pothole'}).success).toBe(true);
+  });
 });
