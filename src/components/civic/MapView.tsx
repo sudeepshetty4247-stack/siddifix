@@ -1,0 +1,86 @@
+// Browser-only Leaflet map. Load via LazyMap, never import from SSR routes directly.
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
+import { useEffect } from "react";
+
+export type MapMarker = { id: string; lat: number; lng: number; tone?: "open" | "resolved" | "critical" | "overdue"; label?: string; href?: string; sub?: string };
+
+const colorVar = { open: "var(--primary)", resolved: "var(--success)", critical: "var(--destructive)", overdue: "var(--warning)" };
+
+function dot(tone: MapMarker["tone"] = "open") {
+  return L.divIcon({
+    className: "",
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    html: `<span style="display:block;width:22px;height:22px;border-radius:999px;background:${colorVar[tone]};border:3px solid var(--card);box-shadow:0 2px 8px oklch(0.2 0.04 255 / .35)"></span>`,
+  });
+}
+const pin = L.divIcon({
+  className: "",
+  iconSize: [36, 46],
+  iconAnchor: [18, 44],
+  html: `<svg width="36" height="46" viewBox="0 0 36 46"><path d="M18 2C9.2 2 2 8.9 2 17.4 2 29 18 44 18 44s16-15 16-26.6C34 8.9 26.8 2 18 2Z" style="fill:var(--ink)"/><circle cx="18" cy="17" r="6" style="fill:var(--primary)"/></svg>`,
+});
+
+function Picker({ onPick }: { onPick?: (lat: number, lng: number) => void }) {
+  useMapEvents({ click: (e) => onPick?.(e.latlng.lat, e.latlng.lng) });
+  return null;
+}
+function Recenter({ lat, lng, zoom }: { lat: number; lng: number; zoom?: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView([lat, lng], zoom ?? map.getZoom(), { animate: true });
+  }, [lat, lng, zoom, map]);
+  return null;
+}
+
+export default function MapView({
+  center,
+  zoom = 13,
+  markers = [],
+  picked,
+  onPick,
+  recenter,
+  className,
+}: {
+  center: { lat: number; lng: number };
+  zoom?: number;
+  markers?: MapMarker[];
+  picked?: { lat: number; lng: number } | null;
+  onPick?: (lat: number, lng: number) => void;
+  recenter?: { lat: number; lng: number; zoom?: number } | null;
+  className?: string;
+}) {
+  return (
+    <MapContainer center={[center.lat, center.lng]} zoom={zoom} scrollWheelZoom className={className} style={{ height: "100%", width: "100%" }}>
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+      />
+      {onPick && <Picker onPick={onPick} />}
+      {recenter && <Recenter {...recenter} />}
+      {picked && (
+        <Marker
+          position={[picked.lat, picked.lng]}
+          icon={pin}
+          draggable={!!onPick}
+          eventHandlers={{ dragend: (e) => { const p = (e.target as L.Marker).getLatLng(); onPick?.(p.lat, p.lng); } }}
+        />
+      )}
+      {markers.map((m) => (
+        <Marker key={m.id} position={[m.lat, m.lng]} icon={dot(m.tone)}>
+          {m.label && (
+            <Popup>
+              <div style={{ minWidth: 160 }}>
+                <div style={{ fontWeight: 600, marginBottom: 2 }}>{m.label}</div>
+                {m.sub && <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>{m.sub}</div>}
+                {m.href && <a href={m.href} style={{ fontSize: 12, fontWeight: 600, color: "var(--primary)" }}>View issue →</a>}
+              </div>
+            </Popup>
+          )}
+        </Marker>
+      ))}
+    </MapContainer>
+  );
+}

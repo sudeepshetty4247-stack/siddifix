@@ -9,50 +9,364 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as CitizenRouteImport } from './routes/_citizen'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
+import { Route as CitizenIndexRouteImport } from './routes/_citizen.index'
+import { Route as CitizenExploreRouteImport } from './routes/_citizen.explore'
+import { Route as CitizenMapRouteImport } from './routes/_citizen.map'
+import { Route as CitizenReportRouteImport } from './routes/_citizen.report'
+import { Route as CitizenTrackRouteImport } from './routes/_citizen.track'
+import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
+import { Route as AuthenticatedStaffMapRouteImport } from './routes/_authenticated/staff.map'
+import { Route as AuthenticatedStaffQueueRouteImport } from './routes/_authenticated/staff.queue'
+import { Route as AuthenticatedStaffTeamRouteImport } from './routes/_authenticated/staff.team'
+import { Route as CitizenIssuesRefRouteImport } from './routes/_citizen.issues.$ref'
+import { Route as AuthenticatedStaffIssuesIdRouteImport } from './routes/_authenticated/staff.issues.$id'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CitizenRoute = CitizenRouteImport.update({
+  id: '/_citizen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const CitizenIndexRoute = CitizenIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CitizenRoute,
+} as any)
+const CitizenExploreRoute = CitizenExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
+  getParentRoute: () => CitizenRoute,
+} as any)
+const CitizenMapRoute = CitizenMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => CitizenRoute,
+} as any)
+const CitizenReportRoute = CitizenReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => CitizenRoute,
+} as any)
+const CitizenTrackRoute = CitizenTrackRouteImport.update({
+  id: '/track',
+  path: '/track',
+  getParentRoute: () => CitizenRoute,
+} as any)
+const AuthenticatedStaffIndexRoute = AuthenticatedStaffIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedStaffRoute,
+} as any)
+const AuthenticatedStaffMapRoute = AuthenticatedStaffMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => AuthenticatedStaffRoute,
+} as any)
+const AuthenticatedStaffQueueRoute = AuthenticatedStaffQueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
+  getParentRoute: () => AuthenticatedStaffRoute,
+} as any)
+const AuthenticatedStaffTeamRoute = AuthenticatedStaffTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AuthenticatedStaffRoute,
+} as any)
+const CitizenIssuesRefRoute = CitizenIssuesRefRouteImport.update({
+  id: '/issues/$ref',
+  path: '/issues/$ref',
+  getParentRoute: () => CitizenRoute,
+} as any)
+const AuthenticatedStaffIssuesIdRoute =
+  AuthenticatedStaffIssuesIdRouteImport.update({
+    id: '/issues/$id',
+    path: '/issues/$id',
+    getParentRoute: () => AuthenticatedStaffRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof CitizenIndexRoute
+  '/auth': typeof AuthRoute
+  '/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/explore': typeof CitizenExploreRoute
+  '/map': typeof CitizenMapRoute
+  '/report': typeof CitizenReportRoute
+  '/track': typeof CitizenTrackRoute
+  '/staff/map': typeof AuthenticatedStaffMapRoute
+  '/staff/queue': typeof AuthenticatedStaffQueueRoute
+  '/staff/team': typeof AuthenticatedStaffTeamRoute
+  '/issues/$ref': typeof CitizenIssuesRefRoute
+  '/staff/': typeof AuthenticatedStaffIndexRoute
+  '/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof CitizenIndexRoute
+  '/auth': typeof AuthRoute
+  '/explore': typeof CitizenExploreRoute
+  '/map': typeof CitizenMapRoute
+  '/report': typeof CitizenReportRoute
+  '/track': typeof CitizenTrackRoute
+  '/staff/map': typeof AuthenticatedStaffMapRoute
+  '/staff/queue': typeof AuthenticatedStaffQueueRoute
+  '/staff/team': typeof AuthenticatedStaffTeamRoute
+  '/issues/$ref': typeof CitizenIssuesRefRoute
+  '/staff': typeof AuthenticatedStaffIndexRoute
+  '/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_citizen': typeof CitizenRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/_citizen/explore': typeof CitizenExploreRoute
+  '/_citizen/map': typeof CitizenMapRoute
+  '/_citizen/report': typeof CitizenReportRoute
+  '/_citizen/track': typeof CitizenTrackRoute
+  '/_citizen/': typeof CitizenIndexRoute
+  '/_authenticated/staff/map': typeof AuthenticatedStaffMapRoute
+  '/_authenticated/staff/queue': typeof AuthenticatedStaffQueueRoute
+  '/_authenticated/staff/team': typeof AuthenticatedStaffTeamRoute
+  '/_citizen/issues/$ref': typeof CitizenIssuesRefRoute
+  '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
+  '/_authenticated/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/staff'
+    | '/explore'
+    | '/map'
+    | '/report'
+    | '/track'
+    | '/staff/map'
+    | '/staff/queue'
+    | '/staff/team'
+    | '/issues/$ref'
+    | '/staff/'
+    | '/staff/issues/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/explore'
+    | '/map'
+    | '/report'
+    | '/track'
+    | '/staff/map'
+    | '/staff/queue'
+    | '/staff/team'
+    | '/issues/$ref'
+    | '/staff'
+    | '/staff/issues/$id'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/_citizen'
+    | '/auth'
+    | '/_authenticated/staff'
+    | '/_citizen/explore'
+    | '/_citizen/map'
+    | '/_citizen/report'
+    | '/_citizen/track'
+    | '/_citizen/'
+    | '/_authenticated/staff/map'
+    | '/_authenticated/staff/queue'
+    | '/_authenticated/staff/team'
+    | '/_citizen/issues/$ref'
+    | '/_authenticated/staff/'
+    | '/_authenticated/staff/issues/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  CitizenRoute: typeof CitizenRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_citizen': {
+      id: '/_citizen'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof CitizenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/staff': {
+      id: '/_authenticated/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof AuthenticatedStaffRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_citizen/': {
+      id: '/_citizen/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof CitizenIndexRouteImport
+      parentRoute: typeof CitizenRoute
+    }
+    '/_citizen/explore': {
+      id: '/_citizen/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof CitizenExploreRouteImport
+      parentRoute: typeof CitizenRoute
+    }
+    '/_citizen/map': {
+      id: '/_citizen/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof CitizenMapRouteImport
+      parentRoute: typeof CitizenRoute
+    }
+    '/_citizen/report': {
+      id: '/_citizen/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof CitizenReportRouteImport
+      parentRoute: typeof CitizenRoute
+    }
+    '/_citizen/track': {
+      id: '/_citizen/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof CitizenTrackRouteImport
+      parentRoute: typeof CitizenRoute
+    }
+    '/_authenticated/staff/': {
+      id: '/_authenticated/staff/'
+      path: '/'
+      fullPath: '/staff/'
+      preLoaderRoute: typeof AuthenticatedStaffIndexRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
+    '/_authenticated/staff/map': {
+      id: '/_authenticated/staff/map'
+      path: '/map'
+      fullPath: '/staff/map'
+      preLoaderRoute: typeof AuthenticatedStaffMapRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
+    '/_authenticated/staff/queue': {
+      id: '/_authenticated/staff/queue'
+      path: '/queue'
+      fullPath: '/staff/queue'
+      preLoaderRoute: typeof AuthenticatedStaffQueueRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
+    '/_authenticated/staff/team': {
+      id: '/_authenticated/staff/team'
+      path: '/team'
+      fullPath: '/staff/team'
+      preLoaderRoute: typeof AuthenticatedStaffTeamRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
+    '/_citizen/issues/$ref': {
+      id: '/_citizen/issues/$ref'
+      path: '/issues/$ref'
+      fullPath: '/issues/$ref'
+      preLoaderRoute: typeof CitizenIssuesRefRouteImport
+      parentRoute: typeof CitizenRoute
+    }
+    '/_authenticated/staff/issues/$id': {
+      id: '/_authenticated/staff/issues/$id'
+      path: '/issues/$id'
+      fullPath: '/staff/issues/$id'
+      preLoaderRoute: typeof AuthenticatedStaffIssuesIdRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
     }
   }
 }
 
+interface AuthenticatedStaffRouteChildren {
+  AuthenticatedStaffMapRoute: typeof AuthenticatedStaffMapRoute
+  AuthenticatedStaffQueueRoute: typeof AuthenticatedStaffQueueRoute
+  AuthenticatedStaffTeamRoute: typeof AuthenticatedStaffTeamRoute
+  AuthenticatedStaffIndexRoute: typeof AuthenticatedStaffIndexRoute
+  AuthenticatedStaffIssuesIdRoute: typeof AuthenticatedStaffIssuesIdRoute
+}
+
+const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
+  AuthenticatedStaffMapRoute: AuthenticatedStaffMapRoute,
+  AuthenticatedStaffQueueRoute: AuthenticatedStaffQueueRoute,
+  AuthenticatedStaffTeamRoute: AuthenticatedStaffTeamRoute,
+  AuthenticatedStaffIndexRoute: AuthenticatedStaffIndexRoute,
+  AuthenticatedStaffIssuesIdRoute: AuthenticatedStaffIssuesIdRoute,
+}
+
+const AuthenticatedStaffRouteWithChildren =
+  AuthenticatedStaffRoute._addFileChildren(AuthenticatedStaffRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface CitizenRouteChildren {
+  CitizenExploreRoute: typeof CitizenExploreRoute
+  CitizenMapRoute: typeof CitizenMapRoute
+  CitizenReportRoute: typeof CitizenReportRoute
+  CitizenTrackRoute: typeof CitizenTrackRoute
+  CitizenIndexRoute: typeof CitizenIndexRoute
+  CitizenIssuesRefRoute: typeof CitizenIssuesRefRoute
+}
+
+const CitizenRouteChildren: CitizenRouteChildren = {
+  CitizenExploreRoute: CitizenExploreRoute,
+  CitizenMapRoute: CitizenMapRoute,
+  CitizenReportRoute: CitizenReportRoute,
+  CitizenTrackRoute: CitizenTrackRoute,
+  CitizenIndexRoute: CitizenIndexRoute,
+  CitizenIssuesRefRoute: CitizenIssuesRefRoute,
+}
+
+const CitizenRouteWithChildren =
+  CitizenRoute._addFileChildren(CitizenRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  CitizenRoute: CitizenRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
