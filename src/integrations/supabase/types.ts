@@ -1071,6 +1071,15 @@ export type Database = {
         Args: { _ref: string; _token: string }
         Returns: boolean
       }
+      ward_at_point: {
+        Args: { _lat: number; _lng: number }
+        Returns: {
+          corporation: string
+          name: string
+          ward_number: number
+          zone: string
+        }[]
+      }
       ward_case_counts: {
         Args: never
         Returns: {
