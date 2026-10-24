@@ -36,8 +36,11 @@ export async function buildReportPdf(r: ReportSnapshot, id: string, fontBytes: U
   line(`${r.summary.overdue} active records are past their recorded ETA or Siddi target. These figures reflect Siddi's recorded workload, not all real-world incidents or an officer performance score.`,11);
   heading('Key measures');
   for(const row of metricRows(r)) line(`${row[0]}: ${row[1]}`,10);
+  next();
   for(const dimension of ['category','status','severity','ward','corporation']) {
-    next(); heading(`Reports by ${dimension}`);
+    const needed=80+r.groups.filter(g=>g.dimension===dimension).length*75;
+    if(y<Math.min(needed,500))next();
+    heading(`Reports by ${dimension}`);
     const groups=r.groups.filter(g=>g.dimension===dimension); const max=Math.max(1,...groups.map(g=>g.total));
     if(!groups.length) { line('No records in this scope. No chart can be calculated.'); continue; }
     for(const g of groups) {
@@ -48,7 +51,7 @@ export async function buildReportPdf(r: ReportSnapshot, id: string, fontBytes: U
       line(`${g.total} records | ${g.active} active | ${g.resolved} resolved | ${g.overdue} overdue`,9,REPORT_THEME.muted); y-=10;
     }
   }
-  next(); heading('Submission trend');
+  if(y<300)next(); heading('Submission trend');
   line('Daily cohorts in IST. Resolved = current resolved/closed from that cohort.');
   for(const t of r.trend) line(`${t.period}: ${t.reports} submitted | ${t.resolved} currently resolved`,10);
   if(!r.trend.length) line('No reporting dates available.');
