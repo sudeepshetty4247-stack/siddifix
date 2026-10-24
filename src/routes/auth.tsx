@@ -41,9 +41,9 @@ function AuthPage() {
         if (error) throw error;
         navigate({ to: "/staff", replace: true });
       } else {
-        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/staff` } });
+        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/auth` } });
         if (error) throw error;
-        toast.success("Check your email to confirm your account.");
+        toast.success("Confirm your email. Workspace access must be granted separately; signup does not grant staff or administrator access.");
         setMode("in");
       }
     } catch (err) {
@@ -76,7 +76,7 @@ function AuthPage() {
           <div className="lg:hidden"><Logo /></div>
           <div>
             <h2 className="text-2xl font-bold">{mode === "in" ? "Staff sign in" : "Create staff account"}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Citizens don't need an account — <Link to="/report" className="font-medium text-primary">report an issue here</Link>.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Citizens don't need an account — <Link to="/report" className="font-medium text-primary">report an issue here</Link>.</p><p className="mt-2 text-xs text-muted-foreground">Accounts require separately granted workspace access. Creating an account never makes you an administrator.</p>
           </div>
           <button onClick={google} className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border bg-card text-sm font-semibold hover:bg-secondary">
             <svg className="h-4 w-4" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81Z" /></svg>
