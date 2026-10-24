@@ -19,3 +19,18 @@ export const reverseGeocode = createServerFn({ method: 'POST' })
       return { address: null, sourceUrl: null, checkedAt: null, notice: 'Address lookup is unavailable. Your report can still be submitted.' };
     }
   });
+
+export const searchAddress=createServerFn({method:'POST'})
+  .inputValidator((input:{query:string})=>z.object({query:z.string().trim().min(3).max(160)}).parse(input))
+  .handler(async({data})=>{
+    const endpoint=process.env['CIVICFIX_NOMINATIM_URL'];
+    const empty={results:[] as {lat:number;lng:number;label:string}[],notice:'Address search is not connected. Choose a map pin instead.'};
+    if(!endpoint)return empty;
+    const url=new URL('search',endpoint.endsWith('/')?endpoint:`${endpoint}/`);
+    if(url.protocol!=='https:'||url.hostname==='nominatim.openstreetmap.org')return empty;
+    url.search=new URLSearchParams({q:data.query,format:'jsonv2',limit:'5',countrycodes:'in'}).toString();
+    try{const r=await fetch(url,{headers:{Accept:'application/json'}});if(!r.ok)return {...empty,notice:'Address search is unavailable. Choose a map pin instead.'};
+      const rows=z.array(z.object({lat:z.string(),lon:z.string(),display_name:z.string().max(1000)})).parse(await r.json());
+      return {results:rows.map(row=>({lat:Number(row.lat),lng:Number(row.lon),label:row.display_name})).filter(row=>Number.isFinite(row.lat)&&Number.isFinite(row.lng)),notice:null};
+    }catch{return empty;}
+  });
