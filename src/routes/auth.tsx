@@ -5,6 +5,7 @@ import { Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Logo } from "@/components/civic/Logo";
+import { BackButton } from "@/components/civic/BackButton";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -73,6 +74,7 @@ function AuthPage() {
       </div>
       <div className="flex items-center justify-center p-6">
         <div className="w-full max-w-sm space-y-6">
+          <BackButton />
           <div className="lg:hidden"><Logo /></div>
           <div>
             <h2 className="text-2xl font-bold">{mode === "in" ? "Staff sign in" : "Create staff account"}</h2>

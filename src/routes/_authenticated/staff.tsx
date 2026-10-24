@@ -7,6 +7,7 @@ import { getMyRoles } from "@/lib/issues.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/civic/Logo";
 import { cn } from "@/lib/utils";
+import { BackButton } from "@/components/civic/BackButton";
 
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Staff workspace — CivicFix" }, { name: "description", content: "Review real civic reports, assignments, evidence and resolution history." }, { property: "og:title", content: "Staff workspace — CivicFix" }, { property: "og:description", content: "Authenticated civic issue resolution workspace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -100,6 +101,7 @@ function StaffLayout() {
           <Logo to="/staff" />
         </div>
         <Outlet />
+        <div className="border-t px-4 py-3"><BackButton fallback="/staff" /></div>
       </div>
     </div>
   );
