@@ -1,4 +1,4 @@
-# Siddi: final product audit (24 Oct 2026)
+# Siddhi: final product audit (24 Oct 2026)
 
 ## Baseline before changes
 - 17 test files, 136 tests passed.
@@ -20,7 +20,7 @@
 | Status transitions, completion evidence trigger, citizen confirm/reopen | Implemented (database-enforced) |
 | Overdue escalation (hourly scheduled job, idempotent) | Implemented and verified |
 | Role enforcement (field worker / supervisor / admin) in the database | Implemented |
-| Authority directory with provenance; licensed portraits (10/27 MLAs, 3/5 MPs) | Partial: see docs/Siddi-Portrait-Report |
+| Authority directory with provenance; licensed portraits (10/27 MLAs, 3/5 MPs) | Partial: see docs/Siddhi-Portrait-Report |
 | Configurable SLA targets per category/severity | Not built; ETAs are set by staff, and no official SLAs are invented |
 | Government notification / handoff | Blocked: needs an authorised municipal integration |
 | SMS / push notifications | Blocked: needs a provider and credentials |

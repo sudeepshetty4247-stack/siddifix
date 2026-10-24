@@ -36,18 +36,18 @@
 - [ ] New invitation email consumption, suspension/reactivation and complete positive case lifecycle acceptance — requires isolated test backend or authorized genuine staff accounts/case work; no synthetic production cases created.
 
 ## Current request — cover, clean workspace and transparency
-- [x] Replace Home cover with the latest supplied community photo; retain Siddi name/slogan and Back-first header.
+- [x] Replace Home cover with the latest supplied community photo; retain Siddhi name/slogan and Back-first header.
 - [x] Remove identified test complaints, dependent activity and test teams; preserve staff accounts and verified directory.
 - [x] Add a one-conversation, visit-only multilingual assistant with safe public context, streaming and Stop.
 - [x] Add full-dataset public transparency reports with corporation, ward, MLA/MP constituency totals and downloadable summaries; add case report export.
 - [x] Verify empty citizen/staff views, assistant multilingual follow-up, report downloads and automated regression tests.
 
-## Current request — Siddi identity and opening screen
-- [x] Renamed app-facing CivicFix wording and page titles to Siddi; retained official Bengaluru locations and historical records.
-- [x] Centered supplied logo on black opening screen; compact Siddi name/slogan in navigation, updated icons. Desktop/mobile opening and dismissal verified; 128 tests passed, preview validation clean.
+## Current request — Siddhi identity and opening screen
+- [x] Renamed app-facing CivicFix wording and page titles to Siddhi; retained official Bengaluru locations and historical records.
+- [x] Centered supplied logo on black opening screen; compact Siddhi name/slogan in navigation, updated icons. Desktop/mobile opening and dismissal verified; 128 tests passed, preview validation clean.
 
 ## Current request — supplied logo and Back fix
-- [x] Applied supplied Siddi logo/slogan and complete-logo favicon/install icons; existing workflow copy remains unchanged.
+- [x] Applied supplied Siddhi logo/slogan and complete-logo favicon/install icons; existing workflow copy remains unchanged.
 - [x] Fixed Back for location overlay and same-page/redirect history; staff Back now above content. Browser verified overlay → sign-in and direct sign-in → Home; logo decoded, no page errors, 128 tests passed and preview validation clean.
 
 ## Current request — staff testing and Back navigation
@@ -147,6 +147,6 @@
 - [x] Configurable service targets (category × severity, versioned, audited, admin-only) applied on every new report with stored snapshot; hourly job now escalates missed acknowledgement and resolution targets separately.
 - [x] Coverage: backend rejects reports outside Bengaluru wards; friendly "not in your city yet" screen; explicit, labelled Bengaluru demo that never saves; manual place search; GPS never overwrites a chosen place.
 - [x] Citywide overview (period filter) + compact neighbourhood panel that hides numbers outside coverage.
-- [x] Floating Ask Siddi launcher; assistant knows coverage/demo/location steps.
+- [x] Floating Ask Siddhi launcher; assistant knows coverage/demo/location steps.
 - [ ] Portrait review centre with candidate approve/reject — not built this round; 10 MLAs + 1 MP verified photos remain, others initials.
 - [ ] Signed-in staff walkthrough of the demo scenario with isolated test data — needs a separate test backend.

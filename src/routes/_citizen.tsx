@@ -9,7 +9,7 @@ import { LocationSelector } from "@/components/civic/LocationSelector";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/civic/BackButton";
 import { CoverageNotice } from "@/components/civic/CoverageNotice";
-import { AskSiddiLauncher } from "@/components/civic/AskSiddiLauncher";
+import { AskSiddhiLauncher } from "@/components/civic/AskSiddhiLauncher";
 
 
 export const Route = createFileRoute("/_citizen")({
@@ -30,7 +30,7 @@ function CitizenLayout() {
     <LocationProvider>
       <CitizenShell />
       <CoverageNotice />
-      <AskSiddiLauncher />
+      <AskSiddhiLauncher />
     </LocationProvider>
   );
 }
@@ -102,7 +102,7 @@ function CitizenShell() {
           <div className="max-w-sm space-y-3">
             <Logo />
             <p className="text-sm text-muted-foreground">Report once. Track every action. Build better communities. Operating in Bengaluru, built for every Indian city.</p>
-            <p className="text-xs text-muted-foreground">Siddi is an independent civic platform and is not an official government service. Authority names are indicative.</p>
+            <p className="text-xs text-muted-foreground">Siddhi is an independent civic platform and is not an official government service. Authority names are indicative.</p>
           </div>
           <div className="flex gap-12 text-sm">
             <div className="space-y-2">

@@ -14,7 +14,7 @@ const dict = {
   explore: { en: "Explore Issues", hi: "समस्याएँ देखें", kn: "ಸಮಸ್ಯೆಗಳನ್ನು ನೋಡಿ" },
   track: { en: "My Tracking", hi: "मेरी ट्रैकिंग", kn: "ನನ್ನ ಟ್ರ್ಯಾಕಿಂಗ್" },
   transparency: { en: "Public Reports", hi: "सार्वजनिक रिपोर्ट", kn: "ಸಾರ್ವಜನಿಕ ವರದಿಗಳು" },
-  assistant: { en: "Ask Siddi", hi: "Siddi से पूछें", kn: "Siddi ಕೇಳಿ" },
+  assistant: { en: "Ask Siddhi", hi: "Siddhi से पूछें", kn: "Siddhi ಕೇಳಿ" },
   staff: { en: "Staff sign in", hi: "कर्मचारी लॉगिन", kn: "ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್" },
   admin: { en: "Admin sign in", hi: "एडमिन लॉगिन", kn: "ಆಡಳಿತ ಲಾಗಿನ್" },
   heroTitle: {
@@ -23,9 +23,9 @@ const dict = {
     kn: "ಒಮ್ಮೆ ವರದಿ ಮಾಡಿ. ಪ್ರತಿ ಕ್ರಮವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ.",
   },
   heroSub: {
-    en: "Snap a photo of a pothole, broken streetlight or overflowing drain. Siddi classifies it, routes it, and keeps a public record until it's fixed.",
-    hi: "गड्ढे, खराब स्ट्रीटलाइट या बहती नाली की फोटो लें। Siddi इसे वर्गीकृत करता है, सही विभाग तक पहुँचाता है और ठीक होने तक सार्वजनिक रिकॉर्ड रखता है।",
-    kn: "ಗುಂಡಿ, ಕೆಟ್ಟ ಬೀದಿದೀಪ ಅಥವಾ ಉಕ್ಕಿ ಹರಿಯುವ ಚರಂಡಿಯ ಫೋಟೋ ತೆಗೆಯಿರಿ. Siddi ಅದನ್ನು ವರ್ಗೀಕರಿಸಿ, ಸರಿಯಾದ ಇಲಾಖೆಗೆ ಕಳುಹಿಸಿ, ಸರಿಯಾಗುವವರೆಗೆ ಸಾರ್ವಜನಿಕ ದಾಖಲೆ ಇಡುತ್ತದೆ.",
+    en: "Snap a photo of a pothole, broken streetlight or overflowing drain. Siddhi classifies it, routes it, and keeps a public record until it's fixed.",
+    hi: "गड्ढे, खराब स्ट्रीटलाइट या बहती नाली की फोटो लें। Siddhi इसे वर्गीकृत करता है, सही विभाग तक पहुँचाता है और ठीक होने तक सार्वजनिक रिकॉर्ड रखता है।",
+    kn: "ಗುಂಡಿ, ಕೆಟ್ಟ ಬೀದಿದೀಪ ಅಥವಾ ಉಕ್ಕಿ ಹರಿಯುವ ಚರಂಡಿಯ ಫೋಟೋ ತೆಗೆಯಿರಿ. Siddhi ಅದನ್ನು ವರ್ಗೀಕರಿಸಿ, ಸರಿಯಾದ ಇಲಾಖೆಗೆ ಕಳುಹಿಸಿ, ಸರಿಯಾಗುವವರೆಗೆ ಸಾರ್ವಜನಿಕ ದಾಖಲೆ ಇಡುತ್ತದೆ.",
   },
   reportCta: { en: "Report a Problem", hi: "समस्या रिपोर्ट करें", kn: "ಸಮಸ್ಯೆ ವರದಿ ಮಾಡಿ" },
   noLogin: { en: "No sign-up needed", hi: "साइन-अप की ज़रूरत नहीं", kn: "ನೋಂದಣಿ ಅಗತ್ಯವಿಲ್ಲ" },

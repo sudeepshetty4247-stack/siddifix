@@ -12,7 +12,7 @@ import { useRoles } from "./staff";
 import { CATEGORIES, categoryById, timeAgo } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/admin/staff")({
-  head: () => ({ meta: [{ title: "Team access management — Siddi" }, { name: "description", content: "Manage authorized Siddi staff roles, designations and work areas." }, { property: "og:title", content: "Team access management — Siddi" }, { property: "og:description", content: "Manage authorized Siddi staff roles, designations and work areas." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Team access management — Siddhi" }, { name: "description", content: "Manage authorized Siddhi staff roles, designations and work areas." }, { property: "og:title", content: "Team access management — Siddhi" }, { property: "og:description", content: "Manage authorized Siddhi staff roles, designations and work areas." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: Team,
 });
 

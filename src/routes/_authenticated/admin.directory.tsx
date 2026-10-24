@@ -18,7 +18,7 @@ import { PeopleDirectoryEditor } from '@/components/civic/PeopleDirectoryEditor'
 import { DirectoryAcquisition } from '@/components/civic/DirectoryAcquisition';
 
 export const Route = createFileRoute('/_authenticated/admin/directory')({
-  head: () => ({ meta: [{ title: 'Authority directory management — Siddi' }, { name: 'description', content: 'Manage verified ward, department and representative records.' }, { property: 'og:title', content: 'Authority directory management — Siddi' }, { property: 'og:description', content: 'Siddi authority directory management.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: 'robots', content: 'noindex' }] }),
+  head: () => ({ meta: [{ title: 'Authority directory management — Siddhi' }, { name: 'description', content: 'Manage verified ward, department and representative records.' }, { property: 'og:title', content: 'Authority directory management — Siddhi' }, { property: 'og:description', content: 'Siddhi authority directory management.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: 'robots', content: 'noindex' }] }),
   component: DirectoryPage,
 });
 

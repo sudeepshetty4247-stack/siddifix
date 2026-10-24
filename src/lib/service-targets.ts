@@ -7,7 +7,7 @@ export type TargetSnapshot = { source: 'configured' | 'default'; category: strin
 export const DEFAULT_ACK_HOURS: Record<Severity, number> = { critical: 4, high: 12, medium: 48, low: 72 };
 
 /**
- * Internal Siddi service targets: calendar hours from the creation time.
+ * Internal Siddhi service targets: calendar hours from the creation time.
  * Picks the active configured rule for category+severity, otherwise the severity default.
  */
 export function computeTargets(targets: ServiceTarget[], category: string, severity: Severity, createdAt: Date) {
@@ -31,5 +31,5 @@ export function deadlineState(due: string | null, open: boolean, kind: 'acknowle
   const span = h >= 48 ? `${Math.round(h / 24)} days` : `${Math.max(h, 1)} h`;
   if (!open) return { label: 'Closed', overdue: false, reason: null };
   if (diff >= 0) return { label: `${span} left`, overdue: false, reason: null };
-  return { label: `${span} overdue`, overdue: true, reason: `The Siddi ${kind} target passed ${span} ago.` };
+  return { label: `${span} overdue`, overdue: true, reason: `The Siddhi ${kind} target passed ${span} ago.` };
 }

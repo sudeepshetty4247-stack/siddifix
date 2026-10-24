@@ -43,7 +43,7 @@ export function LocationSelector() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-xl overflow-y-auto">
         <DialogTitle>Choose your location</DialogTitle>
-        <DialogDescription>Siddi currently serves Bengaluru. Pick the place you want to report in — it stays on this device.</DialogDescription>
+        <DialogDescription>Siddhi currently serves Bengaluru. Pick the place you want to report in — it stays on this device.</DialogDescription>
         {notice && <p role="status" className="text-sm text-warning-foreground">{notice}</p>}
         <Button variant="outline" onClick={() => detect()} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}Use current location</Button>
         <AddressEntry onDraft={()=>setPin(null)} onSelect={r=>{setPin({lat:r.lat,lng:r.lng});setLabel(r.originalAddress||r.label);}} />

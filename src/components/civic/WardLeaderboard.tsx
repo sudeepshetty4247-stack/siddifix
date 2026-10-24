@@ -19,8 +19,8 @@ export function WardLeaderboard() {
   const totals = all.reduce((s, r) => ({ reports: s.reports + r.reports, unique: s.unique + r.unique_issues, open: s.open + r.unresolved, done: s.done + r.resolved }), { reports: 0, unique: 0, open: 0, done: 0 });
   return <section className="border-t p-4">
     <h2 className="flex items-center gap-2 font-semibold"><Trophy className="h-4 w-4 text-primary" />Ward leaderboard</h2>
-    <p className="text-xs text-muted-foreground">{all.length} of {wards.length} wards have Siddi reports · saved Siddi data only</p>
-    {counts.isError ? <p className="mt-3 text-sm">Rankings could not load.</p> : rows.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No ward has a Siddi report yet. Rankings appear once citizens report.</p> : <>
+    <p className="text-xs text-muted-foreground">{all.length} of {wards.length} wards have Siddhi reports · saved Siddhi data only</p>
+    {counts.isError ? <p className="mt-3 text-sm">Rankings could not load.</p> : rows.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">No ward has a Siddhi report yet. Rankings appear once citizens report.</p> : <>
       <div className="mt-3 grid grid-cols-4 gap-2 text-center text-[11px]">
         <div className="rounded-lg bg-muted p-2"><b className="block text-base">{totals.reports}</b>Reports</div>
         <div className="rounded-lg bg-primary/10 p-2"><b className="block text-base">{totals.unique}</b>Unique issues</div>

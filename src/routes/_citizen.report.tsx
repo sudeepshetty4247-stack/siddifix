@@ -22,7 +22,7 @@ import { OutsideArea } from '@/components/civic/OutsideArea';
 import { describeLiveFix, corporationShort } from '@/lib/map-location';
 
 export const Route = createFileRoute('/_citizen/report')({
-  head:()=>({meta:[{title:'Photo report — Siddi'},{name:'description',content:'Take or upload a photo, confirm the problem location when needed and submit without a long form.'},{property:'og:title',content:'Photo report — Siddi'},{property:'og:description',content:'Anonymous photo reporting with private originals, automatic suggestions and public case tracking.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),
+  head:()=>({meta:[{title:'Photo report — Siddhi'},{name:'description',content:'Take or upload a photo, confirm the problem location when needed and submit without a long form.'},{property:'og:title',content:'Photo report — Siddhi'},{property:'og:description',content:'Anonymous photo reporting with private originals, automatic suggestions and public case tracking.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),
   component:ReportPage,
 });
 const fallback = {category:'other',subcategory:'Other',title:'Civic issue reported',summary:'Photo awaiting staff review.',severity:'medium' as const,confidence:0,safety_warning:null as string|null};

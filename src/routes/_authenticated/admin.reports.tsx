@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/reports")({
-  head: () => ({ meta: [{ title: "Admin report queue — Siddi" }, { name: "description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:title", content: "Admin report queue — Siddi" }, { property: "og:description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin report queue — Siddhi" }, { name: "description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:title", content: "Admin report queue — Siddhi" }, { property: "og:description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   validateSearch: (s: Record<string, unknown>): { metric?: string | undefined } => ({ metric: typeof s["metric"] === "string" ? s["metric"] : undefined }),
   component: Queue,
 });

@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { FIELD_TARGETS } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/admin/issues/$id")({
-  head: () => ({ meta: [{ title: "Admin case operations — Siddi" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Admin case operations — Siddi" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin case operations — Siddhi" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Admin case operations — Siddhi" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: StaffIssue,
 });
 
