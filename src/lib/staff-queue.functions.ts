@@ -29,7 +29,7 @@ export const staffQueue = createServerFn({ method: "POST" })
       _team: data.team,
       _ack: data.ack,
       _overdue: data.overdue,
-      _search: data.search?.trim() || null,
+      _search: data.search?.trim() || undefined,
       _limit: 500,
     });
     if (result.error) throw new Error(result.error.message);
@@ -47,8 +47,10 @@ export type AuditEntry = {
   ref: string | null;
 };
 
-async function requireAdmin(supabase: { rpc: (...args: never[]) => PromiseLike<{ data: unknown }> }, userId: string) {
-  const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" } as never);
+type RpcClient = { rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown }> };
+
+async function requireAdmin(supabase: RpcClient, userId: string) {
+  const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
   if (!isAdmin) throw new Error("Only administrators can view the audit log.");
 }
 
