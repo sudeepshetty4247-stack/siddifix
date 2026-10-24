@@ -22,13 +22,13 @@ export const staffQueue = createServerFn({ method: "POST" })
     const { data: staff } = await context.supabase.rpc("is_staff", { _user_id: context.userId });
     if (!staff) throw new Error("Staff access required");
     const result = await context.supabase.rpc("staff_queue_issues", {
-      _category: data.category,
-      _status: data.status,
-      _severity: data.severity,
-      _ward: data.ward,
-      _team: data.team,
-      _ack: data.ack,
-      _overdue: data.overdue,
+      _category: data.category ?? undefined,
+      _status: data.status ?? undefined,
+      _severity: data.severity ?? undefined,
+      _ward: data.ward ?? undefined,
+      _team: data.team ?? undefined,
+      _ack: data.ack ?? undefined,
+      _overdue: data.overdue ?? undefined,
       _search: data.search?.trim() || undefined,
       _limit: 500,
     });
