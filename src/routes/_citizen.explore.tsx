@@ -11,9 +11,9 @@ import { publicCases } from '@/lib/public-cases';
 export const Route = createFileRoute("/_citizen/explore")({
   head: () => ({
     meta: [
-      { title: "Explore civic issues — CivicFix" },
+      { title: "Explore civic issues — Siddi" },
       { name: "description", content: "Browse and search every public infrastructure report in Bengaluru by category and status." },
-      { property: "og:title", content: "Explore civic issues — CivicFix" },
+      { property: "og:title", content: "Explore civic issues — Siddi" },
       { property: "og:description", content: "Every report, every status, fully public." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -40,7 +40,7 @@ function Explore() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <h1 className="text-3xl font-bold sm:text-4xl">Explore issues</h1>
-      <p className="mt-1 text-muted-foreground">Every report submitted to CivicFix, publicly visible.</p>
+      <p className="mt-1 text-muted-foreground">Every report submitted to Siddi, publicly visible.</p>
       <div className="mt-6 flex flex-col gap-3 md:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />

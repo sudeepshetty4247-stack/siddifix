@@ -17,7 +17,7 @@ import { useRoles } from './staff';
 import { PeopleDirectoryEditor } from '@/components/civic/PeopleDirectoryEditor';
 
 export const Route = createFileRoute('/_authenticated/staff/directory')({
-  head: () => ({ meta: [{ title: 'Authority directory management — CivicFix' }, { name: 'description', content: 'Manage verified ward, department and representative records.' }, { property: 'og:title', content: 'Authority directory management — CivicFix' }, { property: 'og:description', content: 'CivicFix authority directory management.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: 'robots', content: 'noindex' }] }),
+  head: () => ({ meta: [{ title: 'Authority directory management — Siddi' }, { name: 'description', content: 'Manage verified ward, department and representative records.' }, { property: 'og:title', content: 'Authority directory management — Siddi' }, { property: 'og:description', content: 'Siddi authority directory management.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: 'robots', content: 'noindex' }] }),
   component: DirectoryPage,
 });
 

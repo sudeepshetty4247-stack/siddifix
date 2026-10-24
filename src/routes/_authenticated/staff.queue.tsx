@@ -11,7 +11,7 @@ import { getDirectory } from "@/lib/directory.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/staff/queue")({
-  head: () => ({ meta: [{ title: "Staff issue queue — CivicFix" }, { name: "description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:title", content: "Staff issue queue — CivicFix" }, { property: "og:description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Staff issue queue — Siddi" }, { name: "description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:title", content: "Staff issue queue — Siddi" }, { property: "og:description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: Queue,
 });
 

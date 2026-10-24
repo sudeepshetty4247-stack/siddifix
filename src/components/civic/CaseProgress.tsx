@@ -35,7 +35,7 @@ export function StaffResponse({ c }: { c: Ack }) {
     return (
       <section className="rounded-2xl border border-dashed bg-card p-5">
         <p className="text-sm font-semibold">Waiting for the team to acknowledge</p>
-        <p className="mt-1 text-sm text-muted-foreground">Your report is saved in the CivicFix staff queue. When a team member acknowledges it, their response and an estimated completion date will appear here.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Your report is saved in the Siddi staff queue. When a team member acknowledges it, their response and an estimated completion date will appear here.</p>
       </section>
     );
   }
@@ -46,7 +46,7 @@ export function StaffResponse({ c }: { c: Ack }) {
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"><MessageSquareQuote className="h-5 w-5" /></span>
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-wide text-primary">Response from the team</p>
-          <p className="mt-0.5 font-semibold">{c.acknowledged_by_label ?? "CivicFix staff"}</p>
+          <p className="mt-0.5 font-semibold">{c.acknowledged_by_label ?? "Siddi staff"}</p>
           <p className="text-xs text-muted-foreground">Acknowledged {fmt(c.acknowledged_at)}</p>
         </div>
       </div>

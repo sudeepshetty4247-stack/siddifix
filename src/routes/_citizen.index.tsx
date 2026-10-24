@@ -8,9 +8,9 @@ import bengaluruPhoto from '@/assets/bengaluru-home.jpg';
 import { NearbyCaseSummary } from '@/components/civic/NearbyCaseSummary';
 export const Route = createFileRoute('/_citizen/')({
   head: () => ({ meta: [
-    {title:'CivicFix Bengaluru — Report a problem. Track the progress.'},
+    {title:'Siddi — Report a problem. Track the progress.'},
     {name:'description',content:'Report a Bengaluru civic problem with a photo, track your case and discover local reports on Civic Map. No citizen login required.'},
-    {property:'og:title',content:'CivicFix Bengaluru — Your city, your voice'},
+    {property:'og:title',content:'Siddi — Your city, your voice'},
     {property:'og:description',content:'Photo reporting, public case histories and Bengaluru ward information in one independent citizen platform.'},
     {property:'og:type',content:'website'},
     {name:'twitter:card',content:'summary'},
@@ -29,8 +29,8 @@ function CitizenHome() {
       <div className="home-photo-shade absolute inset-0 -z-10" />
       <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 sm:py-16 lg:py-20">
         <p className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase"><MapPin className="h-4 w-4" />Bengaluru, Karnataka</p>
-        <h1 className="text-4xl font-bold sm:text-5xl lg:text-6xl">CivicFix Bengaluru</h1>
-        <p className="mt-5 max-w-xl text-xl font-medium sm:text-2xl">Your city. Your voice.<br />A better neighbourhood starts here.</p>
+        <h1 className="text-4xl font-bold sm:text-5xl lg:text-6xl">Siddi</h1>
+        <p className="mt-5 max-w-xl text-xl font-medium sm:text-2xl">Your City. Your Voice.<br />A better neighbourhood starts here.</p>
         <p className="mt-4 max-w-md text-sm leading-relaxed opacity-90">A broken road. An overflowing bin. A streetlight gone dark. Report what matters, and follow every recorded action.</p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Button asChild size="lg" className="h-12 rounded-lg px-5"><Link to="/report"><Camera className="h-5 w-5" />Report a problem<ArrowRight className="h-4 w-4" /></Link></Button>
@@ -55,7 +55,7 @@ function CitizenHome() {
 
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-12">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="mb-2 text-xs font-semibold uppercase text-primary">From the community</p><h2 className="text-2xl font-semibold">Latest reported problems</h2></div><Button asChild variant="outline"><Link to="/explore">All reports<ArrowRight className="h-4 w-4" /></Link></Button></div>
-      {recent.isPending ? <p role="status" className="py-8 text-sm text-muted-foreground">Loading recent reports…</p> : recent.isError ? <div role="alert" className="border-y py-6"><p className="text-sm">Recent reports couldn't be loaded.</p><Button className="mt-3" variant="outline" onClick={() => recent.refetch()}>Try again</Button></div> : recent.data.length ? <div className="grid gap-4 md:grid-cols-3">{recent.data.map(issue => <IssueCard key={issue.id} issue={issue} />)}</div> : <div className="flex flex-col items-start justify-between gap-5 border-y py-8 sm:flex-row sm:items-center"><div><h3 className="text-lg font-semibold">Every better street starts with one report.</h3><p className="mt-2 max-w-lg text-sm text-muted-foreground">No CivicFix reports yet. If you spot a local problem, give it a photo, a location and a voice.</p></div><Button asChild><Link to="/report"><Camera className="h-4 w-4" />Be the first to report</Link></Button></div>}
+      {recent.isPending ? <p role="status" className="py-8 text-sm text-muted-foreground">Loading recent reports…</p> : recent.isError ? <div role="alert" className="border-y py-6"><p className="text-sm">Recent reports couldn't be loaded.</p><Button className="mt-3" variant="outline" onClick={() => recent.refetch()}>Try again</Button></div> : recent.data.length ? <div className="grid gap-4 md:grid-cols-3">{recent.data.map(issue => <IssueCard key={issue.id} issue={issue} />)}</div> : <div className="flex flex-col items-start justify-between gap-5 border-y py-8 sm:flex-row sm:items-center"><div><h3 className="text-lg font-semibold">Every better street starts with one report.</h3><p className="mt-2 max-w-lg text-sm text-muted-foreground">No Siddi reports yet. If you spot a local problem, give it a photo, a location and a voice.</p></div><Button asChild><Link to="/report"><Camera className="h-4 w-4" />Be the first to report</Link></Button></div>}
     </section>
   </div>;
 }

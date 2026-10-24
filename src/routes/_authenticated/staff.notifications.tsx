@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { timeAgo } from "@/lib/civic";
 
 export const Route = createFileRoute("/_authenticated/staff/notifications")({
-  head: () => ({ meta: [{ title: "Notifications & handoffs — CivicFix" }, { name: "description", content: "Every notification CivicFix actually recorded, with honest delivery states." }, { property: "og:title", content: "Notifications & handoffs — CivicFix" }, { property: "og:description", content: "Every notification CivicFix actually recorded, with honest delivery states." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Notifications & handoffs — Siddi" }, { name: "description", content: "Every notification Siddi actually recorded, with honest delivery states." }, { property: "og:title", content: "Notifications & handoffs — Siddi" }, { property: "og:description", content: "Every notification Siddi actually recorded, with honest delivery states." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: NotificationsPage,
 });
 
@@ -40,7 +40,7 @@ function NotificationsPage() {
     <div className="mx-auto max-w-5xl space-y-6 p-4 sm:p-8">
       <div>
         <h1 className="flex items-center gap-2 text-3xl font-bold"><Bell className="h-7 w-7 text-primary" /> Notifications & Handoffs</h1>
-        <p className="mt-1 text-muted-foreground">What CivicFix actually did for each case — in-app updates, and external government channels only when one is genuinely configured. "Not configured" means no message was sent to any outside office.</p>
+        <p className="mt-1 text-muted-foreground">What Siddi actually did for each case — in-app updates, and external government channels only when one is genuinely configured. "Not configured" means no message was sent to any outside office.</p>
       </div>
       {q.error && <p className="rounded-xl bg-destructive-soft p-4 text-sm text-destructive">{(q.error as Error).message}</p>}
       {q.data?.length === 0 && (

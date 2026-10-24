@@ -8,7 +8,7 @@ import { useRoles } from "./staff";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/staff/audit")({
-  head: () => ({ meta: [{ title: "Audit log & system health — CivicFix" }, { name: "description", content: "Administrator view of every staff action and live system checks." }, { property: "og:title", content: "Audit log & system health — CivicFix" }, { property: "og:description", content: "Administrator view of every staff action and live system checks." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Audit log & system health — Siddi" }, { name: "description", content: "Administrator view of every staff action and live system checks." }, { property: "og:title", content: "Audit log & system health — Siddi" }, { property: "og:description", content: "Administrator view of every staff action and live system checks." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: AuditPage,
 });
 

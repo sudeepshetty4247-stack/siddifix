@@ -98,7 +98,7 @@ function CitizenShell() {
           <div className="max-w-sm space-y-3">
             <Logo />
             <p className="text-sm text-muted-foreground">Report once. Track every action. Build better communities. Operating in Bengaluru, built for every Indian city.</p>
-            <p className="text-xs text-muted-foreground">CivicFix is an independent civic platform and is not an official government service. Authority names are indicative.</p>
+            <p className="text-xs text-muted-foreground">Siddi is an independent civic platform and is not an official government service. Authority names are indicative.</p>
           </div>
           <div className="flex gap-12 text-sm">
             <div className="space-y-2">

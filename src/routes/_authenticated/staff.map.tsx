@@ -5,7 +5,7 @@ import { BENGALURU, OPEN_STATUSES, categoryById, isOverdue } from "@/lib/civic";
 import { LazyMap } from "@/components/civic/LazyMap";
 
 export const Route = createFileRoute("/_authenticated/staff/map")({
-  head: () => ({ meta: [{ title: "Staff map and hotspots — CivicFix" }, { name: "description", content: "Review geographic patterns in recorded open civic reports." }, { property: "og:title", content: "Staff map and hotspots — CivicFix" }, { property: "og:description", content: "Review geographic patterns in recorded open civic reports." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Staff map and hotspots — Siddi" }, { name: "description", content: "Review geographic patterns in recorded open civic reports." }, { property: "og:title", content: "Staff map and hotspots — Siddi" }, { property: "og:description", content: "Review geographic patterns in recorded open civic reports." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: StaffMap,
 });
 

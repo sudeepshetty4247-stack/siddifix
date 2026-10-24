@@ -63,7 +63,7 @@ export function CivicInfo({lat,lng,category,subcategory,snapshot}:{lat:number;ln
   if(directory.isPending)return <p className="py-4 text-sm text-muted-foreground">Finding your ward and representatives…</p>;
   if(!directory.data)return <div className="py-4"><p className="text-sm">Local information is unavailable.</p><Button variant="outline" onClick={()=>directory.refetch()}>Try again</Button></div>;
   const routing=resolveCivicRouting(directory.data,lat,lng,category,subcategory??undefined);const {ward,route}=routing;
-  if(!ward)return <section className="border-t py-5"><h2 className="text-lg font-semibold">Local responsibility</h2><p className="mt-2 text-sm text-muted-foreground">{routing.reviewReason??'No supported ward matches this point.'} Your report remains available for CivicFix ownership review.</p></section>;
+  if(!ward)return <section className="border-t py-5"><h2 className="text-lg font-semibold">Local responsibility</h2><p className="mt-2 text-sm text-muted-foreground">{routing.reviewReason??'No supported ward matches this point.'} Your report remains available for Siddi ownership review.</p></section>;
   const relevant=(people.data??[]).filter(p=>authorityMatchesWard(p,ward,category));
   const officers=relevant.filter(p=>p.kind==='operational'||p.kind==='leadership');
   const gba=directory.data.authorities.filter(a=>a.phone&&/Greater Bengaluru/i.test(a.name));
@@ -80,6 +80,6 @@ export function CivicInfo({lat,lng,category,subcategory,snapshot}:{lat:number;ln
       {officers.length>0&&<div className="mt-2 grid gap-2">{officers.map(profile)}</div>}
       {city.length>0&&<div className="mt-2 grid min-w-0 gap-2 sm:grid-cols-2">{city.map(a=><a key={a.id} href={`tel:${a.phone}`} className="flex min-w-0 items-center gap-3 rounded-xl border bg-card p-3 hover:bg-secondary"><Landmark className="h-5 w-5 shrink-0 text-primary"/><span className="min-w-0"><span className="block truncate text-sm font-medium">{a.name}</span><span className="text-xs text-primary">{a.phone}</span></span></a>)}</div>}
     </div>
-    <p className="text-[11px] text-muted-foreground">Ward boundary: official GBA snapshot {ward.source_published_at??ward.verified_at} · <a href={ward.source_url} target="_blank" rel="noopener noreferrer" className="text-primary">source</a>. Authority names are indicative; CivicFix is not a government channel.</p>
+    <p className="text-[11px] text-muted-foreground">Ward boundary: official GBA snapshot {ward.source_published_at??ward.verified_at} · <a href={ward.source_url} target="_blank" rel="noopener noreferrer" className="text-primary">source</a>. Authority names are indicative; Siddi is not a government channel.</p>
   </section>;
 }

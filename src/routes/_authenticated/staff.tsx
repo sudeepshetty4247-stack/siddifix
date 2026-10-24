@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { BackButton } from "@/components/civic/BackButton";
 
 export const Route = createFileRoute("/_authenticated/staff")({
-  head: () => ({ meta: [{ title: "Staff workspace — CivicFix" }, { name: "description", content: "Review real civic reports, assignments, evidence and resolution history." }, { property: "og:title", content: "Staff workspace — CivicFix" }, { property: "og:description", content: "Authenticated civic issue resolution workspace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Staff workspace — Siddi" }, { name: "description", content: "Review real civic reports, assignments, evidence and resolution history." }, { property: "og:title", content: "Staff workspace — Siddi" }, { property: "og:description", content: "Authenticated civic issue resolution workspace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
   component: StaffLayout,
 });
 

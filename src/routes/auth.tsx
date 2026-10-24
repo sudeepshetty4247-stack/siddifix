@@ -10,9 +10,9 @@ import { BackButton } from "@/components/civic/BackButton";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Staff sign in — CivicFix" },
-      { name: "description", content: "Sign in to the CivicFix staff workspace to manage and resolve civic issues." },
-      { property: "og:title", content: "Staff sign in — CivicFix" },
+      { title: "Staff sign in — Siddi" },
+      { name: "description", content: "Sign in to the Siddi staff workspace to manage and resolve civic issues." },
+      { property: "og:title", content: "Staff sign in — Siddi" },
       { property: "og:description", content: "Workspace for officials and field teams." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -70,7 +70,7 @@ function AuthPage() {
           <h1 className="text-4xl font-bold">The workspace for people who fix cities.</h1>
           <p className="opacity-75">Triage reports, assign ownership, record evidence and keep every citizen informed — with a full audit trail.</p>
         </div>
-        <p className="text-xs opacity-50">Access is granted by your CivicFix administrator.</p>
+        <p className="text-xs opacity-50">Access is granted by your Siddi administrator.</p>
       </div>
       <div className="flex items-center justify-center p-6">
         <div className="w-full max-w-sm space-y-6">
