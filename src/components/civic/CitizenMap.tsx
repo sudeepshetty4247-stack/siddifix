@@ -58,9 +58,9 @@ export function CitizenMap() {
     </div>
     {notice && <p role="status" className="bg-warning-soft px-4 py-2 text-sm text-warning-foreground">{notice}</p>}
     <div className="grid flex-1 lg:grid-cols-[1fr_360px]">
-      <div className="relative h-[55dvh] min-h-80 lg:h-[70dvh]">
+      <div className="relative h-[55dvh] min-h-80 lg:h-[min(70dvh,760px)]">
         <LazyMap wards={wards} {...(focusWard ? {selectedWard: focusWard.identifier} : {})} onWardSelect={id=>{const w=wards.find(w=>w.identifier===id); const p=w?wardPreviewPoint(w):null; if(p){setWardPoint(p);setTesting(false);setSelected(null);}}} center={BENGALURU} zoom={13} recenter={pin??wardPoint} picked={picking?pin:wardPoint} {...(picking ? {onPick:(lat:number,lng:number)=>setPin({lat,lng})} : {})} markers={list.map(i=>({id:i.id,lat:i.lat,lng:i.lng,tone:['resolved','closed'].includes(i.status)?'resolved':i.severity==='critical'?'critical':isOverdue(i)?'overdue':'open',label:i.title,sub:`${categoryById(i.category).label} · ${i.ref_code}`,href:`/issues/${i.ref_code}`}))} onSelect={setSelected}/>
-        <div className="pointer-events-none absolute left-3 top-3 z-[500] flex items-center gap-2 rounded-lg border bg-card/95 px-3 py-2 text-xs shadow-soft"><Layers className="h-4 w-4 text-primary" />{wards.length ? `${wards.length} GBA wards · Bengaluru` : 'Loading Bengaluru boundaries…'}</div>
+        <div className="pointer-events-none absolute left-14 top-3 z-[500] flex items-center gap-2 rounded-lg border bg-card/95 px-3 py-2 text-xs shadow-soft"><Layers className="h-4 w-4 text-primary" />{wards.length ? `${wards.length} GBA wards · Bengaluru` : 'Loading Bengaluru boundaries…'}</div>
         {picking && <div className="absolute inset-x-3 bottom-4 z-[500] border bg-card p-3 shadow-soft"><p className="text-sm font-semibold">{pin?`${pin.lat.toFixed(5)}, ${pin.lng.toFixed(5)}`:'Place the problem location on the map'}</p>{pin&&!isInIndia(pin.lat,pin.lng)&&<p role="alert" className="text-xs text-destructive">Choose a location within India.</p>}<div className="mt-2 flex gap-2"><Button disabled={!pin||!isInIndia(pin.lat,pin.lng)} onClick={confirmPin}>Confirm location</Button><Button variant="ghost" onClick={()=>setPicking(false)}>Cancel</Button></div></div>}
       </div>
       <aside className="max-h-[70dvh] overflow-y-auto border-t bg-card lg:border-l lg:border-t-0">
