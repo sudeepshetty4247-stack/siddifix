@@ -1,7 +1,8 @@
-export type Coverage = { id: string; name: string; state: string; bounds: unknown; notice: string; source_url: string | null; verified_at: string | null };
+import type { Json } from '@/integrations/supabase/types';
+export type Coverage = { id: string; name: string; state: string; bounds: Json; notice: string; source_url: string | null; verified_at: string | null };
 export type Authority = { id: string; coverage_id: string | null; name: string; kind: string; website_url: string; reporting_url: string | null; phone: string | null; source_url: string; verified_at: string; notes: string };
 export type ServiceRule = { authority_id: string; category: string; subcategory: string | null; notes: string; confidence: string };
-export type Ward = { name: string; identifier: string; corporation: string; boundary: unknown; source_url: string; verified_at: string; representative: string | null; representative_source_url: string | null };
+export type Ward = { name: string; identifier: string; corporation: string; boundary: Json; source_url: string; verified_at: string; representative: string | null; representative_source_url: string | null };
 export type Directory = { coverage: Coverage[]; authorities: Authority[]; rules: ServiceRule[]; wards: Ward[] };
 export type CivicRouting = { coverage: Coverage | null; candidates: Authority[]; ward: Omit<Ward, 'boundary'> | null; ownershipVerified: boolean };
 

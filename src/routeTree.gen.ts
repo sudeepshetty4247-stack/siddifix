@@ -19,6 +19,7 @@ import { Route as CitizenMapRouteImport } from './routes/_citizen.map'
 import { Route as CitizenReportRouteImport } from './routes/_citizen.report'
 import { Route as CitizenTrackRouteImport } from './routes/_citizen.track'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
+import { Route as AuthenticatedStaffDirectoryRouteImport } from './routes/_authenticated/staff.directory'
 import { Route as AuthenticatedStaffMapRouteImport } from './routes/_authenticated/staff.map'
 import { Route as AuthenticatedStaffQueueRouteImport } from './routes/_authenticated/staff.queue'
 import { Route as AuthenticatedStaffTeamRouteImport } from './routes/_authenticated/staff.team'
@@ -73,6 +74,12 @@ const AuthenticatedStaffIndexRoute = AuthenticatedStaffIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedStaffRoute,
 } as any)
+const AuthenticatedStaffDirectoryRoute =
+  AuthenticatedStaffDirectoryRouteImport.update({
+    id: '/directory',
+    path: '/directory',
+    getParentRoute: () => AuthenticatedStaffRoute,
+  } as any)
 const AuthenticatedStaffMapRoute = AuthenticatedStaffMapRouteImport.update({
   id: '/map',
   path: '/map',
@@ -108,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/map': typeof CitizenMapRoute
   '/report': typeof CitizenReportRoute
   '/track': typeof CitizenTrackRoute
+  '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
   '/staff/queue': typeof AuthenticatedStaffQueueRoute
   '/staff/team': typeof AuthenticatedStaffTeamRoute
@@ -122,6 +130,7 @@ export interface FileRoutesByTo {
   '/map': typeof CitizenMapRoute
   '/report': typeof CitizenReportRoute
   '/track': typeof CitizenTrackRoute
+  '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/map': typeof AuthenticatedStaffMapRoute
   '/staff/queue': typeof AuthenticatedStaffQueueRoute
   '/staff/team': typeof AuthenticatedStaffTeamRoute
@@ -140,6 +149,7 @@ export interface FileRoutesById {
   '/_citizen/report': typeof CitizenReportRoute
   '/_citizen/track': typeof CitizenTrackRoute
   '/_citizen/': typeof CitizenIndexRoute
+  '/_authenticated/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/_authenticated/staff/map': typeof AuthenticatedStaffMapRoute
   '/_authenticated/staff/queue': typeof AuthenticatedStaffQueueRoute
   '/_authenticated/staff/team': typeof AuthenticatedStaffTeamRoute
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/report'
     | '/track'
+    | '/staff/directory'
     | '/staff/map'
     | '/staff/queue'
     | '/staff/team'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/report'
     | '/track'
+    | '/staff/directory'
     | '/staff/map'
     | '/staff/queue'
     | '/staff/team'
@@ -188,6 +200,7 @@ export interface FileRouteTypes {
     | '/_citizen/report'
     | '/_citizen/track'
     | '/_citizen/'
+    | '/_authenticated/staff/directory'
     | '/_authenticated/staff/map'
     | '/_authenticated/staff/queue'
     | '/_authenticated/staff/team'
@@ -274,6 +287,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffIndexRouteImport
       parentRoute: typeof AuthenticatedStaffRoute
     }
+    '/_authenticated/staff/directory': {
+      id: '/_authenticated/staff/directory'
+      path: '/directory'
+      fullPath: '/staff/directory'
+      preLoaderRoute: typeof AuthenticatedStaffDirectoryRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
     '/_authenticated/staff/map': {
       id: '/_authenticated/staff/map'
       path: '/map'
@@ -313,6 +333,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedStaffRouteChildren {
+  AuthenticatedStaffDirectoryRoute: typeof AuthenticatedStaffDirectoryRoute
   AuthenticatedStaffMapRoute: typeof AuthenticatedStaffMapRoute
   AuthenticatedStaffQueueRoute: typeof AuthenticatedStaffQueueRoute
   AuthenticatedStaffTeamRoute: typeof AuthenticatedStaffTeamRoute
@@ -321,6 +342,7 @@ interface AuthenticatedStaffRouteChildren {
 }
 
 const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
+  AuthenticatedStaffDirectoryRoute: AuthenticatedStaffDirectoryRoute,
   AuthenticatedStaffMapRoute: AuthenticatedStaffMapRoute,
   AuthenticatedStaffQueueRoute: AuthenticatedStaffQueueRoute,
   AuthenticatedStaffTeamRoute: AuthenticatedStaffTeamRoute,

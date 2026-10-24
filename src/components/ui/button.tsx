@@ -9,7 +9,8 @@ const buttonVariants = cva("inline-flex items-center justify-center gap-2 whites
     size: { default: "h-10 px-4", sm: "h-9 px-3", lg: "h-12 px-6", icon: "h-10 w-10 shrink-0" },
   }, defaultVariants: { variant: "default", size: "default" },
 });
-export function Button({ className, variant, size, asChild = false, ...props }: React.ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean }) {
+export type ButtonProps = React.ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean };
+export function Button({ className, variant, size, asChild = false, ...props }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
   return <Comp className={cn(buttonVariants({ variant, size, className }))} {...props} />;
 }
