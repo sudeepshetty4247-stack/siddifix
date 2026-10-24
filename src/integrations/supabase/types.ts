@@ -1055,6 +1055,7 @@ export type Database = {
         Args: { _report: Json; _token: string }
         Returns: Json
       }
+      escalate_overdue_issues: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1133,6 +1134,43 @@ export type Database = {
           _severity: Database["public"]["Enums"]["issue_severity"]
         }
         Returns: undefined
+      }
+      staff_queue_issues: {
+        Args: {
+          _ack?: string
+          _category?: string
+          _limit?: number
+          _overdue?: boolean
+          _search?: string
+          _severity?: string
+          _status?: string
+          _team?: string
+          _ward?: string
+        }
+        Returns: {
+          acknowledged_at: string
+          assignment_state: string
+          authority_id: string
+          category: string
+          created_at: string
+          department: string
+          duplicate_candidate_id: string
+          duplicate_of: string
+          escalated_at: string
+          eta_at: string
+          id: string
+          landmark: string
+          photo_url: string
+          ref_code: string
+          severity: Database["public"]["Enums"]["issue_severity"]
+          sla_due_at: string
+          status: Database["public"]["Enums"]["issue_status"]
+          support_count: number
+          team_id: string
+          team_name: string
+          title: string
+          ward_name: string
+        }[]
       }
       staff_record_evidence: {
         Args: { _id: string; _kind: string; _note: string; _path: string }
