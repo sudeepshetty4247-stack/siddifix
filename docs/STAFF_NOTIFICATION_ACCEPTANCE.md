@@ -10,7 +10,9 @@
 - Configurable approaching-deadline reminders and overdue escalation, queue sorting and per-user in-memory filter restoration, dashboard scope context, explicit case/history failures.
 
 ## Checked
-- All 189 automated tests in 24 files passed.
+- Recheck: all 204 automated tests in 25 files passed, including routing→recipient notification for all eleven supported categories and unknown/ambiguous/unclassified routing cases. Disposable rows were truncated and the isolated database closed.
+- Corrected a real mismatch: `Ownership review pending` previously prevented a configured department match. New reports store unknown department as null; legacy placeholder reports can route to a unique eligible configured team. No existing complaints were modified.
+- Live definition checks confirmed atomic report routing and persisted acknowledgement targets. Production counts remained one pre-existing complaint, zero active teams and zero evidence before/after testing.
 - Isolated in-memory PostgreSQL executes migration-defined notification and workflow functions. Covers recipient isolation, duplicate prevention, read timestamp idempotency, unread/archive/restore/bulk actions, revoked scope and suspended sessions, acknowledgements, public/private projections, expected-status concurrency, stored completion prerequisite and citizen reopen/confirmation.
 - These tests use stubbed identity/scope and storage-object fixtures, not the hosted auth/storage providers. They are transaction tests, not a complete hosted browser lifecycle.
 - Signed-in staff browser: team-configuration blocker, zero unread bell, direct notification ownership rejection, bulk zero-state action, no private notifications visible, Admin portal denied. No write to complaints/evidence.
