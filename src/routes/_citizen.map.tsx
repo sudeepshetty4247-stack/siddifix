@@ -100,7 +100,7 @@ function MapPage() {
               </div>
             </Button>
           ))}
-          {!active && <WardLeaderboard issues={q.data ?? []} />}
+          {!active && <WardLeaderboard />}
         </div>
       </aside>
       <div className="order-1 h-[50vh] lg:order-2 lg:h-auto">
