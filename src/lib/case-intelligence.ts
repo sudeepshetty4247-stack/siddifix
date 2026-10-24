@@ -132,7 +132,7 @@ export function findRecurringPatterns(cases: IntelCase[], now = Date.now()): Rec
     .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
   const clusters: IntelCase[][] = [];
   for (const inc of incidents) {
-    const home = clusters.find(cl => cl[0].category === inc.category && distanceM(cl[0], inc) <= RECURRENCE_RULES.radiusM);
+    const home = clusters.find(cl => cl[0]!.category === inc.category && distanceM(cl[0]!, inc) <= RECURRENCE_RULES.radiusM);
     if (home) home.push(inc); else clusters.push([inc]);
   }
   const patterns: RecurringPattern[] = [];
@@ -141,7 +141,7 @@ export function findRecurringPatterns(cases: IntelCase[], now = Date.now()): Rec
     let recurrences = 0, fastReturn = false, uncertain = false;
     for (let i = 1; i < cl.length; i++) {
       const prevResolved = cl.slice(0, i).map(p => p.resolved_at).filter(Boolean).map(r => +new Date(r!)).sort((a, b) => b - a)[0];
-      const startedAt = +new Date(cl[i].created_at);
+      const startedAt = +new Date(cl[i]!.created_at);
       if (prevResolved && startedAt - prevResolved >= RECURRENCE_RULES.minDaysAfterResolution * DAY) {
         recurrences++;
         if (startedAt - prevResolved <= 30 * DAY) fastReturn = true;
@@ -154,16 +154,16 @@ export function findRecurringPatterns(cases: IntelCase[], now = Date.now()): Rec
     const parts = { incidents: cl.length - 1, recurrences: 2 * (recurrences + reopened), severity: sev, open: openNow ? 3 : 0, recency: fastReturn ? 2 : 0 };
     const resolvedDates = cl.map(c => c.resolved_at).filter(Boolean).sort();
     patterns.push({
-      key: cl[0].id,
-      category: cl[0].category,
-      ward: cl[0].ward ?? null,
+      key: cl[0]!.id,
+      category: cl[0]!.category,
+      ward: cl[0]!.ward ?? null,
       center: { lat: cl.reduce((s, c) => s + c.lat, 0) / cl.length, lng: cl.reduce((s, c) => s + c.lng, 0) / cl.length },
       incidents: cl,
       reportCount: cl.reduce((s, c) => s + 1 + (reportsPerCanonical.get(c.id) ?? 0), 0),
       recurrences,
       reopened,
-      firstAt: cl[0].created_at,
-      lastAt: cl[cl.length - 1].created_at,
+      firstAt: cl[0]!.created_at,
+      lastAt: cl[cl.length - 1]!.created_at,
       lastResolvedAt: resolvedDates.length ? resolvedDates[resolvedDates.length - 1]! : null,
       openNow,
       priority: parts.incidents + parts.recurrences + parts.severity + parts.open + parts.recency,
