@@ -246,6 +246,13 @@
       "when": 1792872826205,
       "tag": "0034_atomic_evidence_retry_and_safe_routing",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1792872955624,
+      "tag": "0035_scoped_new_and_daily_metrics",
+      "breakpoints": true
     }
   ]
 }
