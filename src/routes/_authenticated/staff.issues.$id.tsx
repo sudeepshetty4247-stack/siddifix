@@ -190,7 +190,7 @@ function StaffIssue() {
             {i.ai_confidence !== null && <p className="text-xs text-muted-foreground">AI suggestion confidence: {Math.round((i.ai_confidence ?? 0) * 100)}%</p>}
             <label className="block text-sm">
               <span className="text-muted-foreground">Category</span>
-              <select value={i.category} onChange={(e) => updateField({ category: e.target.value }, `Reclassified as ${categoryById(e.target.value).label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
+              <select value={i.category} disabled={!canWork} onChange={(e) => updateField({ category: e.target.value }, `Reclassified as ${categoryById(e.target.value).label}`)} className="mt-1 h-10 w-full rounded-lg border bg-background px-2">
                 {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </label>
