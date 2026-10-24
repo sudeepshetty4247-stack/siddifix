@@ -11,7 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as CitizenRouteImport } from './routes/_citizen'
+import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as StaffLoginRouteImport } from './routes/staff-login'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as CitizenIndexRouteImport } from './routes/_citizen.index'
 import { Route as CitizenAssistantRouteImport } from './routes/_citizen.assistant'
@@ -21,6 +25,10 @@ import { Route as CitizenReportRouteImport } from './routes/_citizen.report'
 import { Route as CitizenTrackRouteImport } from './routes/_citizen.track'
 import { Route as CitizenTransparencyRouteImport } from './routes/_citizen.transparency'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
+import { Route as AuthenticatedAdminDirectoryRouteImport } from './routes/_authenticated/admin.directory'
+import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
+import { Route as AuthenticatedAdminTargetsRouteImport } from './routes/_authenticated/admin.targets'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
 import { Route as AuthenticatedStaffAuditRouteImport } from './routes/_authenticated/staff.audit'
 import { Route as AuthenticatedStaffDirectoryRouteImport } from './routes/_authenticated/staff.directory'
@@ -44,10 +52,30 @@ const CitizenRoute = CitizenRouteImport.update({
   id: '/_citizen',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin-login',
+  path: '/admin-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffLoginRoute = StaffLoginRouteImport.update({
+  id: '/staff-login',
+  path: '/staff-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
   id: '/staff',
@@ -94,6 +122,28 @@ const ApiAssistantRoute = ApiAssistantRouteImport.update({
   path: '/api/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminDirectoryRoute =
+  AuthenticatedAdminDirectoryRouteImport.update({
+    id: '/directory',
+    path: '/directory',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminStaffRoute = AuthenticatedAdminStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminTargetsRoute =
+  AuthenticatedAdminTargetsRouteImport.update({
+    id: '/targets',
+    path: '/targets',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedStaffIndexRoute = AuthenticatedStaffIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -175,7 +225,11 @@ const ApiPublicJobsEscalateOverdueRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof CitizenIndexRoute
+  '/admin-login': typeof AdminLoginRoute
   '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/staff-login': typeof StaffLoginRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/staff': typeof AuthenticatedStaffRouteWithChildren
   '/assistant': typeof CitizenAssistantRoute
   '/explore': typeof CitizenExploreRoute
@@ -184,6 +238,10 @@ export interface FileRoutesByFullPath {
   '/track': typeof CitizenTrackRoute
   '/transparency': typeof CitizenTransparencyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
+  '/admin/staff': typeof AuthenticatedAdminStaffRoute
+  '/admin/targets': typeof AuthenticatedAdminTargetsRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/insights': typeof AuthenticatedStaffInsightsRoute
@@ -201,7 +259,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof CitizenIndexRoute
+  '/admin-login': typeof AdminLoginRoute
   '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/staff-login': typeof StaffLoginRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/assistant': typeof CitizenAssistantRoute
   '/explore': typeof CitizenExploreRoute
   '/map': typeof CitizenMapRoute
@@ -209,6 +271,10 @@ export interface FileRoutesByTo {
   '/track': typeof CitizenTrackRoute
   '/transparency': typeof CitizenTransparencyRoute
   '/api/assistant': typeof ApiAssistantRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
+  '/admin/staff': typeof AuthenticatedAdminStaffRoute
+  '/admin/targets': typeof AuthenticatedAdminTargetsRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/staff/insights': typeof AuthenticatedStaffInsightsRoute
@@ -228,7 +294,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_citizen': typeof CitizenRouteWithChildren
+  '/admin-login': typeof AdminLoginRoute
   '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/staff-login': typeof StaffLoginRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
   '/_citizen/assistant': typeof CitizenAssistantRoute
   '/_citizen/explore': typeof CitizenExploreRoute
@@ -238,6 +308,10 @@ export interface FileRoutesById {
   '/_citizen/transparency': typeof CitizenTransparencyRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/_citizen/': typeof CitizenIndexRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/directory': typeof AuthenticatedAdminDirectoryRoute
+  '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
+  '/_authenticated/admin/targets': typeof AuthenticatedAdminTargetsRoute
   '/_authenticated/staff/audit': typeof AuthenticatedStaffAuditRoute
   '/_authenticated/staff/directory': typeof AuthenticatedStaffDirectoryRoute
   '/_authenticated/staff/insights': typeof AuthenticatedStaffInsightsRoute
@@ -257,7 +331,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin-login'
     | '/auth'
+    | '/reset-password'
+    | '/staff-login'
+    | '/admin'
     | '/staff'
     | '/assistant'
     | '/explore'
@@ -266,6 +344,10 @@ export interface FileRouteTypes {
     | '/track'
     | '/transparency'
     | '/api/assistant'
+    | '/admin/audit'
+    | '/admin/directory'
+    | '/admin/staff'
+    | '/admin/targets'
     | '/staff/audit'
     | '/staff/directory'
     | '/staff/insights'
@@ -283,7 +365,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin-login'
     | '/auth'
+    | '/reset-password'
+    | '/staff-login'
+    | '/admin'
     | '/assistant'
     | '/explore'
     | '/map'
@@ -291,6 +377,10 @@ export interface FileRouteTypes {
     | '/track'
     | '/transparency'
     | '/api/assistant'
+    | '/admin/audit'
+    | '/admin/directory'
+    | '/admin/staff'
+    | '/admin/targets'
     | '/staff/audit'
     | '/staff/directory'
     | '/staff/insights'
@@ -309,7 +399,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/_citizen'
+    | '/admin-login'
     | '/auth'
+    | '/reset-password'
+    | '/staff-login'
+    | '/_authenticated/admin'
     | '/_authenticated/staff'
     | '/_citizen/assistant'
     | '/_citizen/explore'
@@ -319,6 +413,10 @@ export interface FileRouteTypes {
     | '/_citizen/transparency'
     | '/api/assistant'
     | '/_citizen/'
+    | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/directory'
+    | '/_authenticated/admin/staff'
+    | '/_authenticated/admin/targets'
     | '/_authenticated/staff/audit'
     | '/_authenticated/staff/directory'
     | '/_authenticated/staff/insights'
@@ -338,7 +436,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   CitizenRoute: typeof CitizenRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
   AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  StaffLoginRoute: typeof StaffLoginRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
   ApiPublicJobsEscalateOverdueRoute: typeof ApiPublicJobsEscalateOverdueRoute
 }
@@ -359,12 +460,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CitizenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin-login': {
+      id: '/admin-login'
+      path: '/admin-login'
+      fullPath: '/admin-login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff-login': {
+      id: '/staff-login'
+      path: '/staff-login'
+      fullPath: '/staff-login'
+      preLoaderRoute: typeof StaffLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/staff': {
       id: '/_authenticated/staff'
@@ -428,6 +557,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/assistant'
       preLoaderRoute: typeof ApiAssistantRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/directory': {
+      id: '/_authenticated/admin/directory'
+      path: '/directory'
+      fullPath: '/admin/directory'
+      preLoaderRoute: typeof AuthenticatedAdminDirectoryRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/staff': {
+      id: '/_authenticated/admin/staff'
+      path: '/staff'
+      fullPath: '/admin/staff'
+      preLoaderRoute: typeof AuthenticatedAdminStaffRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/targets': {
+      id: '/_authenticated/admin/targets'
+      path: '/targets'
+      fullPath: '/admin/targets'
+      preLoaderRoute: typeof AuthenticatedAdminTargetsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/staff/': {
       id: '/_authenticated/staff/'
@@ -530,6 +687,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminDirectoryRoute: typeof AuthenticatedAdminDirectoryRoute
+  AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
+  AuthenticatedAdminTargetsRoute: typeof AuthenticatedAdminTargetsRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+  AuthenticatedAdminDirectoryRoute: AuthenticatedAdminDirectoryRoute,
+  AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
+  AuthenticatedAdminTargetsRoute: AuthenticatedAdminTargetsRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffAuditRoute: typeof AuthenticatedStaffAuditRoute
   AuthenticatedStaffDirectoryRoute: typeof AuthenticatedStaffDirectoryRoute
@@ -564,10 +738,12 @@ const AuthenticatedStaffRouteWithChildren =
   AuthenticatedStaffRoute._addFileChildren(AuthenticatedStaffRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
 }
 
@@ -602,7 +778,10 @@ const CitizenRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   CitizenRoute: CitizenRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
   AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  StaffLoginRoute: StaffLoginRoute,
   ApiAssistantRoute: ApiAssistantRoute,
   ApiPublicJobsEscalateOverdueRoute: ApiPublicJobsEscalateOverdueRoute,
 }

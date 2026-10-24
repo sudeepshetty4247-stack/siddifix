@@ -179,8 +179,9 @@ export const verifyToken = createServerFn({ method: "POST" })
 export const getMyRoles = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const active = await context.supabase.rpc('account_active', { _user: context.userId });
     const { data } = await context.supabase.from("user_roles").select("role").eq("user_id", context.userId);
-    return { roles: (data ?? []).map((r) => r.role), userId: context.userId, email: (context.claims as { email?: string }).email ?? null };
+    return { roles: active.data ? (data ?? []).map(r => r.role) : [], userId: context.userId, email: String(context.claims.email ?? '') };
   });
 
 export const listTeam = createServerFn({ method: "GET" })
@@ -198,7 +199,7 @@ export const listTeam = createServerFn({ method: "GET" })
       email: u.email ?? "",
       createdAt: u.created_at,
       lastSignIn: u.last_sign_in_at ?? null,
-      suspended: Boolean((u as { banned_until?: string | null }).banned_until && new Date((u as { banned_until?: string }).banned_until!).getTime() > Date.now()),
+      suspended: (profiles.data ?? []).find(p => p.user_id === u.id)?.active === false,
       roles: (roles.data ?? []).filter((r) => r.user_id === u.id).map((r) => r.role),
     }));
   });
@@ -211,11 +212,7 @@ export const setRole = createServerFn({ method: "POST" })
     z.object({ userId: z.string().uuid(), role: z.enum(["admin", "staff", "supervisor", "field_worker"]), grant: z.boolean() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Only admins can manage the team.");
-    if (!data.grant && data.role === "admin" && data.userId === context.userId) throw new Error("You can't remove your own admin access.");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    if (data.grant) await supabaseAdmin.from("user_roles").upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role" });
-    else await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId).eq("role", data.role);
+    const r = await context.supabase.rpc('admin_change_role', { _user: data.userId, _role: data.role, _grant: data.grant });
+    if (r.error) throw new Error(r.error.message);
     return { ok: true };
   });
