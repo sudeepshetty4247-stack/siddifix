@@ -107,6 +107,7 @@
   --shadow-lift: 0 2px 4px oklch(0.22 0.04 255 / 0.06), 0 24px 48px -20px oklch(0.22 0.04 255 / 0.25);
   --grid-line: oklch(0.22 0.04 255 / 0.06);
   --map-mask: oklch(0.86 0.015 210);
+  --map-you: var(--map-you);
   --home-shade: oklch(0.18 0.035 255 / 0.72);
 }
 
@@ -170,7 +171,7 @@
 .civic-count:hover { transform: scale(1.06); }
 .civic-you {
   display: block; width: 22px; height: 22px; border-radius: 999px;
-  background: oklch(0.6 0.17 245); border: 3px solid var(--card);
+  background: var(--map-you); border: 3px solid var(--card);
   box-shadow: 0 0 0 6px oklch(0.6 0.17 245 / 0.22), 0 2px 6px oklch(0.2 0.04 255 / 0.35);
   animation: civic-you-pulse 2s ease-out infinite;
 }

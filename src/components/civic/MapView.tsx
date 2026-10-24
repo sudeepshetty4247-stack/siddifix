@@ -134,7 +134,7 @@ export default function MapView({
       {onPick && <Picker onPick={onPick} />}
       {recenter && <Recenter {...recenter} />}
       {you && <>
-        <Circle center={[you.lat, you.lng]} radius={Math.min(you.accuracy, 3000)} pathOptions={{ color: 'var(--info, var(--primary))', weight: 1, fillColor: 'var(--info, var(--primary))', fillOpacity: 0.12 }} interactive={false} />
+        <Circle center={[you.lat, you.lng]} radius={Math.min(you.accuracy, 3000)} pathOptions={{ color: 'var(--map-you)', weight: 1, fillColor: 'var(--map-you)', fillOpacity: 0.12 }} interactive={false} />
         <Marker position={[you.lat, you.lng]} icon={youIcon} interactive={false} zIndexOffset={1000} />
       </>}
       {picked && (
