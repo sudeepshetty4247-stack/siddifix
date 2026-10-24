@@ -239,6 +239,13 @@
       "when": 1792872725662,
       "tag": "0033_notification_nullable_bulk_and_retry_evidence",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1792872826205,
+      "tag": "0034_atomic_evidence_retry_and_safe_routing",
+      "breakpoints": true
     }
   ]
 }

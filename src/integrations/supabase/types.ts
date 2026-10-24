@@ -1543,6 +1543,16 @@ export type Database = {
         Args: { _id: string; _kind: string; _note: string; _path: string }
         Returns: string
       }
+      staff_record_evidence_retry: {
+        Args: {
+          _id: string
+          _kind: string
+          _note: string
+          _path: string
+          _request: string
+        }
+        Returns: string
+      }
       staff_scope_matches: {
         Args: {
           _case_department: string
