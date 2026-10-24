@@ -125,7 +125,7 @@ export function buildDemoDataset(args: {
         status = bucket === 'reopened' ? 'reopened' : bucket;
       }
     }
-    if (bucket === 'overdue') acknowledged_at = hoursAgo(now, createdHoursBack - rnd() * target.ack_hours);
+    if (bucket === 'overdue') acknowledged_at = new Date(Math.min(now - 3600000, created + rnd() * target.ack_hours * 3600000)).toISOString();
 
 
     issues.push({
