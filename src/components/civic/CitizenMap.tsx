@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Camera, LocateFixed, MapPin, Loader2, Layers, FlaskConical, X, ArrowRight } from 'lucide-react';
+import { Camera, LocateFixed, MapPin, Loader2, Layers, X, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { BENGALURU, CATEGORIES, OPEN_STATUSES, categoryById, isOverdue, isInIndia } from '@/lib/civic';
 import { useLocation } from '@/lib/location';
@@ -14,7 +14,6 @@ import { getDirectory } from '@/lib/directory.functions';
 import { resolveCivicRouting } from '@/lib/directory';
 import { wardPreviewPoint } from '@/lib/bengaluru-map';
 import { CivicInfo } from './CivicInfo';
-import { WardTestPanel } from './WardTestPanel';
 
 type MapIssue = IssueRow & { duplicate_of: string | null };
 export function CitizenMap() {
@@ -22,7 +21,6 @@ export function CitizenMap() {
   const [category, setCategory] = useState('all');
   const [status, setStatus] = useState('open');
   const [scope, setScope] = useState('all');
-  const [testing, setTesting] = useState(false);
   const [wardPoint, setWardPoint] = useState<{lat: number; lng: number} | null>(null);
   const dir = useQuery({ queryKey: ['civic-directory'], queryFn: () => getDirectory(), staleTime: 300000 });
   const wards = dir.data?.wards ?? [];
@@ -45,8 +43,8 @@ export function CitizenMap() {
   return <div className="relative flex flex-col">
     <div className="border-b bg-background px-4 py-6 sm:px-6">
       <div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-5">
-        <div><p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-primary"><MapPin className="h-3.5 w-3.5" />Bengaluru · Citizen workspace</p><h1 className="text-3xl font-bold sm:text-4xl">CivicFix Bengaluru</h1><p className="mt-2 text-sm text-muted-foreground">Your neighbourhood. Better. Real reports, visible progress.</p></div>
-        <div className="flex flex-wrap gap-2"><Button asChild size="lg"><Link to="/report"><Camera className="h-4 w-4"/>Report a problem<ArrowRight className="h-4 w-4"/></Link></Button><Button variant="outline" onClick={()=>setTesting(!testing)}><FlaskConical className="h-4 w-4"/>Test ward lookup</Button></div>
+        <div><p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-primary"><MapPin className="h-3.5 w-3.5" />Bengaluru · 369 wards</p><h1 className="text-3xl font-bold sm:text-4xl">Civic Map</h1><p className="mt-2 text-sm text-muted-foreground">Local reports, ward boundaries and public case histories.</p></div>
+        <Button asChild size="lg"><Link to="/report"><Camera className="h-4 w-4"/>Report a problem<ArrowRight className="h-4 w-4"/></Link></Button>
       </div>
     </div>
     <div className="flex flex-wrap gap-2 border-b bg-background px-4 py-2 sm:px-6">
@@ -59,18 +57,18 @@ export function CitizenMap() {
     {notice && <p role="status" className="bg-warning-soft px-4 py-2 text-sm text-warning-foreground">{notice}</p>}
     <div className="grid flex-1 lg:grid-cols-[1fr_360px]">
       <div className="relative h-[55dvh] min-h-80 lg:h-[min(70dvh,760px)]">
-        <LazyMap wards={wards} {...(focusWard ? {selectedWard: focusWard.identifier} : {})} onWardSelect={id=>{const w=wards.find(w=>w.identifier===id); const p=w?wardPreviewPoint(w):null; if(p){setWardPoint(p);setTesting(false);setSelected(null);}}} center={BENGALURU} zoom={13} recenter={pin??wardPoint} picked={picking?pin:wardPoint} {...(picking ? {onPick:(lat:number,lng:number)=>setPin({lat,lng})} : {})} markers={list.map(i=>({id:i.id,lat:i.lat,lng:i.lng,tone:['resolved','closed'].includes(i.status)?'resolved':i.severity==='critical'?'critical':isOverdue(i)?'overdue':'open',label:i.title,sub:`${categoryById(i.category).label} · ${i.ref_code}`,href:`/issues/${i.ref_code}`}))} onSelect={setSelected}/>
+        <LazyMap wards={wards} {...(focusWard ? {selectedWard: focusWard.identifier} : {})} onWardSelect={id=>{const w=wards.find(w=>w.identifier===id); const p=w?wardPreviewPoint(w):null; if(p){setWardPoint(p);setSelected(null);}}} center={BENGALURU} zoom={13} recenter={pin??wardPoint} picked={picking?pin:wardPoint} {...(picking ? {onPick:(lat:number,lng:number)=>setPin({lat,lng})} : {})} markers={list.map(i=>({id:i.id,lat:i.lat,lng:i.lng,tone:['resolved','closed'].includes(i.status)?'resolved':i.severity==='critical'?'critical':isOverdue(i)?'overdue':'open',label:i.title,sub:`${categoryById(i.category).label} · ${i.ref_code}`,href:`/issues/${i.ref_code}`}))} onSelect={setSelected}/>
         <div className="pointer-events-none absolute left-14 top-3 z-[500] flex items-center gap-2 rounded-lg border bg-card/95 px-3 py-2 text-xs shadow-soft"><Layers className="h-4 w-4 text-primary" />{wards.length ? `${wards.length} GBA wards · Bengaluru` : 'Loading Bengaluru boundaries…'}</div>
         {picking && <div className="absolute inset-x-3 bottom-4 z-[500] border bg-card p-3 shadow-soft"><p className="text-sm font-semibold">{pin?`${pin.lat.toFixed(5)}, ${pin.lng.toFixed(5)}`:'Place the problem location on the map'}</p>{pin&&!isInIndia(pin.lat,pin.lng)&&<p role="alert" className="text-xs text-destructive">Choose a location within India.</p>}<div className="mt-2 flex gap-2"><Button disabled={!pin||!isInIndia(pin.lat,pin.lng)} onClick={confirmPin}>Confirm location</Button><Button variant="ghost" onClick={()=>setPicking(false)}>Cancel</Button></div></div>}
       </div>
       <aside className="max-h-[min(70dvh,760px)] overflow-y-auto border-t bg-card lg:border-l lg:border-t-0">
-        {testing ? <section className="p-4"><div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Ward & responsibility tests</h2><Button size="icon" variant="ghost" aria-label="Close test preview" onClick={()=>setTesting(false)}><X className="h-4 w-4"/></Button></div><WardTestPanel onLocate={p=>{if(dir.data&&resolveCivicRouting(dir.data,p.lat,p.lng).ward)setWardPoint(p);else setWardPoint(null);}} /></section> : wardPoint ? <section className="p-4"><div className="flex items-center justify-between"><h2 className="font-semibold">{focusWard?.name ?? 'Selected location'}</h2><Button size="icon" variant="ghost" aria-label="Close ward details" onClick={()=>setWardPoint(null)}><X className="h-4 w-4"/></Button></div><CivicInfo lat={wardPoint.lat} lng={wardPoint.lng} {...(category!=='all'?{category}:{})} /></section> : null}
+        {wardPoint ? <section className="p-4"><div className="flex items-center justify-between"><h2 className="font-semibold">{focusWard?.name ?? 'Selected location'}</h2><Button size="icon" variant="ghost" aria-label="Close ward details" onClick={()=>setWardPoint(null)}><X className="h-4 w-4"/></Button></div><CivicInfo lat={wardPoint.lat} lng={wardPoint.lng} {...(category!=='all'?{category}:{})} /></section> : null}
         <div className="border-b p-4"><h2 className="font-semibold">{scope==='nearby'?'Nearby issues':'Reported issues'}</h2><p className="mt-1 text-xs text-muted-foreground">{q.isLoading?'Loading reports…':`${list.length} underlying issues in this view`}</p><div className="mt-3 flex flex-wrap gap-3 text-xs"><span className="text-primary">● Open</span><span className="text-warning-foreground">● Overdue</span><span className="text-destructive">● Critical</span><span className="text-success">● Resolved</span></div></div>
         {q.isError?<div role="alert" className="p-4"><p>Reports could not be loaded.</p><Button variant="outline" onClick={()=>q.refetch()}>Retry</Button></div>:!q.isLoading&&!list.length?<div className="space-y-3 p-4"><h3 className="font-semibold">No matching CivicFix reports yet</h3><p className="text-sm text-muted-foreground">No real submissions match this area and these filters.</p>{!location&&<Button variant="outline" onClick={()=>setOpen(true)}>Choose location</Button>}<Button asChild className="w-full"><Link to="/report"><Camera className="h-4 w-4"/>Report a Problem</Link></Button></div>:null}
         {active && <section className="space-y-3 border-b bg-primary-soft p-4"><StatusBadge status={active.status}/><h3 className="font-semibold">{active.title}</h3>{active.photo_url&&<img src={active.photo_url} alt={active.title} className="aspect-video w-full rounded-lg object-cover"/>}<Button asChild><Link to="/issues/$ref" params={{ref:active.ref_code}}>View issue and history</Link></Button></section>}
         {list.map(i=><Link key={i.id} to="/issues/$ref" params={{ref:i.ref_code}} className="flex gap-3 border-b p-4 hover:bg-secondary">{i.photo_url&&<img src={i.photo_url} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" loading="lazy"/>}<div className="min-w-0 space-y-1"><h3 className="line-clamp-2 text-sm font-semibold">{i.title}</h3><p className="font-mono text-xs text-muted-foreground">{i.ref_code}</p><StatusBadge status={i.status}/></div></Link>)}
         {(q.data?.length??0)>=1000&&<p className="p-4 text-xs text-muted-foreground">Showing the latest 1,000 reports; not a city-wide total.</p>}
-        {!testing && !wardPoint && <WardLeaderboard />}
+        {!wardPoint && <WardLeaderboard />}
       </aside>
     </div>
   </div>;

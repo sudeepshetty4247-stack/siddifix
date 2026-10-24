@@ -107,6 +107,7 @@
   --shadow-lift: 0 2px 4px oklch(0.22 0.04 255 / 0.06), 0 24px 48px -20px oklch(0.22 0.04 255 / 0.25);
   --grid-line: oklch(0.22 0.04 255 / 0.06);
   --map-mask: oklch(0.96 0.006 210);
+  --home-shade: oklch(0.18 0.035 255 / 0.72);
 }
 
 @layer base {
@@ -158,6 +159,10 @@
 .leaflet-container {
   font-family: var(--font-sans);
   background: var(--muted);
+}
+
+.home-photo-shade {
+  background: var(--home-shade);
 }
 
 @media (prefers-reduced-motion: reduce) {
