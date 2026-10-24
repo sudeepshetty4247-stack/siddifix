@@ -57,13 +57,13 @@ describe('recurring issues', () => {
   });
   it('detects a new incident after an earlier resolution', () => {
     const a = c({ created_at: at(10), status: 'resolved', resolved_at: at(20) }), b = c({ created_at: at(40) });
-    const [p] = findRecurringPatterns([a, b], NOW);
+    const p = findRecurringPatterns([a, b], NOW)[0]!;
     expect(p.recurrences).toBe(1);
     expect(p.openNow).toBe(true);
   });
   it('counts reopened issues', () => {
     const a = c({ created_at: at(10), status: 'resolved', resolved_at: at(20) }), b = c({ created_at: at(40), status: 'reopened' });
-    expect(findRecurringPatterns([a, b], NOW)[0].reopened).toBe(1);
+    expect(findRecurringPatterns([a, b], NOW)[0]!.reopened).toBe(1);
   });
   it('nearby but unrelated categories are not clustered', () => {
     const a = c({ created_at: at(10), status: 'resolved', resolved_at: at(20) }), b = c({ created_at: at(40), category: 'garbage' });
@@ -75,7 +75,7 @@ describe('recurring issues', () => {
   it('report counts include linked duplicates without inflating recurrences', () => {
     const a = c({ created_at: at(10), status: 'resolved', resolved_at: at(20) }), b = c({ created_at: at(40) });
     const d1 = c({ created_at: at(40), duplicate_of: b.id }), d2 = c({ created_at: at(41), duplicate_of: b.id });
-    const [p] = findRecurringPatterns([a, b, d1, d2], NOW);
+    const p = findRecurringPatterns([a, b, d1, d2], NOW)[0]!;
     expect(p.recurrences).toBe(1);
     expect(p.reportCount).toBe(4);
   });
@@ -86,13 +86,13 @@ describe('recurring issues', () => {
   });
   it('flags uncertainty when an earlier incident has no recorded resolution', () => {
     const a = c({ created_at: at(10), status: 'resolved', resolved_at: at(20) }), b = c({ created_at: at(40) }), d = c({ created_at: at(45) });
-    expect(findRecurringPatterns([a, b, d], NOW)[0].uncertain).toBe(false);
+    expect(findRecurringPatterns([a, b, d], NOW)[0]!.uncertain).toBe(false);
     const x = c({ created_at: at(5) }), y = c({ created_at: at(10), status: 'resolved', resolved_at: at(20) }), z = c({ created_at: at(40) });
-    expect(findRecurringPatterns([x, y, z], NOW)[0].uncertain).toBe(true);
+    expect(findRecurringPatterns([x, y, z], NOW)[0]!.uncertain).toBe(true);
   });
   it('priority follows the documented formula', () => {
     const a = c({ created_at: at(10), status: 'resolved', resolved_at: at(20), severity: 'high' }), b = c({ created_at: at(40) });
     // incidents-1 = 1, recurrences 2×1 = 2, severity high = 3, open = 3, fast return (20 days) = 2
-    expect(findRecurringPatterns([a, b], NOW)[0].priority).toBe(11);
+    expect(findRecurringPatterns([a, b], NOW)[0]!.priority).toBe(11);
   });
 });
