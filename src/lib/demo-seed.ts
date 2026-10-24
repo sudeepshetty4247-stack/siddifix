@@ -70,10 +70,10 @@ export function buildDemoDataset(args: {
   datasetId: string; count: number; now?: number;
   wards: DemoWard[]; teams: DemoTeam[]; staff: DemoStaff[]; targets: DemoTarget[];
   categories: { id: string; subs: string[] }[];
-  photos?: string[];
+  photos?: Record<string, string[]>;
 }): DemoDataset {
   const { datasetId, count, wards, teams, staff, targets, categories } = args;
-  const photos = args.photos ?? [];
+  const photos = args.photos ?? {};
   const now = args.now ?? Date.now();
   const rnd = mulberry32(datasetSeed(datasetId));
   const issues: DemoIssue[] = [];
