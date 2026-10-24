@@ -45,7 +45,6 @@ function CitizenShell() {
               </Link>
             ))}
           </nav>
-          <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex"><Link to="/authorities">Authorities</Link></Button>
           <div className="ml-auto flex items-center gap-2">
             <label className="relative hidden items-center sm:flex">
               <Globe className="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground" />
@@ -74,7 +73,6 @@ function CitizenShell() {
               </Link>
             ))}
             <div className="flex gap-2 px-3 py-3">
-              <Button asChild variant="outline"><Link to="/authorities" onClick={() => setOpen(false)}>Authorities</Link></Button>
               {LANGS.map((l) => (
                 <button key={l.id} onClick={() => setLang(l.id)} className={cn("rounded-full border px-3 py-1 text-sm", lang === l.id && "border-primary bg-primary-soft text-primary")}>{l.label}</button>
               ))}
@@ -98,7 +96,6 @@ function CitizenShell() {
               <Link to="/report" className="block text-muted-foreground hover:text-foreground">Report an issue</Link>
               <Link to="/map" className="block text-muted-foreground hover:text-foreground">Civic map</Link>
               <Link to="/track" className="block text-muted-foreground hover:text-foreground">Track a report</Link>
-              <Link to="/authorities" className="block text-muted-foreground hover:text-foreground">Authorities & contacts</Link>
             </div>
             <div className="space-y-2">
               <p className="font-semibold">Officials</p>

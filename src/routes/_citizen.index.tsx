@@ -10,7 +10,6 @@ import { useLocation } from "@/lib/location";
 import { getDirectory } from "@/lib/directory.functions";
 import { resolveCivicRouting } from "@/lib/directory";
 import { IssueCard, ISSUE_COLUMNS, type IssueRow } from "@/components/civic/IssueCard";
-import { AuthorityDirectory } from "@/components/civic/AuthorityDirectory";
 
 export const Route = createFileRoute("/_citizen/")({
   head: () => ({
@@ -86,7 +85,6 @@ function Home() {
           <div className="relative min-h-36 overflow-hidden rounded-lg"><img src={heroImg} alt="Damaged paving on a Bengaluru street" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-x-0 bottom-0 bg-ink/90 px-3 py-2 text-xs text-ink-foreground">A photo. A confirmed location. A public record.</div></div>
         </div>
       </section>
-      <AuthorityDirectory compact />
       {/* Recent */}
       <section className="border-y bg-card/60">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">

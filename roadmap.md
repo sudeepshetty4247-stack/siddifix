@@ -15,6 +15,8 @@
 - [x] Manifest-only home-screen support (PWA skill); desktop/phone layout and anonymous submit/read-back verified; 6 tests pass
 
 ## Remaining release work
+- [ ] Audit mandatory duplicate review/merge, assignment lifecycle, queues, tracking, analytics, notifications and resolution evidence before implementation
+- [ ] Replace standalone citizen authority directory with integrated case responsibility details and internal actions
 - [x] Current request: public Bengaluru authority directory, searchable service contacts, GBA chief commissioner and 1533 official contact, responsibility chain; CivicFix-only case totals retained; search/filter and phone layout verified
 - [ ] Address lookup integration: blocked on a suitable anonymous-citizen geocoding service configuration
 - [ ] Current official ward boundaries and representative sources: not obtained; no legal jurisdiction claim until verified/imported

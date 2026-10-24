@@ -21,4 +21,4 @@
 - Citizen location preferences are provided by LocationProvider across the citizen layout and stored locally, not continuously tracked.
 - Anonymous submission persists the report, recovery secret and creation event through the service-only create_civic_report transaction; retries never return existing recovery credentials.
 - Home-screen installability uses a manifest and icons only; no app-shell service worker is registered, preserving fresh previews.
-- Public authority cards share the protected civic directory data on home and the authority page, so contact corrections apply consistently across both surfaces.
+- Case-local civic information reads the protected civic directory; the standalone citizen authority directory has been removed to keep reporting and case work integrated.
