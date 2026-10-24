@@ -1184,6 +1184,19 @@ export type Database = {
         Args: { _allow: boolean; _user: string }
         Returns: undefined
       }
+      admin_set_full_staff_scope: {
+        Args: {
+          _categories: string[]
+          _corporations: string[]
+          _department: string
+          _designation: string
+          _name: string
+          _teams: string[]
+          _user: string
+          _wards: string[]
+        }
+        Returns: undefined
+      }
       admin_set_staff_profile: {
         Args: {
           _categories: string[]
@@ -1254,6 +1267,14 @@ export type Database = {
         Args: { _report: Json; _token: string }
         Returns: Json
       }
+      eligible_case_handlers: {
+        Args: { _issue: string }
+        Returns: {
+          designation: string
+          display_name: string
+          user_id: string
+        }[]
+      }
       escalate_overdue_issues: { Args: never; Returns: number }
       has_role: {
         Args: {
@@ -1311,6 +1332,10 @@ export type Database = {
       staff_actor_label: { Args: { _user_id: string }; Returns: string }
       staff_add_note: {
         Args: { _issue: string; _note: string }
+        Returns: undefined
+      }
+      staff_assign_handler: {
+        Args: { _handler: string; _issue: string; _reason: string }
         Returns: undefined
       }
       staff_assign_team: {
