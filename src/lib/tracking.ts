@@ -11,9 +11,10 @@ export function getTracked(): TrackedIssue[] {
   }
 }
 export function saveTracked(item: TrackedIssue) {
+  const previous = getTracked().find(i => i.ref === item.ref);
   const list = getTracked().filter((i) => i.ref !== item.ref);
-  list.unshift(item);
-  localStorage.setItem(KEY, JSON.stringify(list.slice(0, 100)));
+  list.unshift({ ...item, token: item.token ?? previous?.token });
+  try { localStorage.setItem(KEY, JSON.stringify(list.slice(0, 100))); } catch { /* The reference and private link remain available on screen. */ }
 }
 export function removeTracked(ref: string) {
   localStorage.setItem(KEY, JSON.stringify(getTracked().filter((i) => i.ref !== ref)));
