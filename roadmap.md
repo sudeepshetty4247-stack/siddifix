@@ -1,6 +1,7 @@
 # CivicFix roadmap
 
 ## Current priority — simplify and complete the real product
+- [x] NammaKasa-style simplicity rebuild (Home kept as Vidhana Soudha photo page): full-screen map-first Civic Map with floating Active/Reports pill, severity/status/category filters, Map/List toggle, per-ward red count bubbles, ward bottom sheet with Know-your-ward, bottom Report-a-Problem bar; camera-first report entry with LOCATION LOCKED ward overlay; issue page severity·status header with age line; Explore gained resolution-bar ward leaderboard. 48 tests passed, build OK, browser-checked.
 - [x] Address search (e.g. Kudlu Gate) and place names work; every ward shows assembly/Lok Sabha constituency, MLA (2023) and MP (2024) from Election Commission results; corporator shown as not in office. Officer names/photos still need a current official roster.
 - [x] Restored the previous map-free Vidhana Soudha Home and its existing photo; latest direct preference overrides map-first brief.
 - [x] Short photo/location/submit flow, private original preservation, separate annotated copy and operational-first verified-profile presentation implemented; anonymous gallery submit and public case read-back verified, 48 regression tests passed. Latest direct request keeps Vidhana Soudha Home map-free.
