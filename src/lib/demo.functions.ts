@@ -193,7 +193,7 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
     }
 
     const categories = CATEGORIES.filter(c => routes.some(r => r.category === c.id)).map(c => ({ id: c.id, subs: [...c.subs] }));
-    const dataset = buildDemoDataset({ datasetId: data.datasetId, count: data.count, wards, teams, staff, targets: targetsR.data ?? [], categories, photos: data.photos });
+    const dataset = buildDemoDataset({ datasetId: data.datasetId, count: data.count, wards, teams, staff, targets: targetsR.data ?? [], categories, photos: DEMO_PHOTOS });
     const slice = dataset.issues.slice(data.offset, data.offset + data.limit);
     const sliceIndexes = dataset.issues.map((_, i) => i).slice(data.offset, data.offset + data.limit);
     const inSlice = new Set(sliceIndexes);
