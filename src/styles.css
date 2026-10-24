@@ -206,3 +206,10 @@ progress { appearance: none; background: var(--secondary); border: 0; border-rad
 progress::-webkit-progress-bar { background: var(--secondary); }
 progress::-webkit-progress-value { background: var(--primary); }
 progress::-moz-progress-bar { background: var(--primary); }
+
+@utility text-brand-gradient {
+  background-image: linear-gradient(100deg, var(--primary) 0%, oklch(0.62 0.13 175) 45%, var(--warning) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
