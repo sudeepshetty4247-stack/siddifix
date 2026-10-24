@@ -5,8 +5,8 @@ import { Logo } from "@/components/civic/Logo";
 import { useI18n, LANGS, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { LocationProvider } from "@/lib/location";
-import { LocationSelector } from "@/components/civic/LocationSelector";
 import { Button } from "@/components/ui/button";
+
 
 export const Route = createFileRoute("/_citizen")({
   component: CitizenLayout,
@@ -31,8 +31,8 @@ function CitizenShell() {
       <header className="sticky top-0 z-[1000] border-b bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center gap-2 px-4 py-2 sm:gap-4 sm:px-6">
           <Logo />
-          <div className="order-3 w-full border-t pt-1 sm:order-none sm:w-auto sm:border-0 sm:pt-0"><LocationSelector /></div>
           <nav className="hidden items-center gap-1 lg:flex">
+
             {NAV.map((n) => (
               <Link
                 key={n.to}
