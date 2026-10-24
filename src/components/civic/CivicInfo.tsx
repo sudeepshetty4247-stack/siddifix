@@ -27,17 +27,20 @@ export function CivicInfo({ lat, lng, category, subcategory, snapshot }: { lat: 
   const changed = recordedWard && ward && (recordedWard.identifier !== ward.identifier || recordedWard.corporation !== ward.corporation);
   return <section className="space-y-4 border-t py-5">
     <h2 className="flex items-center gap-2 text-lg font-semibold"><Building2 className="h-5 w-5 text-primary" />Responsibility chain</h2>
+    {routing.reviewReason && <p role="status" className="text-sm text-warning-foreground">{routing.reviewReason}</p>}
     {dir.data.wards.length === 0 && <p className="text-sm text-muted-foreground">Ward records haven't been loaded into CivicFix yet. Staff will add them shortly.</p>}
     {dir.data.wards.length > 0 && !ward && <p className="text-sm text-muted-foreground">This location is outside the Greater Bengaluru wards on record. You can still report and track it here.</p>}
     {changed && <p className="rounded-lg bg-muted p-2 text-xs">When reported, this case was recorded in ward {recordedWard.ward_number ?? ''} {recordedWard.name} ({recordedWard.corporation}). Showing the latest directory below.</p>}
     {ward && <ol>
       <Step icon={<MapPin className="h-4 w-4" />} label={`Ward ${ward.ward_number ?? ward.identifier}`} title={<>{ward.name}{ward.name_kn && <span className="ml-1.5 font-normal text-muted-foreground">· {ward.name_kn}</span>}{ward.verification_status !== 'verified' && <Needs />}</>}>
         <p className="text-xs text-muted-foreground">{[ward.zone && `Zone ${ward.zone}`, ward.population && `Population ${ward.population.toLocaleString('en-IN')} (delimitation data)`].filter(Boolean).join(' · ')}</p>
+        {!ward.zone && <p className="text-xs text-warning-foreground">Zone not verified — manual review required.</p>}
+        <p className="mt-1 text-xs text-muted-foreground">Published snapshot: {ward.source_published_at ?? 'Unknown'} · Source checked: {ward.source_checked_at?.slice(0, 10) ?? ward.verified_at}. Current jurisdiction requires review.</p>
       </Step>
       <Step icon={<Landmark className="h-4 w-4" />} label="City corporation" title={ward.corporation}><p className="text-xs text-muted-foreground">Under the Greater Bengaluru Authority.</p></Step>
       {route && <>
         <Step icon={<Inbox className="h-4 w-4" />} label="Receives complaints (indicative)" title={<>{route.receiving_office}{route.verification_status !== 'verified' && <Needs />}</>}>
-          {route.contact_phone && <Call n={route.contact_phone} label={route.contact_label} />}
+          {route.verification_status === 'verified' && route.contact_phone && <Call n={route.contact_phone} label={route.contact_label} />}
           <p className="mt-1 text-[11px] text-muted-foreground">A helpline is a contact option; CivicFix is not connected to it.</p>
         </Step>
         <Step icon={<Wrench className="h-4 w-4" />} label="Fixes the problem (indicative)" title={route.fixing_team}>
@@ -47,7 +50,7 @@ export function CivicInfo({ lat, lng, category, subcategory, snapshot }: { lat: 
       </>}
       <Step icon={<UserRound className="h-4 w-4" />} label={`MLA${ward.assembly ? ` · ${ward.assembly_no} ${ward.assembly}` : ''}`} title={ward.representative_status === 'verified' && ward.mla ? <>{ward.mla} <span className="font-normal text-muted-foreground">({ward.mla_party})</span></> : <Needs />} />
       <Step icon={<Users className="h-4 w-4" />} label={`MP${ward.lok_sabha ? ` · ${ward.lok_sabha}` : ''}`} title={ward.representative_status === 'verified' && ward.mp ? ward.mp : <Needs />} />
-      <Step last icon={<UserRound className="h-4 w-4" />} label="Ward corporator" title={ward.representative ?? 'No elected corporator on record'} />
+      <Step last icon={<UserRound className="h-4 w-4" />} label="Ward corporator" title={ward.representative_status === 'verified' && ward.representative ? ward.representative : <Needs />} />
     </ol>}
     {ward && <p className="flex items-start gap-1 text-[11px] text-muted-foreground"><ShieldCheck className="mt-0.5 h-3 w-3 shrink-0" /><span>Ward boundary: <a className="text-primary" href={ward.source_url} target="_blank" rel="noopener noreferrer">official delimitation data</a>{ward.representative_source_url && <> · Representatives: <a className="text-primary" href={ward.representative_source_url} target="_blank" rel="noopener noreferrer">Election Commission</a></>}</span></p>}
     <p className="text-xs text-muted-foreground">Authority names are indicative. CivicFix manages this case itself; these offices have not accepted it unless the history shows so.</p>

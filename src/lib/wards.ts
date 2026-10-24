@@ -7,7 +7,7 @@ export type WardFileProps = {
   ac_no: number; ac: string; mla: string; mla_party: string; ls: string; mp: string; population: number;
   official_name: string | null; flags: string[];
 };
-export type WardFile = { source: string; notified: string; representatives_source: string; features: { geometry: unknown; properties: WardFileProps }[] };
+export type WardFile = { source: string; notified: string; checked_at?: string; sha256?: string; representatives_source: string; features: { geometry: unknown; properties: WardFileProps }[] };
 
 export const WARD_SOURCE_URL = 'https://data.opencity.in/dataset/gba-wards-delimitation-2025';
 export const CORPORATIONS = ['Central', 'East', 'North', 'South', 'West'].map(c => `Bengaluru ${c} City Corporation`);
@@ -40,10 +40,10 @@ export function fileToRows(file: WardFile) {
   return file.features.map(({ geometry, properties: p }) => ({
     coverage_id: 'bengaluru', identifier: p.id, name: p.name, name_kn: p.name_kn, official_name: p.official_name,
     corporation: p.corporation, zone: p.zone, ward_number: p.no, boundary: geometry as never,
-    source_url: file.source, verified_at: '2025-11-19', population: p.population,
+    source_url: file.source, verified_at: file.checked_at?.slice(0, 10) ?? file.notified, source_published_at: file.notified, source_checked_at: file.checked_at ?? null, source_sha256: file.sha256 ?? null, population: p.population,
     assembly_no: p.ac_no, assembly: p.ac,
     // Names are recorded as candidates; they stay "verification required" until staff confirm them against ECI.
-    mla: p.mla, mla_party: p.mla_party, lok_sabha: p.ls, mp: p.mp, representative_source_url: 'https://results.eci.gov.in/',
+    mla: null, mla_party: null, lok_sabha: p.ls || null, mp: null, representative_source_url: null,
     representative_status: 'verification_required',
     verification_status: p.flags.length ? 'flagged' : 'verification_required',
     flags: p.flags,
