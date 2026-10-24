@@ -25,8 +25,14 @@ import { Route as CitizenReportRouteImport } from './routes/_citizen.report'
 import { Route as CitizenTrackRouteImport } from './routes/_citizen.track'
 import { Route as CitizenTransparencyRouteImport } from './routes/_citizen.transparency'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as AuthenticatedAdminDirectoryRouteImport } from './routes/_authenticated/admin.directory'
+import { Route as AuthenticatedAdminInsightsRouteImport } from './routes/_authenticated/admin.insights'
+import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin.notifications'
+import { Route as AuthenticatedAdminOverdueRouteImport } from './routes/_authenticated/admin.overdue'
+import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
+import { Route as AuthenticatedAdminRoutingRouteImport } from './routes/_authenticated/admin.routing'
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
 import { Route as AuthenticatedAdminTargetsRouteImport } from './routes/_authenticated/admin.targets'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
@@ -41,6 +47,7 @@ import { Route as AuthenticatedStaffRoutingRouteImport } from './routes/_authent
 import { Route as AuthenticatedStaffTargetsRouteImport } from './routes/_authenticated/staff.targets'
 import { Route as AuthenticatedStaffTeamRouteImport } from './routes/_authenticated/staff.team'
 import { Route as CitizenIssuesRefRouteImport } from './routes/_citizen.issues.$ref'
+import { Route as AuthenticatedAdminIssuesIdRouteImport } from './routes/_authenticated/admin.issues.$id'
 import { Route as AuthenticatedStaffIssuesIdRouteImport } from './routes/_authenticated/staff.issues.$id'
 import { Route as ApiPublicJobsEscalateOverdueRouteImport } from './routes/api/public/jobs/escalate-overdue'
 
@@ -122,6 +129,11 @@ const ApiAssistantRoute = ApiAssistantRouteImport.update({
   path: '/api/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -131,6 +143,36 @@ const AuthenticatedAdminDirectoryRoute =
   AuthenticatedAdminDirectoryRouteImport.update({
     id: '/directory',
     path: '/directory',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminInsightsRoute =
+  AuthenticatedAdminInsightsRouteImport.update({
+    id: '/insights',
+    path: '/insights',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminNotificationsRoute =
+  AuthenticatedAdminNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminOverdueRoute =
+  AuthenticatedAdminOverdueRouteImport.update({
+    id: '/overdue',
+    path: '/overdue',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminReportsRoute =
+  AuthenticatedAdminReportsRouteImport.update({
+    id: '/reports',
+    path: '/reports',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminRoutingRoute =
+  AuthenticatedAdminRoutingRouteImport.update({
+    id: '/routing',
+    path: '/routing',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminStaffRoute = AuthenticatedAdminStaffRouteImport.update({
@@ -210,6 +252,12 @@ const CitizenIssuesRefRoute = CitizenIssuesRefRouteImport.update({
   path: '/issues/$ref',
   getParentRoute: () => CitizenRoute,
 } as any)
+const AuthenticatedAdminIssuesIdRoute =
+  AuthenticatedAdminIssuesIdRouteImport.update({
+    id: '/issues/$id',
+    path: '/issues/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedStaffIssuesIdRoute =
   AuthenticatedStaffIssuesIdRouteImport.update({
     id: '/issues/$id',
@@ -240,6 +288,11 @@ export interface FileRoutesByFullPath {
   '/api/assistant': typeof ApiAssistantRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
+  '/admin/insights': typeof AuthenticatedAdminInsightsRoute
+  '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/overdue': typeof AuthenticatedAdminOverdueRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/admin/routing': typeof AuthenticatedAdminRoutingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/targets': typeof AuthenticatedAdminTargetsRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
@@ -253,7 +306,9 @@ export interface FileRoutesByFullPath {
   '/staff/targets': typeof AuthenticatedStaffTargetsRoute
   '/staff/team': typeof AuthenticatedStaffTeamRoute
   '/issues/$ref': typeof CitizenIssuesRefRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/staff/': typeof AuthenticatedStaffIndexRoute
+  '/admin/issues/$id': typeof AuthenticatedAdminIssuesIdRoute
   '/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
   '/api/public/jobs/escalate-overdue': typeof ApiPublicJobsEscalateOverdueRoute
 }
@@ -263,7 +318,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/staff-login': typeof StaffLoginRoute
-  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/assistant': typeof CitizenAssistantRoute
   '/explore': typeof CitizenExploreRoute
   '/map': typeof CitizenMapRoute
@@ -273,6 +327,11 @@ export interface FileRoutesByTo {
   '/api/assistant': typeof ApiAssistantRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/directory': typeof AuthenticatedAdminDirectoryRoute
+  '/admin/insights': typeof AuthenticatedAdminInsightsRoute
+  '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/overdue': typeof AuthenticatedAdminOverdueRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/admin/routing': typeof AuthenticatedAdminRoutingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/targets': typeof AuthenticatedAdminTargetsRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
@@ -286,7 +345,9 @@ export interface FileRoutesByTo {
   '/staff/targets': typeof AuthenticatedStaffTargetsRoute
   '/staff/team': typeof AuthenticatedStaffTeamRoute
   '/issues/$ref': typeof CitizenIssuesRefRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/staff': typeof AuthenticatedStaffIndexRoute
+  '/admin/issues/$id': typeof AuthenticatedAdminIssuesIdRoute
   '/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
   '/api/public/jobs/escalate-overdue': typeof ApiPublicJobsEscalateOverdueRoute
 }
@@ -310,6 +371,11 @@ export interface FileRoutesById {
   '/_citizen/': typeof CitizenIndexRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/directory': typeof AuthenticatedAdminDirectoryRoute
+  '/_authenticated/admin/insights': typeof AuthenticatedAdminInsightsRoute
+  '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/_authenticated/admin/overdue': typeof AuthenticatedAdminOverdueRoute
+  '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/_authenticated/admin/routing': typeof AuthenticatedAdminRoutingRoute
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/_authenticated/admin/targets': typeof AuthenticatedAdminTargetsRoute
   '/_authenticated/staff/audit': typeof AuthenticatedStaffAuditRoute
@@ -323,7 +389,9 @@ export interface FileRoutesById {
   '/_authenticated/staff/targets': typeof AuthenticatedStaffTargetsRoute
   '/_authenticated/staff/team': typeof AuthenticatedStaffTeamRoute
   '/_citizen/issues/$ref': typeof CitizenIssuesRefRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/staff/': typeof AuthenticatedStaffIndexRoute
+  '/_authenticated/admin/issues/$id': typeof AuthenticatedAdminIssuesIdRoute
   '/_authenticated/staff/issues/$id': typeof AuthenticatedStaffIssuesIdRoute
   '/api/public/jobs/escalate-overdue': typeof ApiPublicJobsEscalateOverdueRoute
 }
@@ -346,6 +414,11 @@ export interface FileRouteTypes {
     | '/api/assistant'
     | '/admin/audit'
     | '/admin/directory'
+    | '/admin/insights'
+    | '/admin/notifications'
+    | '/admin/overdue'
+    | '/admin/reports'
+    | '/admin/routing'
     | '/admin/staff'
     | '/admin/targets'
     | '/staff/audit'
@@ -359,7 +432,9 @@ export interface FileRouteTypes {
     | '/staff/targets'
     | '/staff/team'
     | '/issues/$ref'
+    | '/admin/'
     | '/staff/'
+    | '/admin/issues/$id'
     | '/staff/issues/$id'
     | '/api/public/jobs/escalate-overdue'
   fileRoutesByTo: FileRoutesByTo
@@ -369,7 +444,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/staff-login'
-    | '/admin'
     | '/assistant'
     | '/explore'
     | '/map'
@@ -379,6 +453,11 @@ export interface FileRouteTypes {
     | '/api/assistant'
     | '/admin/audit'
     | '/admin/directory'
+    | '/admin/insights'
+    | '/admin/notifications'
+    | '/admin/overdue'
+    | '/admin/reports'
+    | '/admin/routing'
     | '/admin/staff'
     | '/admin/targets'
     | '/staff/audit'
@@ -392,7 +471,9 @@ export interface FileRouteTypes {
     | '/staff/targets'
     | '/staff/team'
     | '/issues/$ref'
+    | '/admin'
     | '/staff'
+    | '/admin/issues/$id'
     | '/staff/issues/$id'
     | '/api/public/jobs/escalate-overdue'
   id:
@@ -415,6 +496,11 @@ export interface FileRouteTypes {
     | '/_citizen/'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/directory'
+    | '/_authenticated/admin/insights'
+    | '/_authenticated/admin/notifications'
+    | '/_authenticated/admin/overdue'
+    | '/_authenticated/admin/reports'
+    | '/_authenticated/admin/routing'
     | '/_authenticated/admin/staff'
     | '/_authenticated/admin/targets'
     | '/_authenticated/staff/audit'
@@ -428,7 +514,9 @@ export interface FileRouteTypes {
     | '/_authenticated/staff/targets'
     | '/_authenticated/staff/team'
     | '/_citizen/issues/$ref'
+    | '/_authenticated/admin/'
     | '/_authenticated/staff/'
+    | '/_authenticated/admin/issues/$id'
     | '/_authenticated/staff/issues/$id'
     | '/api/public/jobs/escalate-overdue'
   fileRoutesById: FileRoutesById
@@ -558,6 +646,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/audit': {
       id: '/_authenticated/admin/audit'
       path: '/audit'
@@ -570,6 +665,41 @@ declare module '@tanstack/react-router' {
       path: '/directory'
       fullPath: '/admin/directory'
       preLoaderRoute: typeof AuthenticatedAdminDirectoryRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/insights': {
+      id: '/_authenticated/admin/insights'
+      path: '/insights'
+      fullPath: '/admin/insights'
+      preLoaderRoute: typeof AuthenticatedAdminInsightsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/notifications': {
+      id: '/_authenticated/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AuthenticatedAdminNotificationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/overdue': {
+      id: '/_authenticated/admin/overdue'
+      path: '/overdue'
+      fullPath: '/admin/overdue'
+      preLoaderRoute: typeof AuthenticatedAdminOverdueRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/reports': {
+      id: '/_authenticated/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/routing': {
+      id: '/_authenticated/admin/routing'
+      path: '/routing'
+      fullPath: '/admin/routing'
+      preLoaderRoute: typeof AuthenticatedAdminRoutingRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/staff': {
@@ -670,6 +800,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CitizenIssuesRefRouteImport
       parentRoute: typeof CitizenRoute
     }
+    '/_authenticated/admin/issues/$id': {
+      id: '/_authenticated/admin/issues/$id'
+      path: '/issues/$id'
+      fullPath: '/admin/issues/$id'
+      preLoaderRoute: typeof AuthenticatedAdminIssuesIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/staff/issues/$id': {
       id: '/_authenticated/staff/issues/$id'
       path: '/issues/$id'
@@ -690,15 +827,29 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminDirectoryRoute: typeof AuthenticatedAdminDirectoryRoute
+  AuthenticatedAdminInsightsRoute: typeof AuthenticatedAdminInsightsRoute
+  AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
+  AuthenticatedAdminOverdueRoute: typeof AuthenticatedAdminOverdueRoute
+  AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
+  AuthenticatedAdminRoutingRoute: typeof AuthenticatedAdminRoutingRoute
   AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
   AuthenticatedAdminTargetsRoute: typeof AuthenticatedAdminTargetsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminIssuesIdRoute: typeof AuthenticatedAdminIssuesIdRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
   AuthenticatedAdminDirectoryRoute: AuthenticatedAdminDirectoryRoute,
+  AuthenticatedAdminInsightsRoute: AuthenticatedAdminInsightsRoute,
+  AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
+  AuthenticatedAdminOverdueRoute: AuthenticatedAdminOverdueRoute,
+  AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
+  AuthenticatedAdminRoutingRoute: AuthenticatedAdminRoutingRoute,
   AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
   AuthenticatedAdminTargetsRoute: AuthenticatedAdminTargetsRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminIssuesIdRoute: AuthenticatedAdminIssuesIdRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =

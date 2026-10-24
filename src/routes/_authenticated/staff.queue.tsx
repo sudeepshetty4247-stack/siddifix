@@ -8,10 +8,12 @@ import { StatusBadge, SeverityTag } from "@/components/civic/StatusBadge";
 import { staffQueue } from "@/lib/staff-queue.functions";
 import { listTeams } from "@/lib/teams.functions";
 import { getDirectory } from "@/lib/directory.functions";
+import { useRoles } from "./staff";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/staff/queue")({
   head: () => ({ meta: [{ title: "Staff issue queue — Siddi" }, { name: "description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:title", content: "Staff issue queue — Siddi" }, { property: "og:description", content: "Search and filter civic reports awaiting review or action." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({ metric: typeof s.metric === "string" ? s.metric : undefined }),
   component: Queue,
 });
 
@@ -19,14 +21,18 @@ const VIEWS = ["open", "unassigned", "assigned", "rejected assignments", "overdu
 
 function Queue() {
   const navigate = useNavigate();
+  const metric = Route.useSearch().metric;
+  const access = useRoles();
+  const listTeamsFn = useServerFn(listTeams);
+  const directoryFn = useServerFn(getDirectory);
   const runQueue = useServerFn(staffQueue);
-  const [view, setView] = useState<(typeof VIEWS)[number]>("open");
+  const [view, setView] = useState<(typeof VIEWS)[number]>(metric === "resolved" ? "resolved" : metric === "overdue" ? "overdue" : metric === "duplicate_reviews" ? "duplicate candidates" : metric === "unassigned" ? "unassigned" : "open");
   const [cat, setCat] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(metric === "in_progress" ? "in_progress" : metric === "awaiting_review" ? "awaiting_verification" : metric === "reopened" ? "reopened" : "");
   const [sev, setSev] = useState("");
   const [team, setTeam] = useState("");
   const [ward, setWard] = useState("");
-  const [ack, setAck] = useState("");
+  const [ack, setAck] = useState(metric === "awaiting_ack" ? "unacknowledged" : "");
   const [search, setSearch] = useState("");
 
   // Every filter is applied in the database; field workers only ever receive
@@ -46,17 +52,17 @@ function Queue() {
           search: search || null,
         },
       }),
-    refetchInterval: 30_000,
+    refetchInterval: 15_000,
   });
 
-  const teams = useQuery({ queryKey: ["staff-teams"], queryFn: () => useServerFn(listTeams)(), staleTime: 60_000 });
-  const directory = useQuery({ queryKey: ["directory"], queryFn: () => useServerFn(getDirectory)(), staleTime: 300_000 });
+  const teams = useQuery({ queryKey: ["staff-teams"], queryFn: () => listTeamsFn(), staleTime: 60_000 });
+  const directory = useQuery({ queryKey: ["directory"], queryFn: () => directoryFn(), staleTime: 300_000 });
   const wards = (directory.data?.wards ?? []).filter((w) => w.active).map((w) => ({ id: w.identifier, label: `${w.name} (${w.ward_number ?? "—"})` }));
 
   const rows = (q.data ?? []).filter((i) => {
     if (view === "duplicate candidates" && !i.duplicate_candidate_id) return false;
     if (view === "open" && !OPEN_STATUSES.includes(i.status as never)) return false;
-    if (view === "unassigned" && (i.authority_id || !OPEN_STATUSES.includes(i.status as never))) return false;
+    if (view === "unassigned" && (i.team_id || !OPEN_STATUSES.includes(i.status as never))) return false;
     if (view === "assigned" && !i.authority_id && !i.team_id) return false;
     if (view === "rejected assignments" && i.assignment_state !== "rejected") return false;
     if (view === "escalated" && !i.escalated_at) return false;
@@ -84,7 +90,7 @@ function Queue() {
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search title, reference, landmark" className="h-10 w-full rounded-lg border bg-card pl-9 pr-3 text-sm" />
         </div>
-        <select className={sel} value={cat} onChange={(e) => setCat(e.target.value)}><option value="">All categories</option>{CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
+        <select className={sel} value={cat} onChange={(e) => setCat(e.target.value)}><option value="">Authorized categories</option>{CATEGORIES.filter(c => access.data?.roles.includes("admin") || access.data?.profile?.categories.includes(c.id)).map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select>
         <select className={sel} value={status} onChange={(e) => setStatus(e.target.value)}><option value="">Any status</option>{STATUSES.map((s) => <option key={s} value={s}>{STATUS_META[s].label}</option>)}</select>
         <select className={sel} value={sev} onChange={(e) => setSev(e.target.value)}><option value="">Any severity</option>{SEVERITIES.map((s) => <option key={s} value={s}>{SEVERITY_META[s].label}</option>)}</select>
         <select className={sel} value={team} onChange={(e) => setTeam(e.target.value)}><option value="">Any team</option>{(teams.data ?? []).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select>
