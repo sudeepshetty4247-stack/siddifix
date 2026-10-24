@@ -64,6 +64,13 @@
       "when": 1792830191433,
       "tag": "0008_civic_source_freshness",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792834971506,
+      "tag": "0009_nearby_citizen_case_summary",
+      "breakpoints": true
     }
   ]
 }
