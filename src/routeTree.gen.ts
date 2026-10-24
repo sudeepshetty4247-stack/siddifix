@@ -9,50 +9,74 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as CitizenRouteImport } from './routes/_citizen'
+import { Route as CitizenIndexRouteImport } from './routes/_citizen.index'
 
-const IndexRoute = IndexRouteImport.update({
+const CitizenRoute = CitizenRouteImport.update({
+  id: '/_citizen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CitizenIndexRoute = CitizenIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => CitizenRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof CitizenIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof CitizenIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_citizen': typeof CitizenRouteWithChildren
+  '/_citizen/': typeof CitizenIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
   to: '/'
-  id: '__root__' | '/'
+  id: '__root__' | '/_citizen' | '/_citizen/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  CitizenRoute: typeof CitizenRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_citizen': {
+      id: '/_citizen'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof CitizenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_citizen/': {
+      id: '/_citizen/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof CitizenIndexRouteImport
+      parentRoute: typeof CitizenRoute
     }
   }
 }
 
+interface CitizenRouteChildren {
+  CitizenIndexRoute: typeof CitizenIndexRoute
+}
+
+const CitizenRouteChildren: CitizenRouteChildren = {
+  CitizenIndexRoute: CitizenIndexRoute,
+}
+
+const CitizenRouteWithChildren =
+  CitizenRoute._addFileChildren(CitizenRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  CitizenRoute: CitizenRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
