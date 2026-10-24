@@ -27,4 +27,6 @@
 - Citizen-suggested duplicates are persisted as candidates, not merges; staff review exclusively controls canonical linking to preserve uncertain originals.
 - Completion and inspection photos use separate issue_evidence records in private storage, staff-authorized atomic event writes, and short-lived public-safe signed projections; a database trigger requires completion evidence before resolution.
 - Report locations require explicit confirmation after a suggested GPS/manual point; low-accuracy GPS is not suggested, and gallery photos never establish their capture location.
+- Confirmed coordinates use hosted Nominatim only for optional address labels; no donated public geocoder fallback. Ward matching is independent, uses published boundaries, and overlapping/shared edges require manual review.
+- Ward import sources retain publication date, source-check time and SHA256 separately; verified snapshot provenance does not establish current asset ownership or verify department contacts.
 - Ward, department-route and representative records are admin-editable rows in civic_wards / civic_department_routes with trigger-written civic_directory_audit; public/data/bengaluru-wards.json is only the official import source. Cases keep the ward recorded at submission in routing_snapshot.

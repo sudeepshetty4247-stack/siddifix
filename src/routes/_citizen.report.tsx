@@ -15,6 +15,7 @@ import { useLocation } from "@/lib/location";
 import { CivicInfo } from "@/components/civic/CivicInfo";
 import { Button } from "@/components/ui/button";
 import { suggestedReportLocation } from "@/lib/report-location";
+import { reverseGeocode } from "@/lib/geocoding.functions";
 
 export const Route = createFileRoute("/_citizen/report")({
   head: () => ({
@@ -76,6 +77,17 @@ function ReportPage() {
   const analyze = useServerFn(analyzeIssue);
   const submit = useServerFn(submitIssue);
   const analysisRun = useRef(0);
+  const geocode = useServerFn(reverseGeocode);
+  const [addressResult, setAddressResult] = useState<Awaited<ReturnType<typeof reverseGeocode>> | null>(null);
+  const [addressLoading, setAddressLoading] = useState(false);
+  useEffect(() => {
+    setAddressResult(null);
+    if (!locationConfirmed || !loc) return;
+    let cancelled = false;
+    setAddressLoading(true);
+    geocode({ data: loc }).then(result => { if (!cancelled) setAddressResult(result); }).catch(() => { if (!cancelled) setAddressResult({ address: null, sourceUrl: null, checkedAt: null, notice: 'Address lookup is unavailable. Your confirmed pin remains usable.' }); }).finally(() => { if (!cancelled) setAddressLoading(false); });
+    return () => { cancelled = true; };
+  }, [locationConfirmed, loc]);
   useEffect(() => { if (loc) return; const suggestion = suggestedReportLocation(location); if (suggestion) { setLoc(suggestion); setLandmark(location?.method === 'manual' ? location.label : ''); } else if (location) setLocationNotice('Device location is too approximate. Place the problem’s exact pin on the map.'); }, [location, loc]);
 
   async function runAnalysis(img: string | null, desc: string) {
@@ -265,6 +277,8 @@ function ReportPage() {
               </p>
             )}
             <Button variant={locationConfirmed ? "outline" : "default"} disabled={!loc || !isInIndia(loc.lat, loc.lng)} onClick={() => setLocationConfirmed(true)}><CheckCircle2 className="h-4 w-4" />{locationConfirmed ? "Problem location confirmed" : "Confirm this problem location"}</Button>
+            {locationConfirmed && <p role="status" className="text-sm text-muted-foreground">{addressLoading ? 'Finding the street address…' : addressResult?.address ?? addressResult?.notice}</p>}
+            {locationConfirmed && loc && <CivicInfo lat={loc.lat} lng={loc.lng} />}
             <div>
               <label className="text-sm font-medium" htmlFor="landmark">Landmark (optional)</label>
               <input id="landmark" value={landmark} maxLength={200} onChange={(e) => setLandmark(e.target.value)} placeholder="e.g. Opposite Indiranagar Metro, near bus stop" className="mt-1.5 h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
@@ -348,6 +362,7 @@ function ReportPage() {
                 <p className="text-sm text-muted-foreground">{analysis.summary}</p>
                 <p className="text-sm"><span className="text-muted-foreground">Severity:</span> <strong>{SEVERITY_META[analysis.severity].label}</strong></p>
                 <p className="text-sm"><span className="text-muted-foreground">Confirmed report location:</span> {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)}</p>
+                {addressResult?.address && <p className="text-sm">{addressResult.address} · © OpenStreetMap contributors</p>}
                 <p className="text-xs text-muted-foreground">Location attached during reporting; photo capture location and time are not verified.</p>
                 {landmark && <p className="text-sm"><span className="text-muted-foreground">Landmark:</span> {landmark}</p>}
               </div>

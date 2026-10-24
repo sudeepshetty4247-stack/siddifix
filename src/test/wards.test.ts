@@ -15,9 +15,9 @@ const at = (lat: number, lng: number) => resolveCivicRouting(dir, lat, lng, 'was
 
 describe('official ward file', () => {
   it('has 369 wards with no structural problems', () => expect(validateWardSet(rows)).toEqual([]));
-  it('flags 33 name differences and 19 cleaned boundaries for review', () => {
-    expect(rows.filter(r => r.flags.includes('name_differs_from_division_list')).length).toBe(33);
-    expect(rows.filter(r => r.flags.includes('boundary_had_stray_lines_removed')).length).toBe(19);
+  it('uses the December published source with zones and no inferred representative names', () => {
+    expect(rows.every(r => r.zone && r.source_published_at === '2025-12-01')).toBe(true);
+    expect(rows.every(r => r.mla === null && r.mp === null)).toBe(true);
   });
   it('imports every representative as verification required', () => expect(rows.every(r => r.representative_status === 'verification_required')).toBe(true));
 });
@@ -28,10 +28,11 @@ describe('ward lookup', () => {
   ])('finds %f,%f in the %s corporation', (lat, lng, corp) => expect(at(lat, lng)?.corporation).toBe(`Bengaluru ${corp} City Corporation`));
   it('returns no ward outside Bengaluru', () => expect(at(12.2958, 76.6394)).toBeNull());
   it('assigns a point next to a shared boundary to exactly one ward', () => {
-    const w = wards.find(x => x.identifier === 'central-4')!;
-    const ring = (w.boundary as { coordinates: number[][][][] }).coordinates[0]![0]!;
-    const [lng, lat] = ring[0]!;
-    const near = [lat! + 0.0002, lng! + 0.0002] as const;
+    const w = wards.find(x => x.identifier === 'central-4');
+    if (!w) throw new Error('Expected central-4');
+    const vertex = (w.boundary as { coordinates: number[][][][] }).coordinates[0]?.[0]?.[0];
+    if (!vertex || vertex[0] === undefined || vertex[1] === undefined) throw new Error('Expected boundary vertex');
+    const near = [vertex[1] + 0.0002, vertex[0] + 0.0002] as const;
     expect(wards.filter(x => pointInGeometry(near[0], near[1], x.boundary)).length).toBeLessThanOrEqual(1);
   });
   it('skips deactivated wards', () => {
