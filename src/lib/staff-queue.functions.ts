@@ -29,7 +29,7 @@ export const staffQueue = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: staff } = await context.supabase.rpc("is_staff", { _user_id: context.userId });
     if (!staff) throw new Error("Staff access required");
-    let query = context.supabase.from('issues').select('id,ref_code,title,category,severity,status,sla_due_at,eta_at,acknowledged_at,escalated_at,created_at,landmark,department,support_count,photo_url,authority_id,assignment_state,duplicate_of,duplicate_candidate_id,team_id,routing_snapshot,ack_due_at,assigned_to,description,lat,lng', {count:'exact'});
+    let query = context.supabase.from('issues').select('id,ref_code,title,category,severity,status,sla_due_at,eta_at,acknowledged_at,escalated_at,created_at,landmark,department,support_count,photo_url,authority_id,assignment_state,duplicate_of,duplicate_candidate_id,team_id,routing_snapshot,ack_due_at,assigned_to,description,lat,lng,demo_dataset_id', {count:'exact'});
     if(data.sort==='deadline')query=query.order('ack_due_at',{ascending:true,nullsFirst:false}).order('sla_due_at',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true});
     else if(data.sort==='severity')query=query.order('severity',{ascending:false}).order('created_at',{ascending:true});
     else query=query.order('created_at',{ascending:data.sort==='oldest'});

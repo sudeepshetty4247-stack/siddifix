@@ -133,7 +133,7 @@ function Queue() {
                         {i.photo_url ? <img src={i.photo_url} alt="" className="h-10 w-10 rounded-lg object-cover" loading="lazy" /> : <div className="h-10 w-10 rounded-lg bg-muted" />}
                         <div className="min-w-0">
                           <p className="max-w-xs truncate font-medium">{i.title}</p><p className="max-w-xs truncate text-xs text-muted-foreground">{i.landmark??`${i.lat}, ${i.lng}`}</p><p className="max-w-xs truncate text-xs text-muted-foreground">{i.description}</p>
-                          <p className="font-mono text-xs text-muted-foreground">{i.ref_code}{i.duplicate_of&&" · Linked report"}{i.duplicate_candidate_id&&" · Duplicate review"}{i.support_count > 0 && ` · +${i.support_count} linked`}</p>
+                          <p className="font-mono text-xs text-muted-foreground">{i.ref_code}{i.demo_dataset_id&&<span className="ml-1 rounded bg-warning/20 px-1 py-0.5 font-sans font-semibold text-warning-foreground">DEMO</span>}{i.duplicate_of&&" · Linked report"}{i.duplicate_candidate_id&&" · Duplicate review"}{i.support_count > 0 && ` · +${i.support_count} linked`}</p>
                         </div>
                       </div>
                     </td>
