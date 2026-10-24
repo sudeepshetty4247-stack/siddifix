@@ -15,11 +15,13 @@ export const Route = createFileRoute("/_citizen")({
   component: CitizenLayout,
 });
 
-const NAV: { to: "/" | "/report" | "/map" | "/explore" | "/track"; key: TKey }[] = [
+const NAV: { to: "/" | "/report" | "/map" | "/explore" | "/track" | "/transparency" | "/assistant"; key: TKey }[] = [
   { to: "/", key: "home" },
   { to: "/map", key: "map" },
   { to: "/explore", key: "explore" },
   { to: "/track", key: "track" },
+  { to: "/transparency", key: "transparency" },
+  { to: "/assistant", key: "assistant" },
 ];
 
 function CitizenLayout() {
@@ -41,7 +43,7 @@ function CitizenShell() {
           <BackButton />
           <Logo />
           <LocationSelector />
-          <nav className="hidden items-center gap-1 lg:flex">
+          <nav className="hidden flex-wrap items-center gap-1 xl:flex">
 
             {NAV.map((n) => (
               <Link
@@ -70,12 +72,12 @@ function CitizenShell() {
             <Link to="/report" className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90">
               <Camera className="h-4 w-4" /> <span className="hidden sm:inline">{t("report")}</span><span className="sm:hidden">Report</span>
             </Link>
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
+            <Button variant="ghost" size="icon" className="xl:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
-        <div className={cn("border-t bg-background lg:hidden", open ? "block" : "hidden")}>
+        <div className={cn("border-t bg-background xl:hidden", open ? "block" : "hidden")}>
           <nav className="mx-auto flex max-w-7xl flex-col p-2">
             {NAV.map((n) => (
               <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-lg px-3 py-3 text-sm font-medium" activeOptions={{ exact: n.to === "/" }} activeProps={{ className: "bg-secondary" }}>
@@ -106,6 +108,8 @@ function CitizenShell() {
               <Link to="/report" className="block text-muted-foreground hover:text-foreground">Report an issue</Link>
               <Link to="/map" className="block text-muted-foreground hover:text-foreground">Civic map</Link>
               <Link to="/track" className="block text-muted-foreground hover:text-foreground">Track a report</Link>
+              <Link to="/transparency" className="block text-muted-foreground hover:text-foreground">{t('transparency')}</Link>
+              <Link to="/assistant" className="block text-muted-foreground hover:text-foreground">{t('assistant')}</Link>
             </div>
             <div className="space-y-2">
               <p className="font-semibold">Officials</p>

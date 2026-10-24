@@ -187,6 +187,16 @@
   background: var(--home-shade);
 }
 
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  header, footer, .report-controls, [data-brand-opening], button { display: none !important; }
+  .public-report { max-width: none; padding: 0; }
+  table { min-width: 0 !important; font-size: 10px; }
+  tr, section, img { break-inside: avoid; }
+  a { text-decoration: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

@@ -13,6 +13,8 @@ const dict = {
   map: { en: "Civic Map", hi: "नागरिक नक्शा", kn: "ನಾಗರಿಕ ನಕ್ಷೆ" },
   explore: { en: "Explore Issues", hi: "समस्याएँ देखें", kn: "ಸಮಸ್ಯೆಗಳನ್ನು ನೋಡಿ" },
   track: { en: "My Tracking", hi: "मेरी ट्रैकिंग", kn: "ನನ್ನ ಟ್ರ್ಯಾಕಿಂಗ್" },
+  transparency: { en: "Public Reports", hi: "सार्वजनिक रिपोर्ट", kn: "ಸಾರ್ವಜನಿಕ ವರದಿಗಳು" },
+  assistant: { en: "Ask Siddi", hi: "Siddi से पूछें", kn: "Siddi ಕೇಳಿ" },
   staff: { en: "Staff sign in", hi: "कर्मचारी लॉगिन", kn: "ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್" },
   heroTitle: {
     en: "Report once. Track every action.",

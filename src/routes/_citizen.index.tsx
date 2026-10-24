@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Camera, Map, MapPin, Search, ShieldCheck, FileText } from 'lucide-react';
+import { ArrowRight, Camera, Map, MapPin, Search, ShieldCheck, FileText, MessageCircle, ChartNoAxesCombined } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { publicCases } from '@/lib/public-cases';
 import { IssueCard } from '@/components/civic/IssueCard';
@@ -52,6 +52,8 @@ function CitizenHome() {
         </Link>)}
       </div>
     </section>
+
+    <section className="border-b bg-primary-soft"><div className="mx-auto grid max-w-7xl gap-6 px-5 py-7 sm:px-6 md:grid-cols-2"><Link to="/transparency" className="flex items-start gap-4"><ChartNoAxesCombined className="mt-1 h-6 w-6 shrink-0 text-primary" /><div><h2 className="flex items-center gap-3 text-lg font-semibold">Public transparency report<ArrowRight className="h-4 w-4" /></h2><p className="mt-2 text-sm text-muted-foreground">City, ward and constituency progress. Real numbers, downloadable records.</p></div></Link><Link to="/assistant" className="flex items-start gap-4"><MessageCircle className="mt-1 h-6 w-6 shrink-0 text-primary" /><div><h2 className="flex items-center gap-3 text-lg font-semibold">Ask Siddi<ArrowRight className="h-4 w-4" /></h2><p className="mt-2 text-sm text-muted-foreground">Your questions. Your language.</p></div></Link></div></section>
 
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-12">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="mb-2 text-xs font-semibold uppercase text-primary">From the community</p><h2 className="text-2xl font-semibold">Latest reported problems</h2></div><Button asChild variant="outline"><Link to="/explore">All reports<ArrowRight className="h-4 w-4" /></Link></Button></div>

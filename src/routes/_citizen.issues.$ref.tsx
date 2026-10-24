@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, CalendarClock, Copy, Eye, EyeOff, MapPin, ShieldAlert, ThumbsDown, ThumbsUp, Users } from "lucide-react";
+import { ArrowLeft, Building2, CalendarClock, Copy, Download, Eye, EyeOff, MapPin, ShieldAlert, ThumbsDown, ThumbsUp, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { categoryById, isOverdue, SEVERITY_META, type Severity } from "@/lib/civic";
 import { StatusBadge, SeverityTag } from "@/components/civic/StatusBadge";
@@ -17,6 +17,8 @@ import { JourneyBar, StaffResponse } from '@/components/civic/CaseProgress';
 import { Button } from '@/components/ui/button';
 import { publicCases, publicEvents } from '@/lib/public-cases';
 import { getReportPhoto } from '@/lib/report-media.functions';
+import { caseReport } from '@/lib/case-report';
+import { downloadText } from '@/lib/transparency';
 
 export const Route = createFileRoute("/_citizen/issues/$ref")({
   head: ({ params }) => ({
@@ -143,7 +145,9 @@ function IssuePage() {
           <p className="text-muted-foreground">{cat.emoji} {cat.label}{i.subcategory ? ` · ${i.subcategory}` : ""}</p>
           <p className="text-sm text-muted-foreground">Reported {ageDays === 0 ? "today" : `${ageDays}d ago`}{unresolved && ageDays > 0 ? ` · ${ageDays}d unresolved` : ""}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" disabled={!events.data || events.isError} onClick={() => downloadText(caseReport(i, events.data ?? []), `Siddi-${i.ref_code}.md`, 'text/markdown;charset=utf-8')}><Download className="h-4 w-4" />Download report</Button>
+          <Button variant="outline" onClick={() => window.print()}>Save PDF</Button>
           <button onClick={toggleFollow} className="inline-flex h-10 items-center gap-2 rounded-lg border bg-card px-4 text-sm font-semibold hover:bg-secondary">
             {following ? <><EyeOff className="h-4 w-4" /> Unfollow</> : <><Eye className="h-4 w-4" /> Follow</>}
           </button>
