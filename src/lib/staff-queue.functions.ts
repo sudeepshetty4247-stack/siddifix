@@ -47,8 +47,8 @@ export type AuditEntry = {
   ref: string | null;
 };
 
-async function requireAdmin(supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" }) => Promise<{ data: unknown }> }, userId: string) {
-  const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+async function requireAdmin(supabase: { rpc: (...args: never[]) => PromiseLike<{ data: unknown }> }, userId: string) {
+  const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" } as never);
   if (!isAdmin) throw new Error("Only administrators can view the audit log.");
 }
 
