@@ -15,6 +15,13 @@
       "when": 1792825847858,
       "tag": "0001_civic_directory_and_atomic_workflows",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792827476416,
+      "tag": "0002_duplicate_review_and_atomic_citizen_actions",
+      "breakpoints": true
     }
   ]
 }

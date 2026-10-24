@@ -185,6 +185,54 @@ export type Database = {
           },
         ]
       }
+      issue_duplicate_reviews: {
+        Row: {
+          actor_id: string
+          candidate_id: string
+          created_at: string
+          decision: string
+          id: string
+          previous_parent: string | null
+          reason: string
+          report_id: string
+        }
+        Insert: {
+          actor_id: string
+          candidate_id: string
+          created_at?: string
+          decision: string
+          id?: string
+          previous_parent?: string | null
+          reason: string
+          report_id: string
+        }
+        Update: {
+          actor_id?: string
+          candidate_id?: string
+          created_at?: string
+          decision?: string
+          id?: string
+          previous_parent?: string | null
+          reason?: string
+          report_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_duplicate_reviews_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issue_duplicate_reviews_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_events: {
         Row: {
           actor_id: string | null
@@ -373,6 +421,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      citizen_change_issue: {
+        Args: { _action: string; _note: string; _ref: string; _token: string }
+        Returns: string
+      }
       create_civic_report: {
         Args: { _report: Json; _token: string }
         Returns: Json
@@ -401,6 +453,15 @@ export type Database = {
           status: Database["public"]["Enums"]["issue_status"]
           title: string
         }[]
+      }
+      review_issue_duplicate: {
+        Args: {
+          _candidate: string
+          _decision: string
+          _reason: string
+          _report: string
+        }
+        Returns: undefined
       }
       staff_change_issue: {
         Args: {
