@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 const buttonVariants = cva("inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50", {
   variants: {
     variant: { default: "bg-primary text-primary-foreground hover:bg-primary/90", outline: "border bg-card hover:bg-secondary", ghost: "hover:bg-secondary", secondary: "bg-secondary text-secondary-foreground hover:bg-muted", destructive: "bg-destructive text-destructive-foreground" },
-    size: { default: "h-10 px-4", sm: "h-9 px-3", lg: "h-12 px-6", icon: "h-10 w-10 shrink-0" },
+    size: { default: "h-10 px-4", sm: "h-9 px-3", lg: "h-12 px-6", icon: "h-10 w-10 shrink-0", "icon-sm": "h-8 w-8 shrink-0 p-0" },
   }, defaultVariants: { variant: "default", size: "default" },
 });
 export type ButtonProps = React.ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean };

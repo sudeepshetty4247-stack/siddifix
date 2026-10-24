@@ -162,6 +162,13 @@
       "when": 1792850678545,
       "tag": "0022_authority_portrait_provenance",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792853498736,
+      "tag": "0023_public_transparency_metrics",
+      "breakpoints": true
     }
   ]
 }

@@ -4,7 +4,7 @@ import { ArrowRight, Camera, Map, MapPin, Search, ShieldCheck, FileText } from '
 import { Button } from '@/components/ui/button';
 import { publicCases } from '@/lib/public-cases';
 import { IssueCard } from '@/components/civic/IssueCard';
-import bengaluruPhoto from '@/assets/bengaluru-home.jpg';
+import communityCover from '@/assets/siddi-community-cover.png.asset.json';
 import { NearbyCaseSummary } from '@/components/civic/NearbyCaseSummary';
 export const Route = createFileRoute('/_citizen/')({
   head: () => ({ meta: [
@@ -25,7 +25,7 @@ function CitizenHome() {
   return <div>
     <NearbyCaseSummary />
     <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
-      <img src={bengaluruPhoto} alt="Vidhana Soudha, Bengaluru" width={1600} height={912} className="absolute inset-0 -z-20 h-full w-full object-cover object-center" fetchPriority="high" />
+      <img src={communityCover.url} alt="A citizen photographing a damaged Bengaluru pavement near Vidhana Soudha" width={1365} height={768} className="absolute inset-0 -z-20 h-full w-full object-cover object-center" fetchPriority="high" />
       <div className="home-photo-shade absolute inset-0 -z-10" />
       <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 sm:py-16 lg:py-20">
         <p className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase"><MapPin className="h-4 w-4" />Bengaluru, Karnataka</p>

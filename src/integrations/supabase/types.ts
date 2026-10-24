@@ -1106,6 +1106,7 @@ export type Database = {
       }
       public_case_events: { Args: { _id: string }; Returns: Json }
       public_case_rows: { Args: { _ref?: string }; Returns: Json }
+      public_transparency_metrics: { Args: { _days?: number }; Returns: Json }
       review_issue_duplicate: {
         Args: {
           _candidate: string
