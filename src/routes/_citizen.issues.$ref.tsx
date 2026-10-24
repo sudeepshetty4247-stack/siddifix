@@ -13,6 +13,7 @@ import { citizenAction, verifyToken } from "@/lib/issues.functions";
 import { getTracked, isTracked, removeTracked, saveTracked } from "@/lib/tracking";
 import { CivicInfo } from "@/components/civic/CivicInfo";
 import { IssueEvidence } from '@/components/civic/IssueEvidence';
+import { JourneyBar, StaffResponse } from '@/components/civic/CaseProgress';
 import { Button } from '@/components/ui/button';
 import { publicCases, publicEvents } from '@/lib/public-cases';
 import { getReportPhoto } from '@/lib/report-media.functions';
@@ -152,10 +153,12 @@ function IssuePage() {
         </div>
       </div>
 
+      <div className="mt-6"><JourneyBar status={i.status} /></div>
       {i.duplicate_of && <section className="mt-6 space-y-3 border-y bg-primary-soft p-4"><h2 className="font-semibold">This original report is linked to an underlying issue</h2><p className="text-sm">Your reference, photo and history are preserved. Current work and resolution are tracked on the canonical issue.</p>{canonical.data?<Button asChild><Link to="/issues/$ref" params={{ref:canonical.data.ref_code}}>Track {canonical.data.ref_code} · {canonical.data.title}</Link></Button>:<p className="text-sm">{canonical.isError?'The linked issue could not be loaded.':'Loading linked issue…'}</p>}</section>}
       {i.duplicate_candidate_id && !i.duplicate_of && <p className="mt-4 border-l-2 border-warning pl-3 text-sm text-muted-foreground">A possible matching report is awaiting staff review. This report has not been merged.</p>}
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-6">
+          {!i.duplicate_of && <StaffResponse c={i} />}
           {i.photo_url && <img src={i.photo_url} alt={i.title} className="max-h-[520px] w-full rounded-3xl border object-cover shadow-soft" />}
           {photo.data?.url&&<details className="border-y py-4"><summary className="cursor-pointer text-sm font-semibold">Annotated report photo</summary><img src={photo.data.url} alt="Separate annotated report evidence with report location and available capture metadata" className="mt-4 w-full rounded-lg" loading="lazy"/><p className="mt-2 text-xs text-muted-foreground">A separate copy. The untouched original stays private; report location is not proof of photo capture location.</p></details>}
           {i.safety_warning && <div className="flex gap-3 rounded-2xl bg-destructive-soft p-4 text-sm text-destructive"><ShieldAlert className="h-5 w-5 shrink-0" />{i.safety_warning}</div>}
@@ -175,12 +178,12 @@ function IssuePage() {
         <aside className="space-y-4">
           {tokenValid && i.status === "resolved" && (
             <div className="rounded-2xl border-2 border-primary bg-primary-soft p-5">
-              <p className="font-semibold">Is it actually fixed?</p>
+              <p className="font-semibold">Has this problem been fixed?</p>
               <p className="mt-1 text-sm text-muted-foreground">As the original reporter, you can confirm or dispute this closure.</p>
               <label className="mt-3 block text-sm">Feedback (optional)<textarea aria-label="Reporter feedback" value={feedback} maxLength={500} onChange={e=>setFeedback(e.target.value)} className="mt-1 w-full rounded-lg border bg-card p-2"/></label>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <button disabled={busy} onClick={() => doAction("confirm")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-success text-sm font-semibold text-primary-foreground disabled:opacity-50"><ThumbsUp className="h-4 w-4" /> Yes, fixed</button>
-                <button disabled={busy} onClick={() => doAction("reopen")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-destructive text-sm font-semibold text-destructive-foreground disabled:opacity-50"><ThumbsDown className="h-4 w-4" /> Not fixed</button>
+                <button disabled={busy} onClick={() => doAction("reopen")} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-destructive text-sm font-semibold text-destructive-foreground disabled:opacity-50"><ThumbsDown className="h-4 w-4" /> No, still there</button>
               </div>
             </div>
           )}
