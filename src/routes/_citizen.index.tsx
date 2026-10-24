@@ -10,6 +10,7 @@ import { useLocation } from "@/lib/location";
 import { getDirectory } from "@/lib/directory.functions";
 import { resolveCivicRouting } from "@/lib/directory";
 import { IssueCard, ISSUE_COLUMNS, type IssueRow } from "@/components/civic/IssueCard";
+import { AuthorityDirectory } from "@/components/civic/AuthorityDirectory";
 
 export const Route = createFileRoute("/_citizen/")({
   head: () => ({
@@ -34,6 +35,7 @@ function useStats() {
         supabase.from("issues").select("id", { count: "exact", head: true }).in("status", OPEN_STATUSES),
         supabase.from("issues").select("id", { count: "exact", head: true }).in("status", ["resolved", "closed"]),
       ]);
+      for (const result of [total, open, resolved]) if (result.error) throw result.error;
       return { total: total.count ?? 0, open: open.count ?? 0, resolved: resolved.count ?? 0 };
     },
   });
@@ -84,7 +86,7 @@ function Home() {
           <div className="relative min-h-36 overflow-hidden rounded-lg"><img src={heroImg} alt="Damaged paving on a Bengaluru street" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-x-0 bottom-0 bg-ink/90 px-3 py-2 text-xs text-ink-foreground">A photo. A confirmed location. A public record.</div></div>
         </div>
       </section>
-
+      <AuthorityDirectory compact />
       {/* Recent */}
       <section className="border-y bg-card/60">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
@@ -104,7 +106,7 @@ function Home() {
               <div className="flex flex-col items-center rounded-2xl border border-dashed bg-card px-6 py-14 text-center">
                 <CheckCircle2 className="h-10 w-10 text-primary" />
                 <h3 className="mt-4 text-lg font-semibold">No reports yet</h3>
-                <p className="mt-1 max-w-sm text-sm text-muted-foreground">Be the first to put a problem on the map. It takes less than a minute.</p>
+                <p className="mt-1 max-w-sm text-sm text-muted-foreground">No CivicFix submissions in this area yet. This is not a count of government complaints or all city issues.</p>
                 <Link to="/report" className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground"><Camera className="h-4 w-4" /> Report a problem</Link>
               </div>
             )}
