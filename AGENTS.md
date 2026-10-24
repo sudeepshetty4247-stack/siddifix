@@ -23,7 +23,7 @@
 - Home-screen installability uses a manifest and icons only; no app-shell service worker is registered, preserving fresh previews.
 - Case-local civic information reads the protected civic directory; the standalone citizen authority directory has been removed to keep reporting and case work integrated.
 - Duplicate review, assignment lifecycle, classification and reporter resolution decisions use atomic database operations with durable events; ordinary staff clients cannot directly update issue fields.
-- Staff analytics use full-dataset database aggregates, not the capped triage sample; Home uses CitizenMap for the map-first opening requested by the latest correction brief.
+- Staff analytics use full-dataset database aggregates, not the capped triage sample; Home keeps its photo-led actions and recent real reports while CitizenMap owns geographic browsing.
 - Citizen-suggested duplicates are persisted as candidates, not merges; staff review exclusively controls canonical linking to preserve uncertain originals.
 - Completion and inspection photos use separate issue_evidence records in private storage, staff-authorized atomic event writes, and short-lived public-safe signed projections; a database trigger requires completion evidence before resolution.
 - Reporting accepts reliable camera-session GPS as a suggested editable report point; gallery EXIF and manual points require confirmation, and gallery images never inherit current device GPS.
