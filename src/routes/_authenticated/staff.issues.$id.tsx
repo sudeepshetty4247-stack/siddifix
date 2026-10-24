@@ -152,8 +152,14 @@ function StaffIssue() {
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         <div className="space-y-6">
-          <StaffCommitment issue={i} onDone={refresh} />
-          <div className="rounded-2xl border bg-card p-5 shadow-soft">
+          {scope.data === false && !supervisor && (
+            <div className="rounded-2xl border border-warning bg-card p-5 shadow-soft">
+              <h2 className="font-semibold">Outside your assigned scope</h2>
+              <p className="mt-1 text-sm text-muted-foreground">This case belongs to a category or ward not assigned to you. You can view it, but only the responsible team can act on it.</p>
+            </div>
+          )}
+          {canWork && <StaffCommitment issue={i} onDone={refresh} />}
+          {canWork && <div className="rounded-2xl border bg-card p-5 shadow-soft">
             <h2 className="font-semibold">Move the case forward</h2>
             {!options.length && <p className="mt-2 text-sm text-muted-foreground">{i.duplicate_of ? "This report is linked to a canonical issue — work on that one." : "No further step for your role here."}</p>}
             <div className="mt-4 flex flex-wrap gap-2">
