@@ -9,6 +9,7 @@ export type DemoTarget = { category: string; severity: string; ack_hours: number
 
 export type DemoIssue = {
   id: string; ref_code: string; idempotency_key: string; title: string; summary: string; description: string;
+  photo_url: string | null;
   category: string; subcategory: string; severity: 'low' | 'medium' | 'high' | 'critical';
   status: string; lat: number; lng: number; landmark: string; department: string | null;
   assigned_to: string | null; team_id: string | null; duplicate_of: string | null;
@@ -22,17 +23,17 @@ export type DemoNotification = { issue_index: number; recipient_index: number; n
 export type DemoFeedback = { issue_index: number; rating: number; resolution: string; response_time: string; comment: string; status_at_submission: string; submitted_at: string };
 export type DemoDataset = { issues: DemoIssue[]; events: DemoEvent[]; notifications: DemoNotification[]; feedback: DemoFeedback[]; secrets: { issue_index: number; token: string }[] };
 
-/** Lifecycle buckets mapped to the real status state machine. Fractions sum to 1. */
+/** Lifecycle buckets mapped to the real status state machine. Fractions sum to 1 (2,100-report plan). */
 export const STATUS_MIX = [
-  { key: 'closed', fraction: 0.17 },        // resolved and citizen-confirmed, with feedback
-  { key: 'resolved', fraction: 0.10 },      // resolved, awaiting citizen confirmation
-  { key: 'in_progress', fraction: 0.17 },
-  { key: 'pending_ack', fraction: 0.10 },   // routed, nobody acknowledged yet
-  { key: 'assigned_unack', fraction: 0.10 },
-  { key: 'overdue', fraction: 0.10 },       // open past the resolution target
-  { key: 'unassigned', fraction: 0.07 },    // routing exception
-  { key: 'reopened', fraction: 0.07 },
-  { key: 'new', fraction: 0.12 },           // submitted in the last day
+  { key: 'closed', fraction: 350 / 2100 },        // resolved and citizen-confirmed, with feedback
+  { key: 'resolved', fraction: 250 / 2100 },      // resolved, awaiting citizen confirmation
+  { key: 'in_progress', fraction: 350 / 2100 },
+  { key: 'pending_ack', fraction: 200 / 2100 },   // routed, nobody acknowledged yet
+  { key: 'assigned_unack', fraction: 200 / 2100 },
+  { key: 'overdue', fraction: 200 / 2100 },       // open past the resolution target
+  { key: 'unassigned', fraction: 150 / 2100 },    // routing exception
+  { key: 'reopened', fraction: 150 / 2100 },
+  { key: 'new', fraction: 250 / 2100 },           // submitted in the last day
 ] as const;
 export type BucketKey = (typeof STATUS_MIX)[number]['key'];
 
@@ -69,8 +70,10 @@ export function buildDemoDataset(args: {
   datasetId: string; count: number; now?: number;
   wards: DemoWard[]; teams: DemoTeam[]; staff: DemoStaff[]; targets: DemoTarget[];
   categories: { id: string; subs: string[] }[];
+  photos?: Record<string, string[]>;
 }): DemoDataset {
   const { datasetId, count, wards, teams, staff, targets, categories } = args;
+  const photos = args.photos ?? {};
   const now = args.now ?? Date.now();
   const rnd = mulberry32(datasetSeed(datasetId));
   const issues: DemoIssue[] = [];
@@ -128,8 +131,10 @@ export function buildDemoDataset(args: {
     if (bucket === 'overdue') acknowledged_at = new Date(Math.min(now - 3600000, created + rnd() * target.ack_hours * 3600000)).toISOString();
 
 
+    const catPhotos = photos[cat.id] ?? [];
     issues.push({
       id: crypto.randomUUID(),
+      photo_url: catPhotos.length && rnd() < 0.7 ? pick(rnd, catPhotos) : null,
       ref_code: ref, idempotency_key: ref, title: `${sub} near ${ward.name}`, summary: `${sub} reported in ${ward.name}.`,
       description: `Synthetic demonstration report (${datasetId}). ${sub} observed near ${ward.name}; generated for workflow testing only.`,
       category: cat.id, subcategory: sub, severity, status, lat, lng,

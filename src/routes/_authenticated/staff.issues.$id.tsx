@@ -148,6 +148,7 @@ function StaffIssue() {
             <SeverityTag severity={i.severity} />
             {isOverdue(i) && <span className="rounded-full bg-warning px-2 py-0.5 text-xs font-semibold text-warning-foreground">Overdue</span>}
             <span className="font-mono text-sm text-muted-foreground">{i.ref_code}</span>
+            {i.demo_dataset_id && <span className="rounded bg-warning/20 px-2 py-0.5 text-xs font-semibold text-warning-foreground">DEMO — synthetic record</span>}
           </div>
           <h1 className="text-2xl font-bold sm:text-3xl">{i.title}</h1>
         </div>
