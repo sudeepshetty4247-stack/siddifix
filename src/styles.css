@@ -172,12 +172,12 @@
 .civic-you {
   display: block; width: 22px; height: 22px; border-radius: 999px;
   background: var(--map-you); border: 3px solid var(--card);
-  box-shadow: 0 0 0 6px color-mix(in oklch, var(--map-you) calc(0.22 * 100%), transparent), 0 2px 6px oklch(0.2 0.04 255 / 0.35);
+  box-shadow: 0 0 0 6px color-mix(in oklch, var(--map-you) 22%, transparent), 0 2px 6px oklch(0.2 0.04 255 / 0.35);
   animation: civic-you-pulse 2s ease-out infinite;
 }
 @keyframes civic-you-pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--map-you) calc(0.45 * 100%), transparent), 0 2px 6px oklch(0.2 0.04 255 / 0.35); }
-  100% { box-shadow: 0 0 0 14px color-mix(in oklch, var(--map-you) calc(0 * 100%), transparent), 0 2px 6px oklch(0.2 0.04 255 / 0.35); }
+  0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--map-you) 45%, transparent), 0 2px 6px oklch(0.2 0.04 255 / 0.35); }
+  100% { box-shadow: 0 0 0 14px color-mix(in oklch, var(--map-you) 0%, transparent), 0 2px 6px oklch(0.2 0.04 255 / 0.35); }
 }
 .leaflet-bottom.leaflet-right .leaflet-control-zoom { margin-bottom: 84px; border: 0; box-shadow: var(--shadow-soft, 0 2px 8px oklch(0.2 0.04 255 / .15)); border-radius: 12px; overflow: hidden; }
 
