@@ -10,6 +10,7 @@ import { CivicInfo } from '@/components/civic/CivicInfo';
 import { getDirectory } from '@/lib/directory.functions';
 import { resolveCivicRouting } from '@/lib/directory';
 import { analyzeIssue, submitIssue } from '@/lib/issues.functions';
+import { useLocation } from '@/lib/location';
 import { prepareOriginalUpload, saveAnnotatedPhoto } from '@/lib/report-media.functions';
 import { reverseGeocode, searchAddress } from '@/lib/geocoding.functions';
 import { annotationLines, annotatedPhoto, embeddedPhotoMetadata, processedPhoto, type PhotoMetadata } from '@/lib/report-photo';
