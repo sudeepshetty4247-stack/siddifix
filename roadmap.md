@@ -7,6 +7,9 @@
 - [x] English / Hindi / Kannada switcher (navigation + home)
 
 ## Next
+- [ ] Current overhaul: persistent location, action-first home, official Bengaluru directory and source-based routing
+- [ ] Evidence originals + separate annotation, configurable coverage, atomic submission and backend state transitions
+- [ ] Home-screen installability and end-to-end release checks
 - [ ] Full Hindi/Kannada translation of every screen
 - [ ] Ask CivicFix assistant (grounded in real records)
 - [ ] Community threads
