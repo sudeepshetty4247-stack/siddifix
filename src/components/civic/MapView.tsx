@@ -116,6 +116,11 @@ export default function MapView({
           eventHandlers={{ dragend: (e) => { const p = (e.target as L.Marker).getLatLng(); onPick?.(p.lat, p.lng); } }}
         />
       )}
+      {counts.map((c) => (
+        <Marker key={`count-${c.id}`} position={[c.lat, c.lng]} icon={countBadge(c.count)} eventHandlers={onCountSelect ? { click: () => onCountSelect(c.id) } : {}}>
+          {c.label && <Popup><div style={{ fontWeight: 600 }}>{c.label}</div><div style={{ fontSize: 12, opacity: 0.7 }}>{c.count} report{c.count === 1 ? "" : "s"}</div></Popup>}
+        </Marker>
+      ))}
       {markers.map((m) => (
         <Marker key={m.id} position={[m.lat, m.lng]} icon={dot(m.tone)} eventHandlers={onSelect ? {click: () => onSelect(m.id)} : {}}>
           {m.label && (
