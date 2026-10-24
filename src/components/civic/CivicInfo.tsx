@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Building2, UserRound, Phone, Mail, MapPin, Landmark, Vote, ExternalLink } from 'lucide-react';
-import { getDirectory } from '@/lib/directory.functions';
+import { getLocalDirectory } from '@/lib/directory.functions';
 import { resolveCivicRouting, type CivicRouting, type Ward } from '@/lib/directory';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -55,7 +55,7 @@ export function WardSummary({ ward }: { ward: Omit<Ward, 'boundary'> }) {
 }
 
 export function CivicInfo({lat,lng,category,subcategory,snapshot}:{lat:number;lng:number;category?:string;subcategory?:string|null;snapshot?:unknown}){
-  const directory=useQuery({queryKey:['civic-directory'],queryFn:()=>getDirectory(),staleTime:300000});
+  const directory=useQuery({queryKey:['civic-directory',lat,lng],queryFn:()=>getLocalDirectory({data:{lat,lng}}),staleTime:300000});
   const people=useQuery({queryKey:['verified-civic-people'],queryFn:async()=>{const r=await supabase.from('civic_people').select('id,full_name,designation,kind,corporation,ward_identifier,category,zone,photo_url,contact_phone,contact_email,source_url,checked_at').eq('verification_status','verified').eq('active',true);if(r.error)throw r.error;return r.data;},staleTime:300000});
   if(directory.isPending)return <p className="py-4 text-sm text-muted-foreground">Finding your ward and representatives…</p>;
   if(!directory.data)return <div className="py-4"><p className="text-sm">Local information is unavailable.</p><Button variant="outline" onClick={()=>directory.refetch()}>Try again</Button></div>;
