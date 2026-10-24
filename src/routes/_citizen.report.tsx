@@ -1,505 +1,104 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { toast } from "sonner";
-import {
-  Camera, ImagePlus, Mic, MicOff, LocateFixed, ArrowLeft, ArrowRight, Sparkles, Loader2, AlertTriangle, CheckCircle2, Copy, MapPin, RefreshCw, Link2,
-} from "lucide-react";
-import { analyzeIssue, submitIssue } from "@/lib/issues.functions";
-import { CATEGORIES, SEVERITIES, SEVERITY_META, BENGALURU, isInBengaluru, isInIndia, categoryById, STATUS_META, type IssueStatus } from "@/lib/civic";
-import { LazyMap } from "@/components/civic/LazyMap";
-import { saveTracked } from "@/lib/tracking";
-import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
-import { useLocation } from "@/lib/location";
-import { CivicInfo } from "@/components/civic/CivicInfo";
-import { Button } from "@/components/ui/button";
-import { suggestedReportLocation } from "@/lib/report-location";
-import { reverseGeocode } from "@/lib/geocoding.functions";
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useEffect, useRef, useState } from 'react';
+import { useServerFn } from '@tanstack/react-start';
+import { Camera, ImagePlus, MapPin, Loader2, CheckCircle2, Copy, Pencil, Search, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { LazyMap } from '@/components/civic/LazyMap';
+import { CivicInfo } from '@/components/civic/CivicInfo';
+import { analyzeIssue, submitIssue } from '@/lib/issues.functions';
+import { prepareOriginalUpload, saveAnnotatedPhoto } from '@/lib/report-media.functions';
+import { reverseGeocode, searchAddress } from '@/lib/geocoding.functions';
+import { annotationLines, annotatedPhoto, embeddedPhotoMetadata, processedPhoto, type PhotoMetadata } from '@/lib/report-photo';
+import { BENGALURU, CATEGORIES, isInIndia, categoryById } from '@/lib/civic';
+import { saveTracked } from '@/lib/tracking';
+import { supabase } from '@/integrations/supabase/client';
 
-export const Route = createFileRoute("/_citizen/report")({
-  head: () => ({
-    meta: [
-      { title: "Report a civic issue — CivicFix" },
-      { name: "description", content: "Report a pothole, streetlight, drainage or waste problem in under a minute. No sign-up needed." },
-      { property: "og:title", content: "Report a civic issue — CivicFix" },
-      { property: "og:description", content: "Snap a photo, pin the location, and CivicFix handles the rest." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
-  component: ReportPage,
+export const Route = createFileRoute('/_citizen/report')({
+  head:()=>({meta:[{title:'Photo report — CivicFix Bengaluru'},{name:'description',content:'Take or upload a photo, confirm the problem location when needed and submit without a long form.'},{property:'og:title',content:'Photo report — CivicFix'},{property:'og:description',content:'Anonymous photo reporting with private originals, automatic suggestions and public case tracking.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),
+  component:ReportPage,
 });
+const fallback = {category:'other',subcategory:'Other',title:'Civic issue reported',summary:'Photo awaiting staff review.',severity:'medium' as const,confidence:0,safety_warning:null as string|null};
+type Suggestion = {category:string;subcategory:string;title:string;summary:string;severity:'low'|'medium'|'high'|'critical';confidence:number;safety_warning:string|null};
+type Point = {lat:number;lng:number};
 
-type Analysis = {
-  category: string; subcategory: string; title: string; summary: string; severity: (typeof SEVERITIES)[number];
-  urgency: string; confidence: number; missing_info: string | null; safety_warning: string | null; clarification_question: string | null; is_civic_issue: boolean;
-};
-type Nearby = { id: string; ref_code: string; title: string; status: string; category: string; distance_m: number };
+function ReportPage(){
+  const camera=useRef<HTMLInputElement>(null);const gallery=useRef<HTMLInputElement>(null);
+  const [key]=useState(()=>crypto.randomUUID());const [file,setFile]=useState<File|null>(null);const [image,setImage]=useState<string|null>(null);
+  const [meta,setMeta]=useState<PhotoMetadata>({source:'gallery',capturedAt:null,captureTimeSource:'unknown',gps:null});
+  const captureGps=useRef<PhotoMetadata['gps']>(null);const run=useRef(0);
+  const [point,setPoint]=useState<Point|null>(null);const [confirmed,setConfirmed]=useState(false);const [editingLocation,setEditingLocation]=useState(false);
+  const [description,setDescription]=useState('');const [analysis,setAnalysis]=useState<Suggestion>(fallback);const [aiState,setAiState]=useState('idle');
+  const [notice,setNotice]=useState('');const [preparing,setPreparing]=useState(false);const [busy,setBusy]=useState(false);
+  const [address,setAddress]=useState<string|null>(null);const [addressNotice,setAddressNotice]=useState('');
+  const [search,setSearch]=useState('');const [results,setResults]=useState<{lat:number;lng:number;label:string}[]>([]);
+  const [matches,setMatches]=useState<{id:string;title:string;ref_code:string;distance_m:number}[]>([]);const [candidate,setCandidate]=useState<string|null>(null);
+  const [originalPath,setOriginalPath]=useState<string|null>(null);const [done,setDone]=useState<{ref:string;token:string|null;annotated:boolean}|null>(null);
+  const analyze=useServerFn(analyzeIssue);const submit=useServerFn(submitIssue);const prepare=useServerFn(prepareOriginalUpload);const annotate=useServerFn(saveAnnotatedPhoto);
+  const geocode=useServerFn(reverseGeocode);const findAddress=useServerFn(searchAddress);
 
-const STEPS = ["Photo", "Location", "Details", "Review"];
-
-async function compressImage(file: File): Promise<string> {
-  const bitmap = await createImageBitmap(file);
-  const max = 1600;
-  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Image processing unavailable");
-  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  return canvas.toDataURL("image/jpeg", 0.82); // re-encoding strips EXIF/GPS metadata
-}
-
-function ReportPage() {
-  const { location } = useLocation();
-  const [step, setStep] = useState(0);
-  const [image, setImage] = useState<string | null>(null);
-  const [description, setDescription] = useState("");
-  const [loc, setLoc] = useState<{ lat: number; lng: number } | null>(null);
-  const [recenter, setRecenter] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
-  const [landmark, setLandmark] = useState("");
-  const [locating, setLocating] = useState(false);
-  const [locationConfirmed, setLocationConfirmed] = useState(false);
-  const [locationNotice, setLocationNotice] = useState("Current location is only a suggestion. Confirm where the photo’s problem actually is.");
-  const [nearbyNotice, setNearbyNotice] = useState("");
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
-  const [aiState, setAiState] = useState<"idle" | "running" | "done" | "fallback">("idle");
-  const [aiNotice, setAiNotice] = useState<string | null>(null);
-  const [needsClass, setNeedsClass] = useState(false);
-  const [nearby, setNearby] = useState<Nearby[]>([]);
-  const [linkTo, setLinkTo] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState<{ ref: string; token: string | null } | null>(null);
-  const idemKey = useMemo(() => crypto.randomUUID(), []);
-  const analyze = useServerFn(analyzeIssue);
-  const submit = useServerFn(submitIssue);
-  const analysisRun = useRef(0);
-  const geocode = useServerFn(reverseGeocode);
-  const [addressResult, setAddressResult] = useState<Awaited<ReturnType<typeof reverseGeocode>> | null>(null);
-  const [addressLoading, setAddressLoading] = useState(false);
-  useEffect(() => {
-    setAddressResult(null);
-    if (!locationConfirmed || !loc) return;
-    let cancelled = false;
-    setAddressLoading(true);
-    geocode({ data: loc }).then(result => { if (!cancelled) setAddressResult(result); }).catch(() => { if (!cancelled) setAddressResult({ address: null, sourceUrl: null, checkedAt: null, notice: 'Address lookup is unavailable. Your report can still be submitted.' }); }).finally(() => { if (!cancelled) setAddressLoading(false); });
-    return () => { cancelled = true; };
-  }, [locationConfirmed, loc]);
-  useEffect(() => { if (loc) return; const suggestion = suggestedReportLocation(location); if (suggestion) { setLoc(suggestion); setLandmark(location?.method === 'manual' ? location.label : ''); } else if (location) setLocationNotice('Device location is too approximate. Place the problem’s exact pin on the map.'); }, [location, loc]);
-
-  async function runAnalysis(img: string | null, desc: string) {
-    const run = ++analysisRun.current;
-    setAiState("running");
-    setAiNotice(null);
-    try {
-      const res = await analyze({ data: { imageDataUrl: img, description: desc || null } });
-      if (run !== analysisRun.current) return;
-      setAnalysis(res.analysis as Analysis);
-      setAiState(res.ok ? "done" : "fallback");
-      if (!res.ok) setAiNotice(res.notice);
-      setNeedsClass(res.analysis.confidence < 0.4);
-    } catch {
-      if (run !== analysisRun.current) return;
-      setAiState("fallback");
-      setAiNotice("AI is unavailable. Please choose the category yourself.");
-      setAnalysis({ category: "other", subcategory: "Other", title: "", summary: desc, severity: "medium", urgency: "Standard", confidence: 0, missing_info: null, safety_warning: null, clarification_question: null, is_civic_issue: true });
-      setNeedsClass(true);
-    }
+  async function freshGps():Promise<PhotoMetadata['gps']>{
+    if(!navigator.geolocation)return null;
+    return new Promise(resolve=>navigator.geolocation.getCurrentPosition(p=>resolve({lat:p.coords.latitude,lng:p.coords.longitude,accuracy:p.coords.accuracy,acquiredAt:new Date(p.timestamp).toISOString(),source:'device-session'}),()=>resolve(null),{enableHighAccuracy:true,maximumAge:0,timeout:10000}));
   }
-
-  async function onFile(file?: File) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) { toast.error("Please choose an image file."); return; }
-    if (file.size > 25 * 1024 * 1024) { toast.error("That image is too large (max 25 MB)."); return; }
-    try {
-      const url = await compressImage(file);
-      setImage(url);
-      setLocationConfirmed(false);
-      setAnalysis(null);
-      setAiState("idle");
-      analysisRun.current += 1;
-    } catch {
-      toast.error("We couldn't read that image. Try another photo.");
-    }
+  async function takePhoto(){setPreparing(true);captureGps.current=await freshGps();setPreparing(false);camera.current?.click();}
+  async function chooseFile(next?:File,source:'camera'|'gallery'='gallery'){
+    if(!next)return;
+    if(!['image/jpeg','image/png','image/webp'].includes(next.type)||next.size>25*1024*1024){toast.error('Choose a JPG, PNG or WebP photo up to 25 MB.');return;}
+    setPreparing(true);setOriginalPath(null);setConfirmed(false);setPoint(null);setAddress(null);setCandidate(null);setMatches([]);setAnalysis(fallback);
+    const sequence=++run.current;
+    try{
+      const exifr=await import('exifr');let embedded:unknown=null;try{embedded=await exifr.parse(next);}catch{/* no metadata */}
+      let metadata=embeddedPhotoMetadata(embedded);
+      if(source==='camera')metadata={...metadata,source:'camera',capturedAt:metadata.capturedAt??new Date().toISOString(),captureTimeSource:metadata.capturedAt?'embedded':'camera-session',gps:captureGps.current??metadata.gps};
+      const preview=await processedPhoto(next);if(sequence!==run.current)return;
+      setFile(next);setImage(preview);setMeta(metadata);
+      if(metadata.gps&&isInIndia(metadata.gps.lat,metadata.gps.lng)&&(metadata.gps.source==='embedded'||(metadata.gps.accuracy??Infinity)<=100)){
+        setPoint({lat:metadata.gps.lat,lng:metadata.gps.lng});setConfirmed(source==='camera');setEditingLocation(source!=='camera');
+        setNotice(source==='camera'?'Device GPS near capture is the suggested report location. Change it if the problem is elsewhere.':'Embedded photo GPS is a suggestion. Confirm where the problem is.');
+      }else{setEditingLocation(true);setNotice('Where is the problem? This photo has no reliable location. Place a pin or search for an address.');}
+      setAiState('running');
+      analyze({data:{imageDataUrl:preview,description:description||null}}).then(result=>{
+        if(sequence!==run.current)return;setAnalysis(result.analysis);setAiState(result.ok?'done':'fallback');if(!result.ok)setNotice(result.notice);
+      }).catch(()=>{if(sequence===run.current){setAiState('fallback');setAnalysis({...fallback,summary:description||fallback.summary});}});
+    }catch{toast.error('This photo could not be read. Please try another image.');}finally{setPreparing(false);}
   }
-
-  function locate() {
-    if (!("geolocation" in navigator)) { toast.error("Location isn't available on this device. Tap the map to place a pin."); return; }
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
-        const next = { lat: p.coords.latitude, lng: p.coords.longitude };
-        setLocationConfirmed(false);
-        if (p.coords.accuracy > 100) { setLocationNotice(`GPS is approximate (within ${Math.round(p.coords.accuracy)} m). Place an exact map pin before continuing.`); setLocating(false); return; }
-        setLocationNotice(`Suggested device location (within ${Math.round(p.coords.accuracy)} m). Confirm the problem location; this does not verify photo capture location.`);
-        setLoc(next);
-        setRecenter({ ...next, zoom: 17 });
-        setLocating(false);
-      },
-      () => {
-        setLocating(false);
-        setLocationNotice("Location permission was denied or unavailable. Place a pin manually; reporting still works.");
-      },
-      { enableHighAccuracy: true, timeout: 12000 },
-    );
+  useEffect(()=>{
+    if(!confirmed||!point)return;let cancelled=false;setAddressNotice('Finding the place name…');
+    geocode({data:point}).then(r=>{if(!cancelled){setAddress(r.address);setAddressNotice(r.notice??'');}}).catch(()=>{if(!cancelled)setAddressNotice('Place lookup unavailable; your confirmed pin remains usable.');});
+    return()=>{cancelled=true;};
+  },[confirmed,point?.lat,point?.lng]);
+  useEffect(()=>{
+    setMatches([]);if(!confirmed||!point||analysis.category==='other')return;let cancelled=false;
+    supabase.rpc('nearby_issues',{_lat:point.lat,_lng:point.lng,_radius_m:120,_category:analysis.category}).then(r=>{if(!cancelled)setMatches(r.data??[]);});return()=>{cancelled=true;};
+  },[confirmed,point?.lat,point?.lng,analysis.category]);
+  async function searchPlace(){try{const r=await findAddress({data:{query:search}});setResults(r.results);setAddressNotice(r.notice??'');}catch{setAddressNotice('Address search unavailable. Place a pin instead.');}}
+  async function submitReport(){
+    if(!file||!image||!point||!confirmed||busy)return;setBusy(true);
+    try{
+      let path=originalPath;
+      if(!path){const upload=await prepare({data:{key,mime:file.type,size:file.size}});const stored=await supabase.storage.from('issue-photos').uploadToSignedUrl(upload.path,upload.token,file,{contentType:file.type});if(stored.error)throw new Error('Original photo upload failed. Try again.');path=upload.path;setOriginalPath(path);}
+      const suggestion=aiState==='done'?analysis:{...analysis,title:analysis.title.trim()||fallback.title,summary:description||analysis.summary};
+      const res=await submit({data:{idempotencyKey:key,imageDataUrl:image,originalPath:path,photoMetadata:meta,description:description||null,title:suggestion.title.trim()||fallback.title,summary:suggestion.summary,category:suggestion.category,subcategory:suggestion.subcategory,severity:suggestion.severity,aiConfidence:aiState==='done'?suggestion.confidence:null,safetyWarning:suggestion.safety_warning,needsClassification:aiState!=='done'||suggestion.confidence<0.4,lat:point.lat,lng:point.lng,landmark:address?.slice(0,200)??null,duplicateOf:candidate}});
+      saveTracked({ref:res.ref,token:res.token??undefined,title:suggestion.title,savedAt:new Date().toISOString()});
+      let annotated=false;
+      if(res.token){try{const output=await annotatedPhoto(image,annotationLines(meta,point,address,res.ref));await annotate({data:{ref:res.ref,token:res.token,imageDataUrl:output}});annotated=true;}catch{toast.warning('Report saved. Its annotated copy could not be saved; the original is retained.');}}
+      setDone({ref:res.ref,token:res.token,annotated});window.scrollTo({top:0});
+    }catch(e){toast.error(e instanceof Error?e.message:'Report could not be saved.');}finally{setBusy(false);}
   }
-
-  // Duplicate check when entering review
-  useEffect(() => {
-    if (step !== 3 || !loc || !analysis) return;
-    let cancelled = false;
-    setNearbyNotice("Checking nearby reports…");
-    supabase
-      .rpc("nearby_issues", { _lat: loc.lat, _lng: loc.lng, _radius_m: 120, _category: analysis.category })
-      .then(({ data, error }) => { if (cancelled) return; setNearby((data as Nearby[]) ?? []); setNearbyNotice(error ? "Nearby search is unavailable. Your report can still be submitted for staff review." : ""); });
-    return () => { cancelled = true; };
-  }, [step, loc, analysis]);
-
-  const locValid = !!loc && isInIndia(loc.lat, loc.lng) && locationConfirmed;
-  const canNext = [!!image, locValid, !!analysis && (analysis.title?.trim().length ?? 0) >= 3, true][step];
-
-  async function onSubmit() {
-    if (submitting || !image || !loc || !analysis || !locValid) return;
-    setSubmitting(true);
-    try {
-      const res = await submit({
-        data: {
-          idempotencyKey: idemKey,
-          imageDataUrl: image,
-          description: description || null,
-          title: analysis.title.trim(),
-          summary: analysis.summary || null,
-          category: analysis.category,
-          subcategory: analysis.subcategory || null,
-          severity: analysis.severity,
-          aiConfidence: aiState === "done" ? analysis.confidence : null,
-          safetyWarning: analysis.safety_warning,
-          needsClassification: needsClass,
-          lat: loc.lat,
-          lng: loc.lng,
-          landmark: landmark || null,
-          duplicateOf: linkTo,
-        },
-      });
-      saveTracked({ ref: res.ref, token: res.token ?? undefined, title: analysis.title, savedAt: new Date().toISOString() });
-      setDone({ ref: res.ref, token: res.token });
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (e) {
-      toast.error((e as Error).message || "Submission failed. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  if (done && loc) return <Confirmation done={done} title={analysis?.title ?? ""} loc={loc} needsClass={needsClass} />;
-
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold sm:text-4xl">Report a problem</h1>
-        <p className="mt-1 text-muted-foreground">Photo, confirmed location, and a tracking reference. No sign-up.</p>
-      </div>
-
-      {/* Stepper */}
-      <ol className="mb-8 grid grid-cols-4 gap-2">
-        {STEPS.map((s, i) => (
-          <li key={s} className="space-y-2">
-            <div className={cn("h-1.5 rounded-full transition-colors", i <= step ? "bg-primary" : "bg-border")} />
-            <p className={cn("text-xs font-medium sm:text-sm", i === step ? "text-foreground" : "text-muted-foreground")}>
-              <span className="font-mono">{i + 1}.</span> {s}
-            </p>
-          </li>
-        ))}
-      </ol>
-
-      <div className="border-t pt-5 sm:pt-8">
-        {step === 0 && (
-          <div className="space-y-6">
-            {image ? (
-              <div className="relative overflow-hidden rounded-2xl">
-                <img src={image} alt="Selected issue" className="max-h-[420px] w-full object-cover" />
-                <label className="absolute bottom-3 right-3 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-card/95 px-3 py-2 text-sm font-medium shadow-soft backdrop-blur">
-                  <RefreshCw className="h-4 w-4" /> Change photo
-                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
-                </label>
-                {aiState === "running" && (
-                  <span className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full bg-ink/90 px-3 py-1 text-xs font-medium text-ink-foreground">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> AI is reading your photo…
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-primary/40 bg-primary-soft px-6 py-12 text-center transition hover:border-primary">
-                  <span className="rounded-2xl bg-primary p-4 text-primary-foreground shadow-lift transition group-hover:scale-105"><Camera className="h-7 w-7" /></span>
-                  <span className="font-semibold">Take a photo</span>
-                  <span className="text-xs text-muted-foreground">Opens your camera on mobile</span>
-                  <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
-                </label>
-                <label className="group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-12 text-center transition hover:border-primary/50 hover:bg-secondary">
-                  <span className="rounded-2xl bg-secondary p-4 text-foreground transition group-hover:scale-105"><ImagePlus className="h-7 w-7" /></span>
-                  <span className="font-semibold">Upload from gallery</span>
-                  <span className="text-xs text-muted-foreground">JPG, PNG or WebP</span>
-                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
-                </label>
-              </div>
-            )}
-            <DescriptionInput value={description} onChange={setDescription} />
-          </div>
-        )}
-
-        {step === 1 && (
-          <div className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">Where is it?</h2>
-                <p className="text-sm text-muted-foreground">We use the location only to place the report on the map. Tap the map or drag the pin to adjust.</p>
-              </div>
-              <Button onClick={locate} disabled={locating} className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-ink-foreground disabled:opacity-60">
-                {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />} Use my location
-              </Button>
-            </div>
-            <p role="status" className="text-sm text-muted-foreground">{locationNotice}</p>
-            <div className="h-[360px] overflow-hidden rounded-2xl border">
-              <LazyMap center={loc ?? BENGALURU} zoom={loc ? 17 : 12} picked={loc} onPick={(lat, lng) => { setLoc({ lat, lng }); setLocationConfirmed(false); }} recenter={recenter} />
-            </div>
-            {loc && (
-              <p className={cn("flex items-center gap-2 text-sm", isInBengaluru(loc.lat, loc.lng) ? "text-success" : isInIndia(loc.lat, loc.lng) ? "text-warning-foreground" : "text-destructive")}>
-                <MapPin className="h-4 w-4" />
-                {isInBengaluru(loc.lat, loc.lng)
-                  ? `Inside Bengaluru · ${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`
-                  : isInIndia(loc.lat, loc.lng)
-                    ? "Community reporting available. Verified local authority information may be incomplete."
-                    : "This location is outside India. Please place the pin where the problem is."}
-              </p>
-            )}
-            <Button variant={locationConfirmed ? "outline" : "default"} disabled={!loc || !isInIndia(loc.lat, loc.lng)} onClick={() => setLocationConfirmed(true)}><CheckCircle2 className="h-4 w-4" />{locationConfirmed ? "Problem location confirmed" : "Confirm this problem location"}</Button>
-            {locationConfirmed && <p role="status" className="text-sm text-muted-foreground">{addressLoading ? 'Finding the street address…' : addressResult?.address ?? addressResult?.notice}</p>}
-            {locationConfirmed && loc && <CivicInfo lat={loc.lat} lng={loc.lng} />}
-            <div>
-              <label className="text-sm font-medium" htmlFor="landmark">Landmark (optional)</label>
-              <input id="landmark" value={landmark} maxLength={200} onChange={(e) => setLandmark(e.target.value)} placeholder="e.g. Opposite Indiranagar Metro, near bus stop" className="mt-1.5 h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-xl font-semibold">Check the details</h2>
-              {aiState === "done" && analysis && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">
-                  <Sparkles className="h-3.5 w-3.5" /> AI · {Math.round(analysis.confidence * 100)}% confident
-                </span>
-              )}
-            </div>
-            {aiState === "running" && (
-              <div className="flex items-center gap-3 rounded-xl bg-secondary p-4 text-sm"><Loader2 className="h-4 w-4 animate-spin text-primary" /> AI is analysing your photo. This usually takes a few seconds…</div>
-            )}
-            {aiNotice && <div className="flex items-start gap-2 rounded-xl bg-warning-soft p-4 text-sm text-warning-foreground"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />{aiNotice}</div>}
-            {analysis?.safety_warning && <div className="flex items-start gap-2 rounded-xl bg-destructive-soft p-4 text-sm text-destructive"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><span><strong>Safety:</strong> {analysis.safety_warning}</span></div>}
-            {analysis?.clarification_question && (
-              <div className="rounded-xl border border-primary/30 bg-primary-soft p-4 text-sm">
-                <p className="font-medium">{analysis.clarification_question}</p>
-                <p className="mt-1 text-muted-foreground">Add a short description below, or submit as "Needs classification" and staff will review it.</p>
-                <Button variant="ghost" onClick={() => runAnalysis(image, description)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"><RefreshCw className="h-3.5 w-3.5" /> Re-analyse with my description</Button>
-              </div>
-            )}
-            {aiState === "running" && <Button variant="outline" onClick={() => { analysisRun.current += 1; setAiState("fallback"); setAiNotice("Manual details selected. Staff will review the classification."); setNeedsClass(true); setAnalysis({category:"other",subcategory:"Other",title:"",summary:description,severity:"medium",urgency:"Standard",confidence:0,missing_info:null,safety_warning:null,clarification_question:null,is_civic_issue:true}); }}>Enter details manually</Button>}
-            {analysis && (
-              <>
-                <Field label="Title">
-                  <input aria-label="Problem title" value={analysis.title} maxLength={120} onChange={(e) => setAnalysis({ ...analysis, title: e.target.value })} placeholder="Short description of the problem" className="h-11 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-                </Field>
-                <Field label="Category">
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {CATEGORIES.map((c) => (
-                      <Button variant="outline" key={c.id} type="button" onClick={() => setAnalysis({ ...analysis, category: c.id, subcategory: c.subs[0] })} className={cn("flex h-auto justify-start gap-2 whitespace-normal rounded-lg border px-3 py-2.5 text-left text-sm transition", analysis.category === c.id ? "border-primary bg-primary-soft font-semibold text-primary" : "hover:bg-secondary")}>
-                        <span>{c.emoji}</span><span className="whitespace-normal">{c.label}</span>
-                      </Button>
-                    ))}
-                  </div>
-                </Field>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Type">
-                    <select value={analysis.subcategory} onChange={(e) => setAnalysis({ ...analysis, subcategory: e.target.value })} className="h-11 w-full rounded-xl border bg-background px-3 text-sm">
-                      {[...new Set([analysis.subcategory, ...categoryById(analysis.category).subs])].filter(Boolean).map((s) => <option key={s}>{s}</option>)}
-                    </select>
-                  </Field>
-                  <Field label="How serious is it?">
-                    <div className="grid grid-cols-4 gap-1 rounded-xl bg-secondary p-1">
-                      {SEVERITIES.map((s) => (
-                        <Button variant="ghost" key={s} type="button" onClick={() => setAnalysis({ ...analysis, severity: s })} className={cn("rounded-lg px-1 py-2 text-xs font-semibold transition", analysis.severity === s ? (s === "critical" ? "bg-destructive text-destructive-foreground" : "bg-card shadow-soft") : "text-muted-foreground")}>
-                          {SEVERITY_META[s].label}
-                        </Button>
-                      ))}
-                    </div>
-                  </Field>
-                </div>
-                <Field label="Summary">
-                  <textarea value={analysis.summary} maxLength={600} rows={3} onChange={(e) => setAnalysis({ ...analysis, summary: e.target.value })} className="w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-                </Field>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={needsClass} onChange={(e) => setNeedsClass(e.target.checked)} className="h-4 w-4 accent-primary" />
-                  I'm not sure about the category — ask staff to classify it
-                </label>
-              </>
-            )}
-          </div>
-        )}
-
-        {step === 3 && analysis && loc && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold">Review and submit</h2>
-            <div className="grid gap-4 sm:grid-cols-[180px_1fr]">
-              {image && <img src={image} alt="" className="aspect-square w-full rounded-2xl object-cover" />}
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">{categoryById(analysis.category).emoji} {categoryById(analysis.category).label} · {analysis.subcategory}</p>
-                <p className="text-lg font-semibold">{analysis.title}</p>
-                <p className="text-sm text-muted-foreground">{analysis.summary}</p>
-                <p className="text-sm"><span className="text-muted-foreground">Severity:</span> <strong>{SEVERITY_META[analysis.severity].label}</strong></p>
-                <p className="text-sm"><span className="text-muted-foreground">Confirmed report location:</span> {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)}</p>
-                {addressResult?.address && <p className="text-sm">{addressResult.address} · © OpenStreetMap contributors</p>}
-                <p className="text-xs text-muted-foreground">Location attached during reporting; photo capture location and time are not verified.</p>
-                {landmark && <p className="text-sm"><span className="text-muted-foreground">Landmark:</span> {landmark}</p>}
-              </div>
-            </div>
-            <CivicInfo lat={loc.lat} lng={loc.lng} category={analysis.category} subcategory={analysis.subcategory} />
-            {nearbyNotice && <p role="status" className="text-sm text-muted-foreground">{nearbyNotice}</p>}
-            {nearby.length > 0 && (
-              <div className="rounded-2xl border border-warning/40 bg-warning-soft p-4">
-                <p className="flex items-center gap-2 font-semibold text-warning-foreground"><Link2 className="h-4 w-4" /> This might already be reported</p>
-                <p className="mt-1 text-sm text-warning-foreground/80">Flagging a match saves your report separately for staff review. It does not merge uncertain reports.</p>
-                <div className="mt-3 space-y-2">
-                  {nearby.map((n) => (
-                    <label key={n.id} className={cn("flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-sm", linkTo === n.id && "border-primary ring-2 ring-primary/20")}>
-                      <input type="radio" name="dup" checked={linkTo === n.id} onChange={() => setLinkTo(n.id)} className="accent-primary" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium">{n.title}</span>
-                        <span className="text-xs text-muted-foreground">{n.ref_code} · {Math.round(n.distance_m)} m away · {STATUS_META[n.status as IssueStatus]?.label}</span>
-                      </span>
-                    </label>
-                  ))}
-                  <label className={cn("flex cursor-pointer items-center gap-3 rounded-xl border bg-card p-3 text-sm", linkTo === null && "border-primary ring-2 ring-primary/20")}>
-                    <input type="radio" name="dup" checked={linkTo === null} onChange={() => setLinkTo(null)} className="accent-primary" />
-                    It's a different problem
-                  </label>
-                </div>
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">By submitting, your photo, location and description become publicly visible. Avoid including faces or personal information.</p>
-          </div>
-        )}
-
-        <div className="mt-8 flex items-center justify-between border-t pt-6">
-          <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} className="inline-flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-semibold text-muted-foreground transition hover:bg-secondary disabled:invisible">
-            <ArrowLeft className="h-4 w-4" /> Back
-          </Button>
-          {step < 3 ? (
-            <Button
-              onClick={() => {
-                if (step === 1 && aiState === "idle") runAnalysis(image, description);
-                setStep((s) => s + 1);
-              }}
-              disabled={!canNext}
-              className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90 disabled:opacity-40"
-            >
-              Continue <ArrowRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button onClick={onSubmit} disabled={submitting} className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lift transition hover:bg-primary/90 disabled:opacity-60">
-              {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting…</> : <>Submit report <CheckCircle2 className="h-4 w-4" /></>}
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <p className="text-sm font-medium">{label}</p>
-      {children}
-    </div>
-  );
-}
-
-type SpeechRec = { start: () => void; stop: () => void; lang: string; interimResults: boolean; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void };
-
-function DescriptionInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [listening, setListening] = useState(false);
-  const [supported, setSupported] = useState(false);
-  const recRef = useRef<SpeechRec | null>(null);
-  useEffect(() => {
-    const w = window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec };
-    setSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition));
-  }, []);
-  function toggle() {
-    if (listening) { recRef.current?.stop(); return; }
-    const w = window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec };
-    const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!Ctor) return;
-    const rec = new Ctor();
-    rec.lang = "en-IN";
-    rec.interimResults = false;
-    rec.onresult = (e) => onChange((value ? value + " " : "") + Array.from(e.results).map((r) => r[0]?.transcript ?? '').join(" "));
-    rec.onend = () => setListening(false);
-    recRef.current = rec;
-    rec.start();
-    setListening(true);
-  }
-  return (
-    <div>
-      <div className="flex items-center justify-between">
-        <label htmlFor="desc" className="text-sm font-medium">Anything to add? <span className="font-normal text-muted-foreground">(optional)</span></label>
-        {supported && (
-          <Button variant="ghost" type="button" onClick={toggle} className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold", listening ? "bg-destructive text-destructive-foreground" : "bg-secondary")}>
-            {listening ? <><MicOff className="h-3.5 w-3.5" /> Stop</> : <><Mic className="h-3.5 w-3.5" /> Speak</>}
-          </Button>
-        )}
-      </div>
-      <textarea id="desc" value={value} onChange={(e) => onChange(e.target.value)} maxLength={1000} rows={3} placeholder="e.g. Pothole has been growing for 2 weeks, bikes are skidding at night" className="mt-1.5 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-    </div>
-  );
-}
-
-function Confirmation({ done, title, loc, needsClass }: { done: { ref: string; token: string | null }; title: string; loc: { lat: number; lng: number }; needsClass: boolean }) {
-  const privateLink = done.token ? `${typeof window !== "undefined" ? window.location.origin : ""}/issues/${done.ref}#t=${done.token}` : null;
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-      <div className="animate-rise rounded-3xl border bg-card p-6 text-center shadow-lift sm:p-10">
-        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-soft text-success"><CheckCircle2 className="h-9 w-9" /></span>
-        <h1 className="mt-5 text-3xl font-bold">Report received</h1>
-        <p className="mt-2 text-muted-foreground">Thank you for helping fix your city.</p>
-        <div className="mt-6 inline-flex flex-col items-center rounded-2xl bg-secondary px-8 py-4">
-          <span className="text-xs uppercase tracking-wider text-muted-foreground">Tracking reference</span>
-          <span className="font-mono text-3xl font-semibold tracking-wider">{done.ref}</span>
-        </div>
-        <dl className="mt-6 grid grid-cols-2 gap-3 text-left text-sm">
-          <div className="rounded-xl border p-3"><dt className="text-xs text-muted-foreground">Status</dt><dd className="font-semibold">{needsClass ? "Needs classification" : "Submitted"}</dd></div>
-          <div className="rounded-xl border p-3"><dt className="text-xs text-muted-foreground">Submitted</dt><dd className="font-semibold">{new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</dd></div>
-          <div className="col-span-2 rounded-xl border p-3"><dt className="text-xs text-muted-foreground">Issue</dt><dd className="font-semibold">{title}</dd><dd className="text-xs text-muted-foreground">{loc.lat.toFixed(5)}, {loc.lng.toFixed(5)}</dd></div>
-        </dl>
-        {privateLink && (
-          <div className="mt-6 rounded-2xl border border-primary/30 bg-primary-soft p-4 text-left">
-            <p className="text-sm font-semibold">Your private tracking link</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Keep this safe. It lets you confirm or dispute the fix later from any device. It's also saved on this device.</p>
-            <div className="mt-3 flex gap-2">
-              <input readOnly value={privateLink} className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 font-mono text-xs" onFocus={(e) => e.target.select()} />
-              <Button onClick={() => { navigator.clipboard.writeText(privateLink); toast.success("Link copied"); }} className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground"><Copy className="h-4 w-4" /> Copy</Button>
-            </div>
-          </div>
-        )}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link to="/issues/$ref" params={{ ref: done.ref }} {...(done.token ? { hash: `t=${done.token}` } : {})} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-ink px-5 text-sm font-semibold text-ink-foreground">View public issue <ArrowRight className="h-4 w-4" /></Link>
-          <a href="/report" className="inline-flex h-11 items-center justify-center rounded-xl border px-5 text-sm font-semibold hover:bg-secondary">Report another</a>
-        </div>
-      </div>
-    </div>
-  );
+  if(done)return <div className="mx-auto max-w-xl px-4 py-12"><CheckCircle2 className="h-12 w-12 text-success"/><h1 className="mt-4 text-3xl font-bold">Report received</h1><p className="mt-3 font-mono text-2xl">{done.ref}</p><p className="mt-3 text-sm text-muted-foreground">Your original photo is retained privately.{done.annotated?' A separate annotated copy is ready.':''} No government delivery has been recorded.</p>{done.token&&<div className="mt-6 border-y py-5"><p className="text-sm font-semibold">Keep your private tracking link safe</p><Button variant="outline" className="mt-3" onClick={()=>{navigator.clipboard.writeText(`${window.location.origin}/issues/${done.ref}#t=${done.token}`);toast.success('Private link copied');}}><Copy className="h-4 w-4"/>Copy private link</Button></div>}<Button asChild className="mt-6"><Link to="/issues/$ref" params={{ref:done.ref}} {...(done.token?{hash:`t=${done.token}`}:{})}>Track report<ArrowRight className="h-4 w-4"/></Link></Button></div>;
+  return <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6"><h1 className="text-3xl font-bold">Report a problem</h1><p className="mt-2 text-sm text-muted-foreground">A photo. The problem location. Your voice.</p>
+    <input ref={camera} aria-label="Camera photo" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="sr-only" onChange={e=>chooseFile(e.target.files?.[0],'camera')}/>
+    <input ref={gallery} aria-label="Gallery photo" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={e=>chooseFile(e.target.files?.[0],'gallery')}/>
+    {!image?<div className="mt-8 grid gap-3 sm:grid-cols-2"><Button variant="outline" className="h-44 flex-col gap-3 border-dashed bg-primary-soft" disabled={preparing} onClick={takePhoto}>{preparing?<Loader2 className="h-7 w-7 animate-spin"/>:<Camera className="h-7 w-7 text-primary"/>}Take a photo</Button><Button variant="outline" className="h-44 flex-col gap-3 border-dashed" disabled={preparing} onClick={()=>gallery.current?.click()}><ImagePlus className="h-7 w-7 text-primary"/>Upload from gallery</Button></div>:<div className="mt-6 space-y-5">
+      <div className="relative"><img src={image} alt="Your report photo" className="max-h-96 w-full rounded-lg object-contain bg-muted"/><Button variant="secondary" size="sm" className="absolute right-3 top-3" disabled={busy} onClick={()=>gallery.current?.click()}><ImagePlus className="h-4 w-4"/>Change photo</Button></div>
+      <div className="border-y py-4"><div className="flex items-start justify-between gap-3"><div><p className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4 text-primary"/>{address??(confirmed?'Selected report location':'Where is the problem?')}</p>{point&&<p className="mt-1 font-mono text-xs text-muted-foreground">{point.lat.toFixed(5)}, {point.lng.toFixed(5)}</p>}</div><Button size="sm" variant="outline" onClick={()=>setEditingLocation(!editingLocation)}><Pencil className="h-3 w-3"/>Change</Button></div><p role="status" className="mt-2 text-xs text-muted-foreground">{notice}</p>
+      {editingLocation&&<div className="mt-4 space-y-3"><div className="flex gap-2"><input aria-label="Search problem address" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Locality or address" className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 text-sm"/><Button variant="outline" size="icon" aria-label="Search address" disabled={search.trim().length<3} onClick={searchPlace}><Search className="h-4 w-4"/></Button></div>{results.map(r=><Button key={`${r.lat}-${r.lng}`} variant="ghost" className="h-auto w-full whitespace-normal text-left" onClick={()=>{setPoint({lat:r.lat,lng:r.lng});setConfirmed(false);setResults([]);}}>{r.label}</Button>)}<div className="h-64 overflow-hidden rounded-lg border"><LazyMap center={point??BENGALURU} picked={point} recenter={point?{...point,zoom:16}:null} zoom={point?16:12} onPick={(lat,lng)=>{setPoint({lat,lng});setConfirmed(false);setAddress(null);}}/></div><Button disabled={!point||!isInIndia(point.lat,point.lng)} onClick={()=>{setConfirmed(true);setEditingLocation(false);}}><CheckCircle2 className="h-4 w-4"/>Confirm problem location</Button>{point&&!isInIndia(point.lat,point.lng)&&<p className="text-sm text-destructive">Choose a problem location within India.</p>}</div>}{addressNotice&&<p className="mt-2 text-xs text-muted-foreground">{addressNotice}</p>}</div>
+      <label className="block text-sm font-medium">Anything to add? <span className="text-muted-foreground">(optional)</span><textarea aria-label="Optional description" value={description} maxLength={1000} onChange={e=>setDescription(e.target.value)} rows={2} className="mt-2 w-full rounded-lg border bg-card p-3 font-normal"/></label>
+      <div><p role="status" className="text-sm">{aiState==='running'?'Reading your photo… You can submit now for staff review.':aiState==='done'?`${categoryById(analysis.category).label} · AI suggestion, not an official assessment`:'Staff will review the category.'}</p>{analysis.safety_warning&&<p className="mt-2 text-sm text-destructive">{analysis.safety_warning}</p>}<details className="mt-3"><summary className="cursor-pointer text-sm font-medium text-primary">Edit suggested details</summary><div className="mt-3 space-y-3"><input aria-label="Problem title" value={analysis.title} maxLength={120} onChange={e=>setAnalysis({...analysis,title:e.target.value})} className="h-10 w-full rounded-lg border bg-card px-3 text-sm"/><select aria-label="Suggested category" value={analysis.category} onChange={e=>setAnalysis({...analysis,category:e.target.value,subcategory:categoryById(e.target.value).subs[0]})} className="h-10 w-full rounded-lg border bg-card px-3 text-sm">{CATEGORIES.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></div></details></div>
+      {matches.length>0&&<details><summary className="cursor-pointer text-sm font-semibold">Nearby reports that may match</summary><div className="mt-3 space-y-2">{matches.map(n=><label key={n.id} className="flex gap-2 text-sm"><input type="radio" name="candidate" checked={candidate===n.id} onChange={()=>setCandidate(n.id)}/><span>{n.title} · {Math.round(n.distance_m)} m · {n.ref_code}</span></label>)}<label className="flex gap-2 text-sm"><input type="radio" name="candidate" checked={!candidate} onChange={()=>setCandidate(null)}/>Different problem</label><p className="text-xs text-muted-foreground">Your report stays separate. Staff decide whether it matches.</p></div></details>}
+      {confirmed&&point&&<details><summary className="cursor-pointer text-sm font-semibold">Local responsibility details</summary><CivicInfo lat={point.lat} lng={point.lng} category={analysis.category}/></details>}
+      <p className="text-xs text-muted-foreground">The display photo, report location and description are public. Avoid faces and personal details; the untouched original is private.</p><Button className="h-12 w-full" disabled={!confirmed||!point||busy||preparing} onClick={submitReport}>{busy?<><Loader2 className="h-4 w-4 animate-spin"/>Saving report…</>:<><CheckCircle2 className="h-4 w-4"/>Submit report</>}</Button>
+    </div>}
+  </div>;
 }
