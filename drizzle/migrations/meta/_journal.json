@@ -99,6 +99,13 @@
       "when": 1792836856184,
       "tag": "0013_unique_hashed_reporter_capabilities",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792840861370,
+      "tag": "0014_lifecycle_and_role_values",
+      "breakpoints": true
     }
   ]
 }
