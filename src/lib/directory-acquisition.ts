@@ -1,0 +1,7 @@
+export const SOURCE_HOSTS = ['kla.kar.nic.in','bbmptax.karnataka.gov.in','bbmpeaasthi.karnataka.gov.in','gba.karnataka.gov.in','www.gba.karnataka.gov.in','bbmp.gov.in','www.bbmp.gov.in','sansad.in','commons.wikimedia.org','upload.wikimedia.org'];
+export function allowedDirectoryUrl(value: string) { try { const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&SOURCE_HOSTS.includes(u.hostname)&&(!u.port||u.port==='443'); } catch { return false; } }
+export function validPortrait(size:number,width:number,height:number,type:string) {return size>=1024&&size<=5*1024*1024&&width>=96&&height>=96&&width<=6000&&height<=6000&&['jpg','png','webp'].includes(type);}
+export function directoryQuality(rows: {kind:string;photo_verified:boolean;photo_url:string|null;contact_phone:string|null;contact_email:string|null;verification_status:string;full_name:string;designation:string}[]) {
+  const unique=new Map<string,typeof rows[number]>();for(const r of rows)unique.set(`${r.kind}|${r.full_name}|${r.designation}`,r);
+  const records=[...unique.values()];return {records:rows.length,distinct:records.length,portraits:records.filter(r=>r.photo_verified&&r.photo_url).length,missing:records.filter(r=>!r.photo_verified||!r.photo_url).length,contacts:records.filter(r=>r.verification_status==='verified'&&(r.contact_phone||r.contact_email)).length,pending:records.filter(r=>r.verification_status!=='verified').length};
+}
