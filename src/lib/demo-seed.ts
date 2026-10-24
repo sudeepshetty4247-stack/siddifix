@@ -97,8 +97,12 @@ export function buildDemoDataset(args: {
     // Timeline: created first, then acknowledgement, progress, resolution — never out of order.
     const createdHoursBack = bucket === 'new' ? rnd() * 20 : 24 + rnd() * 90 * 24;
     let created = now - createdHoursBack * 3600000;
-    let ackDue = created + target.ack_hours * 3600000;
-    let resolveDue = created + target.resolve_hours * 3600000;
+    // Duplicate linking is decided before the timeline so a linked report never predates its incident.
+    const isDuplicate = bucket !== 'unassigned' && rnd() < 0.05 && (canonicalByCategory.get(cat.id)?.length ?? 0) > 0;
+    const duplicateTarget = isDuplicate ? issues[pick(rnd, canonicalByCategory.get(cat.id)!)]! : null;
+    if (duplicateTarget) created = Math.max(created, new Date(duplicateTarget.created_at).getTime() + 3600000);
+    const ackDue = created + target.ack_hours * 3600000;
+    const resolveDue = created + target.resolve_hours * 3600000;
     const lat = ward.lat + (rnd() - 0.5) * 0.004;
     const lng = ward.lng + (rnd() - 0.5) * 0.004;
     const sub = pick(rnd, cat.subs);

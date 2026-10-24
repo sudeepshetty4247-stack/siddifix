@@ -59,9 +59,9 @@ describe('Demo tagging, purge and master-data validation', () => {
     await db.query(`INSERT INTO issue_events VALUES ('${demoId}')`);
     await db.query(`INSERT INTO issue_secrets VALUES ('${demoId}','demo-v1')`);
     await db.query(`INSERT INTO issue_feedback VALUES ('${demoId}')`);
-    const r = await db.query<{ issues: number; secrets: number }>(`SELECT * FROM purge_demo_dataset('demo-v1')`);
-    expect(r.rows[0]!.issues).toBe(2);
-    expect(r.rows[0]!.secrets).toBe(1);
+    const r = await db.query<{ r: { issues: number; secrets: number } }>(`SELECT purge_demo_dataset('demo-v1') AS r`);
+    expect(r.rows[0]!.r.issues).toBe(2);
+    expect(r.rows[0]!.r.secrets).toBe(1);
     const left = await db.query<{ n: number }>(`SELECT count(*)::int n FROM issues`);
     expect(left.rows[0]!.n).toBe(1);
     const refs = await db.query<{ ref_code: string }>(`SELECT ref_code FROM issues`);
