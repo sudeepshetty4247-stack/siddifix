@@ -5,6 +5,7 @@ import { resolveCivicRouting, type CivicRouting, type Ward } from '@/lib/directo
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { AuthorityPortrait, PortraitCredit } from '@/components/civic/AuthorityPortrait';
+import { authorityMatchesWard } from '@/lib/authority-scope';
 
 const MP_SOURCE = 'https://results.eci.gov.in/PcResultGenJune2024/index.htm';
 const MLA_SOURCE = 'https://results.eci.gov.in/ResultAcGenMay2023/partywiseresult-S10.htm';
@@ -63,7 +64,7 @@ export function CivicInfo({lat,lng,category,subcategory,snapshot}:{lat:number;ln
   if(!directory.data)return <div className="py-4"><p className="text-sm">Local information is unavailable.</p><Button variant="outline" onClick={()=>directory.refetch()}>Try again</Button></div>;
   const routing=resolveCivicRouting(directory.data,lat,lng,category,subcategory??undefined);const {ward,route}=routing;
   if(!ward)return <section className="border-t py-5"><h2 className="text-lg font-semibold">Local responsibility</h2><p className="mt-2 text-sm text-muted-foreground">{routing.reviewReason??'No supported ward matches this point.'} Your report remains available for CivicFix ownership review.</p></section>;
-  const relevant=(people.data??[]).filter(p=>(!p.ward_identifier||p.ward_identifier===ward.identifier)&&(!p.corporation||p.corporation===ward.corporation)&&(!p.category||p.category===category)&&(!p.zone||p.zone===ward.zone));
+  const relevant=(people.data??[]).filter(p=>authorityMatchesWard(p,ward,category));
   const officers=relevant.filter(p=>p.kind==='operational'||p.kind==='leadership');
   const gba=directory.data.authorities.filter(a=>a.phone&&/Greater Bengaluru/i.test(a.name));
   const city=[...routing.candidates.filter(a=>a.phone),...gba].filter((a,i,all)=>all.findIndex(o=>o.id===a.id)===i).slice(0,3);
