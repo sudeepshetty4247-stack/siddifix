@@ -1,5 +1,12 @@
 # CivicFix roadmap
 
+## Authority portraits and photo QA — 24 October 2026
+- [x] Diagnose directory photo fields and elected-card rendering; initially all 781 profiles lacked photo URL/source. Elected profiles were also wrongly filtered by constituency versus city zone.
+- [x] Shared source-backed portrait display with fixed dimensions, loading state and initials fallback; scope case-page people reads to the relevant ward.
+- [x] Integrate three licensed Commons portraits with independent verification, credits and licence links across 235 existing ward-linked profiles; other 546 profiles retain initials. No official-hosted portraits or guessed officer photos claimed.
+- [x] Build 40 licensed local photo fixtures covering 20 subjects, with per-file provenance, hash and independent scenario coordinates; 128 tests passed. Real case portrait decoded at desktop and 390px; fixed case-page horizontal overflow. Evidence and limits: docs/AUTHORITY_PHOTO_QA_2026-10-24.md.
+- [ ] Bulk persisted photo E2E tests — blocked until a separate test backend is available; preview and published app share the live database. Do not seed public sample complaints.
+
 ## Current priority — simplify and complete the real product
 - [x] Operational teams model (master prompt §3): civic_teams table (name, department, categories, wards, supervisor, fallback, active, audit), automatic category+ward routing on every new report, routing-exception queue page for supervisors, admin team manager in Team Management; both routing paths verified in the database (assigned + exception), test rows removed.
 - [x] Overdue & Escalated page (cases past promised ETA with overdue age + escalate-with-reason action, escalated list, 30 s refresh) and Notifications & Handoffs page (honest channel states: posted in app / external not configured / failed) added to staff nav. Build OK, 56 tests pass.

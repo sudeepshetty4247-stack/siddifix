@@ -157,7 +157,7 @@ function IssuePage() {
       {i.duplicate_of && <section className="mt-6 space-y-3 border-y bg-primary-soft p-4"><h2 className="font-semibold">This original report is linked to an underlying issue</h2><p className="text-sm">Your reference, photo and history are preserved. Current work and resolution are tracked on the canonical issue.</p>{canonical.data?<Button asChild><Link to="/issues/$ref" params={{ref:canonical.data.ref_code}}>Track {canonical.data.ref_code} · {canonical.data.title}</Link></Button>:<p className="text-sm">{canonical.isError?'The linked issue could not be loaded.':'Loading linked issue…'}</p>}</section>}
       {i.duplicate_candidate_id && !i.duplicate_of && <p className="mt-4 border-l-2 border-warning pl-3 text-sm text-muted-foreground">A possible matching report is awaiting staff review. This report has not been merged.</p>}
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {!i.duplicate_of && <StaffResponse c={i} />}
           {i.photo_url && <img src={i.photo_url} alt={i.title} className="max-h-[520px] w-full rounded-3xl border object-cover shadow-soft" />}
           {photo.data?.url&&<details className="border-y py-4"><summary className="cursor-pointer text-sm font-semibold">Annotated report photo</summary><img src={photo.data.url} alt="Separate annotated report evidence with report location and available capture metadata" className="mt-4 w-full rounded-lg" loading="lazy"/><p className="mt-2 text-xs text-muted-foreground">A separate copy. The untouched original stays private; report location is not proof of photo capture location.</p></details>}
@@ -175,7 +175,7 @@ function IssuePage() {
           </div>
           <IssueEvidence issueId={i.id} />
         </div>
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           {tokenValid && i.status === "resolved" && (
             <div className="rounded-2xl border-2 border-primary bg-primary-soft p-5">
               <p className="font-semibold">Has this problem been fixed?</p>

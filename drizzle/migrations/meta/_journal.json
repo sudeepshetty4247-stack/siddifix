@@ -155,6 +155,13 @@
       "when": 1792847579234,
       "tag": "0021_restore_citizen_tracking_function_access",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792850678545,
+      "tag": "0022_authority_portrait_provenance",
+      "breakpoints": true
     }
   ]
 }

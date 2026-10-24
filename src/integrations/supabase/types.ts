@@ -228,8 +228,14 @@ export type Database = {
           full_name: string
           id: string
           kind: string
+          photo_credit: string | null
+          photo_license_url: string | null
+          photo_source_type: string | null
           photo_source_url: string | null
           photo_url: string | null
+          photo_usage_notes: string | null
+          photo_verified: boolean
+          photo_verified_at: string | null
           source_url: string
           updated_at: string
           updated_by: string | null
@@ -248,8 +254,14 @@ export type Database = {
           full_name: string
           id?: string
           kind?: string
+          photo_credit?: string | null
+          photo_license_url?: string | null
+          photo_source_type?: string | null
           photo_source_url?: string | null
           photo_url?: string | null
+          photo_usage_notes?: string | null
+          photo_verified?: boolean
+          photo_verified_at?: string | null
           source_url: string
           updated_at?: string
           updated_by?: string | null
@@ -268,8 +280,14 @@ export type Database = {
           full_name?: string
           id?: string
           kind?: string
+          photo_credit?: string | null
+          photo_license_url?: string | null
+          photo_source_type?: string | null
           photo_source_url?: string | null
           photo_url?: string | null
+          photo_usage_notes?: string | null
+          photo_verified?: boolean
+          photo_verified_at?: string | null
           source_url?: string
           updated_at?: string
           updated_by?: string | null

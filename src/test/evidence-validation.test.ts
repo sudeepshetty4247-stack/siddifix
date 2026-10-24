@@ -7,7 +7,7 @@ describe('Evidence validation', () => {
   it('rejects a disguised non-image upload', () => {
     expect(()=>decodeEvidenceImage('data:image/jpeg;base64,aGVsbG8=')).toThrow();
   });
-  it('accepts matching image signature bytes', () => {
-    expect(Array.from(decodeEvidenceImage('data:image/jpeg;base64,/9j/').bytes)).toEqual([255,216,255]);
+  it('rejects a truncated JPEG containing only its signature', () => {
+    expect(() => decodeEvidenceImage('data:image/jpeg;base64,/9j/')).toThrow('truncated JPEG');
   });
 });
