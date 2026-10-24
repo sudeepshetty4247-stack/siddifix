@@ -138,42 +138,72 @@ export type Database = {
       civic_wards: {
         Row: {
           active: boolean
+          assembly: string | null
+          assembly_no: number | null
           boundary: Json
           corporation: string
           coverage_id: string
           id: string
           identifier: string
+          lok_sabha: string | null
+          mla: string | null
+          mla_party: string | null
+          mp: string | null
           name: string
+          name_kn: string | null
+          population: number | null
           representative: string | null
           representative_source_url: string | null
           source_url: string
           verified_at: string
+          ward_number: number | null
+          zone: string | null
         }
         Insert: {
           active?: boolean
+          assembly?: string | null
+          assembly_no?: number | null
           boundary: Json
           corporation: string
           coverage_id: string
           id?: string
           identifier: string
+          lok_sabha?: string | null
+          mla?: string | null
+          mla_party?: string | null
+          mp?: string | null
           name: string
+          name_kn?: string | null
+          population?: number | null
           representative?: string | null
           representative_source_url?: string | null
           source_url: string
           verified_at: string
+          ward_number?: number | null
+          zone?: string | null
         }
         Update: {
           active?: boolean
+          assembly?: string | null
+          assembly_no?: number | null
           boundary?: Json
           corporation?: string
           coverage_id?: string
           id?: string
           identifier?: string
+          lok_sabha?: string | null
+          mla?: string | null
+          mla_party?: string | null
+          mp?: string | null
           name?: string
+          name_kn?: string | null
+          population?: number | null
           representative?: string | null
           representative_source_url?: string | null
           source_url?: string
           verified_at?: string
+          ward_number?: number | null
+          zone?: string | null
         }
         Relationships: [
           {
