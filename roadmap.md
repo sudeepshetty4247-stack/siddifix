@@ -15,6 +15,7 @@
 - [x] Manifest-only home-screen support (PWA skill); desktop/phone layout and anonymous submit/read-back verified; 6 tests pass
 
 ## Remaining release work
+- [ ] Current request: prominent public Bengaluru authority directory and responsibility/contact details inspired by reference screens; retain CivicFix-only case totals
 - [ ] Address lookup integration: blocked on a suitable anonymous-citizen geocoding service configuration
 - [ ] Current official ward boundaries and representative sources: not obtained; no legal jurisdiction claim until verified/imported
 - [ ] Staff action end-to-end verification: no auth users exist; requesting administrator must create their own account before testing
