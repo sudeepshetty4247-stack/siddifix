@@ -9,6 +9,7 @@ import { LazyMap } from './LazyMap';
 import { StatusBadge } from './StatusBadge';
 import { ISSUE_COLUMNS, type IssueRow } from './IssueCard';
 import { Button } from '@/components/ui/button';
+import { WardLeaderboard } from './WardLeaderboard';
 
 type MapIssue = IssueRow & { duplicate_of: string | null };
 export function CitizenMap() {
@@ -55,6 +56,7 @@ export function CitizenMap() {
         {active && <section className="space-y-3 border-b bg-primary-soft p-4"><StatusBadge status={active.status}/><h3 className="font-semibold">{active.title}</h3>{active.photo_url&&<img src={active.photo_url} alt={active.title} className="aspect-video w-full rounded-lg object-cover"/>}<Button asChild><Link to="/issues/$ref" params={{ref:active.ref_code}}>View issue and history</Link></Button></section>}
         {list.map(i=><Link key={i.id} to="/issues/$ref" params={{ref:i.ref_code}} className="flex gap-3 border-b p-4 hover:bg-secondary">{i.photo_url&&<img src={i.photo_url} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" loading="lazy"/>}<div className="min-w-0 space-y-1"><h3 className="line-clamp-2 text-sm font-semibold">{i.title}</h3><p className="font-mono text-xs text-muted-foreground">{i.ref_code}</p><StatusBadge status={i.status}/></div></Link>)}
         {(q.data?.length??0)>=1000&&<p className="p-4 text-xs text-muted-foreground">Showing the latest 1,000 reports; not a city-wide total.</p>}
+        <WardLeaderboard />
       </aside>
     </div>
   </div>;

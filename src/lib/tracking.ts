@@ -17,7 +17,7 @@ export function saveTracked(item: TrackedIssue) {
   try { localStorage.setItem(KEY, JSON.stringify(list.slice(0, 100))); } catch { /* The reference and private link remain available on screen. */ }
 }
 export function removeTracked(ref: string) {
-  localStorage.setItem(KEY, JSON.stringify(getTracked().filter((i) => i.ref !== ref)));
+  try { localStorage.setItem(KEY, JSON.stringify(getTracked().filter((i) => i.ref !== ref))); } catch { /* Optional device storage. */ }
 }
 export function isTracked(ref: string) {
   return getTracked().some((i) => i.ref === ref);
