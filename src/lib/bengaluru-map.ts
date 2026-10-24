@@ -3,7 +3,7 @@ import { pointInGeometry, type Ward } from './directory';
 export const TEST_LOCATIONS = [
   { id: 'central', label: 'Central · Vidhana Soudha', lat: 12.9796, lng: 77.5907, category: 'waste' },
   { id: 'south', label: 'South · Koramangala', lat: 12.9352, lng: 77.6245, category: 'roads' },
-  { id: 'north', label: 'North · Yelahanka', lat: 13.1007, lng: 77.5963, category: 'streetlights' },
+  { id: 'north', label: 'North · Yelahanka', lat: 13.1007, lng: 77.5963, category: 'electricity' },
   { id: 'east', label: 'East · Whitefield', lat: 12.9698, lng: 77.75, category: 'drainage' },
   { id: 'west', label: 'West · Kengeri', lat: 12.9081, lng: 77.4851, category: 'water' },
   { id: 'outside', label: 'Outside coverage · Mysuru', lat: 12.2958, lng: 76.6394, category: 'waste' },

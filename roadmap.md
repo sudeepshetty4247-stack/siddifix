@@ -1,6 +1,7 @@
 # CivicFix roadmap
 
 ## Current priority — simplify and complete the real product
+- [ ] Bengaluru-focused ward map, improved citizen home and read-only ward/category test inputs; verify all corporations and coverage edge cases.
 - [x] Imported 369 December-2025 GBA ward polygons and zones atomically with publication/check dates and source hash; real Bengaluru UI lookup and shared-edge/manual-review rules verified (29 tests).
 - [ ] Hosted OpenStreetMap/Nominatim reverse-geocoding integration implemented but blocked by missing hosted service URL; donated public endpoint deliberately not used. Department routes remain verification-required, not official assignments. GPS denial callback tested deterministically, real browser permission denial remains unverified.
 - [x] Audit existing citizen reporting, map, staff workflows, directory and tests against the latest uploaded brief.

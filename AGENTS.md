@@ -30,3 +30,5 @@
 - Confirmed coordinates use hosted Nominatim only for optional address labels; no donated public geocoder fallback. Ward matching is independent, uses published boundaries, and overlapping/shared edges require manual review.
 - Ward import sources retain publication date, source-check time and SHA256 separately; verified snapshot provenance does not establish current asset ownership or verify department contacts.
 - Ward, department-route and representative records are admin-editable rows in civic_wards / civic_department_routes with trigger-written civic_directory_audit; public/data/bengaluru-wards.json is only the official import source. Cases keep the ward recorded at submission in routing_snapshot.
+- Citizen map boundaries and browsing limits derive from live directory ward polygons; optional map props keep report/staff maps unrestricted for honest out-of-coverage handling.
+- Ward test previews are read-only local state using the live responsibility resolver, never seeded issues; this keeps citizen case totals genuine.
