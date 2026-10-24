@@ -224,11 +224,9 @@ function ProfileForm({ member, onSaved }: { member: Member; onSaved: () => void 
 
   async function save() {
     setBusy(true);
-    const { error } = await supabase.rpc("admin_set_staff_profile", { _user: member.id, _name: name, _designation: designation, _department: department, _categories: cats, _wards: wards.split(",").map(w => w.trim()).filter(Boolean) });
+    const { error } = await supabase.rpc("admin_set_full_staff_scope", { _user: member.id, _name: name, _designation: designation, _department: department, _categories: cats, _wards: wards.split(",").map(w => w.trim()).filter(Boolean), _teams:teamIds, _corporations:corporations.split(",").map(c=>c.trim()).filter(Boolean) });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
-    const scope=await supabase.rpc('admin_set_team_scope',{_user:member.id,_teams:teamIds,_corporations:corporations.split(',').map(c=>c.trim()).filter(Boolean)});
-    if(scope.error){toast.error('Profile saved, but team scope needs correction: '+scope.error.message);return;}
     toast.success("Profile saved");
     onSaved();
   }
