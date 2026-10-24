@@ -214,7 +214,8 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
     await batchInsert('issue_notifications', dataset.notifications.filter(n => inSlice.has(n.issue_index) && idAt(n.issue_index)).map(n => ({ issue_id: idAt(n.issue_index), recipient_user_id: staff[n.recipient_index]?.id ?? null, audience: 'staff', channel: 'in_app', status: 'recorded', notification_type: n.notification_type, title: n.title, detail: n.detail, priority: n.priority, created_at: n.created_at })), 'notifications');
     await batchInsert('issue_feedback', dataset.feedback.filter(f => inSlice.has(f.issue_index) && idAt(f.issue_index)).map(f => ({ issue_id: idAt(f.issue_index), rating: f.rating, resolution: f.resolution, response_time: f.response_time, comment: f.comment, status_at_submission: f.status_at_submission, submitted_at: f.submitted_at })), 'feedback');
     await batchInsert('issue_secrets', dataset.secrets.filter(s => inSlice.has(s.issue_index) && idAt(s.issue_index)).map(s => ({ issue_id: idAt(s.issue_index), recovery_token: s.token, demo_dataset_id: data.datasetId })), 'secrets');
-    await batchInsert('issue_photos', dataset.issues.map((iss, idx) => ({ iss, idx })).filter(x => inSlice.has(x.idx) && x.iss.photo_url && idAt(x.idx)).map(x => ({ issue_id: idAt(x.idx), original_path: x.iss.photo_url, display_path: x.iss.photo_url, source: 'demo', metadata: { demo: true, licence: 'See demo media credits' }, original_sha256: `demo-${x.iss.ref_code}` })), 'photos');
+    // Demo photos are licensed static assets referenced by photo_url only; private issue_photos
+    // storage rows are intentionally not created (they are reserved for genuine citizen uploads).
 
     const nextOffset = data.offset + data.limit;
     const done = nextOffset >= data.count;
