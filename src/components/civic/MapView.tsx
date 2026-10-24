@@ -1,8 +1,10 @@
 // Browser-only Leaflet map. Load via LazyMap, never import from SSR routes directly.
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMapEvents, useMap } from "react-leaflet";
 import { useEffect } from "react";
+import type { Ward } from "@/lib/directory";
+import { geometryRings, wardMapBounds } from "@/lib/bengaluru-map";
 
 export type MapMarker = { id: string; lat: number; lng: number; tone?: "open" | "resolved" | "critical" | "overdue"; label?: string; href?: string; sub?: string };
 
@@ -35,6 +37,27 @@ function Recenter({ lat, lng, zoom }: { lat: number; lng: number; zoom?: number 
   return null;
 }
 
+function WardLayer({ wards, selectedWard, onWardSelect }: { wards: Ward[]; selectedWard?: string; onWardSelect?: (id: string) => void }) {
+  const map = useMap();
+  const bounds = wardMapBounds(wards);
+  useEffect(() => {
+    if (!bounds) return;
+    map.setMaxBounds(L.latLngBounds(bounds).pad(0.08));
+    map.setMinZoom(Math.max(10, map.getBoundsZoom(L.latLngBounds(bounds), false)));
+    map.fitBounds(bounds, { padding: [18, 18], animate: false });
+    return () => { map.setMaxBounds([]); map.setMinZoom(0); };
+  }, [wards, map]);
+  // A local outer ring avoids the antimeridian wrapping of a world-sized mask.
+  const outer = [[10, 74], [16, 74], [16, 81], [10, 81], [10, 74]];
+  const holes = wards.flatMap(w => geometryRings(w.boundary)).map(r => r.map(p => [p[1] ?? 0, p[0] ?? 0]));
+  return <>
+    <GeoJSON data={{ type: 'Polygon', coordinates: [outer.map(p => [p[1], p[0]]), ...holes.map(r => r.map(p => [p[1], p[0]]))] } as GeoJSON.GeoJsonObject} style={{ fillColor: 'var(--map-mask)', fillOpacity: 0.7, weight: 0 }} interactive={false} />
+    {wards.map(w => <GeoJSON key={`${w.id}-${w.identifier === selectedWard}`} data={w.boundary as unknown as GeoJSON.GeoJsonObject}
+      style={{ color: w.identifier === selectedWard ? 'var(--ink)' : 'var(--primary)', weight: w.identifier === selectedWard ? 2.5 : 0.7, fillColor: 'var(--primary)', fillOpacity: w.identifier === selectedWard ? 0.25 : 0.055 }}
+      onEachFeature={(_, layer) => { layer.bindTooltip(`${w.ward_number ?? ''} · ${w.name}`); layer.on('click', () => onWardSelect?.(w.identifier)); }} />)}
+  </>;
+}
+
 export default function MapView({
   center,
   zoom = 13,
@@ -44,6 +67,9 @@ export default function MapView({
   recenter,
   className,
   onSelect,
+  wards,
+  selectedWard,
+  onWardSelect,
 }: {
   center: { lat: number; lng: number };
   zoom?: number;
@@ -53,13 +79,17 @@ export default function MapView({
   recenter?: { lat: number; lng: number; zoom?: number } | null;
   className?: string | undefined;
   onSelect?: (id: string) => void;
+  wards?: Ward[];
+  selectedWard?: string;
+  onWardSelect?: (id: string) => void;
 }) {
   return (
-    <MapContainer center={[center.lat, center.lng]} zoom={zoom} scrollWheelZoom {...(className ? { className } : {})} style={{ height: "100%", width: "100%" }}>
+    <MapContainer center={[center.lat, center.lng]} zoom={zoom} maxBoundsViscosity={1} scrollWheelZoom {...(className ? { className } : {})} style={{ height: "100%", width: "100%" }}>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {wards?.length ? <WardLayer wards={wards} {...(selectedWard ? { selectedWard } : {})} {...(onWardSelect ? { onWardSelect } : {})} /> : null}
       {onPick && <Picker onPick={onPick} />}
       {recenter && <Recenter {...recenter} />}
       {picked && (

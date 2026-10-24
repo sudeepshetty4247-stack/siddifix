@@ -1,12 +1,13 @@
 # CivicFix roadmap
 
 ## Current priority — simplify and complete the real product
+- [x] Bengaluru-focused live ward map and citizen home with separate read-only ward/category test inputs. All five corporation lookups and Mysuru outside-coverage warning passed in the browser; 37 tests passed including interior pins for all 369 wards. No test reports inserted. Hosted address service, verified member contacts and administrator account remain blockers for full operational end-to-end checks.
 - [x] Imported 369 December-2025 GBA ward polygons and zones atomically with publication/check dates and source hash; real Bengaluru UI lookup and shared-edge/manual-review rules verified (29 tests).
 - [ ] Hosted OpenStreetMap/Nominatim reverse-geocoding integration implemented but blocked by missing hosted service URL; donated public endpoint deliberately not used. Department routes remain verification-required, not official assignments. GPS denial callback tested deterministically, real browser permission denial remains unverified.
 - [x] Audit existing citizen reporting, map, staff workflows, directory and tests against the latest uploaded brief.
 - [x] Map-first opening screen, explicit report-location confirmation, manual pin correction and AI network-failure fallback; anonymous submit/photo/history/map read-back verified, temporary reports removed (zero reports).
 - [ ] Duplicate review, assignment, status, completion evidence requirement, public tracking and full-dataset analytics implemented; signed-in transaction/evidence/reporter-resolution verification blocked by zero staff accounts.
-- [ ] Restricted directory setup/import verification blocked by zero admin accounts; zero loaded wards, missing-ward and out-of-city notices verified.
+- [ ] Restricted directory editing verification blocked by zero admin accounts; 369 wards are loaded, missing-ward and out-of-city notices verified.
 - [ ] Finish end-to-end staff resolution and reporter decisions after administrator signup; browser GPS-denial feedback remains unverified (test timed out). 28 unit tests passed and latest preview validation passed.
 
 ## Done (phase 1)
@@ -30,7 +31,7 @@
 - [ ] Remaining approved stages: signed-in resolution evidence verification, notification persistence/delivery and end-to-end release checks; candidate queue/history refinements implemented
 - [x] Current request: public Bengaluru authority directory, searchable service contacts, GBA chief commissioner and 1533 official contact, responsibility chain; CivicFix-only case totals retained; search/filter and phone layout verified
 - [ ] Address lookup integration: blocked on a suitable anonymous-citizen geocoding service configuration
-- [ ] Current official ward boundaries and representative sources: not obtained; no legal jurisdiction claim until verified/imported
+- [ ] Official December-2025 ward boundaries imported; current representative names and contacts still need verified sources.
 - [ ] Staff action end-to-end verification: no auth users exist; requesting administrator must create their own account before testing
 - [ ] Evidence original retention and separate annotated derivative, capture/submission timestamp distinction
 - [ ] Security release review: bootstrap-admin provisioning, private credential hashing, abuse controls, public-safe projection
