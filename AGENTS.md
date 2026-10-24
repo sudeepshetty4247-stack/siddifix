@@ -23,7 +23,7 @@
 - Home-screen installability uses a manifest and icons only; no app-shell service worker is registered, preserving fresh previews.
 - Case-local civic information reads the protected civic directory; the standalone citizen authority directory has been removed to keep reporting and case work integrated.
 - Duplicate review, assignment lifecycle, classification and reporter resolution decisions use atomic database operations with durable events; ordinary staff clients cannot directly update issue fields.
-- Staff analytics use full-dataset database aggregates, not the capped triage sample; citizen home and map reuse CitizenMap, separating original reports from canonical markers and linking to public history.
+- Staff analytics use full-dataset database aggregates, not the capped triage sample; Home reads recent real reports while CitizenMap owns map discovery, keeping the opening actions distinct from geographic browsing.
 - Citizen-suggested duplicates are persisted as candidates, not merges; staff review exclusively controls canonical linking to preserve uncertain originals.
 - Completion and inspection photos use separate issue_evidence records in private storage, staff-authorized atomic event writes, and short-lived public-safe signed projections; a database trigger requires completion evidence before resolution.
 - Report locations require explicit confirmation after a suggested GPS/manual point; low-accuracy GPS is not suggested, and gallery photos never establish their capture location.
@@ -31,4 +31,4 @@
 - Ward import sources retain publication date, source-check time and SHA256 separately; verified snapshot provenance does not establish current asset ownership or verify department contacts.
 - Ward, department-route and representative records are admin-editable rows in civic_wards / civic_department_routes with trigger-written civic_directory_audit; public/data/bengaluru-wards.json is only the official import source. Cases keep the ward recorded at submission in routing_snapshot.
 - Citizen map boundaries and browsing limits derive from live directory ward polygons; optional map props keep report/staff maps unrestricted for honest out-of-coverage handling.
-- Ward test previews are read-only local state using the live responsibility resolver, never seeded issues; this keeps citizen case totals genuine.
+- Ward and routing edge-case fixtures belong in automated tests only, not citizen-facing test controls; this preserves a real citizen experience and genuine case totals.
