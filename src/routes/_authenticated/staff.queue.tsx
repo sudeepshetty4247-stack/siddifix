@@ -81,7 +81,7 @@ function Queue() {
         </div>
         <div className="flex flex-wrap gap-1 rounded-xl bg-secondary p-1 text-sm">
           {VIEWS.map((v) => (
-            <button key={v} onClick={() => {setView(v);void navigate({search:{}});}} className={cn("rounded-lg px-4 py-1.5 font-medium capitalize", view === v ? "bg-card shadow-soft" : "text-muted-foreground")}>{v}</button>
+            <button key={v} onClick={() => {setView(v);void navigate({to:"/staff/queue",search:{metric:undefined}});}} className={cn("rounded-lg px-4 py-1.5 font-medium capitalize", view === v ? "bg-card shadow-soft" : "text-muted-foreground")}>{v}</button>
           ))}
         </div>
       </div>
