@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { getTransparency } from '@/lib/transparency.functions';
 import { downloadText, resolutionRate, transparencyCsv, type Counts, type RepresentativeReport } from '@/lib/transparency';
 import { categoryById } from '@/lib/civic';
+import { ReportWorkspace } from '@/components/civic/ReportWorkspace';
 
 type Period = 0 | 7 | 30 | 90 | 365;
 const options = (days: Period) => queryOptions({ queryKey: ['public-transparency', days], queryFn: () => getTransparency({ data: { days } }), staleTime: 30000, refetchInterval: 30000 });
@@ -28,6 +29,8 @@ function Transparency() {
   function exportReport() { downloadText(transparencyCsv(r), `Siddi-public-report-${days || 'all'}-${r.generated_at.slice(0,10)}.csv`); }
   return <div className="public-report mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
     <div className="flex flex-wrap items-start justify-between gap-5"><div><p className="text-xs font-semibold uppercase text-primary">Bengaluru · Public record</p><h1 className="mt-2 text-3xl font-bold sm:text-4xl">The city, in the open.</h1><p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">Real Siddi reports. Recorded actions. Visible outcomes. Your City. Your Voice.</p></div><div className="report-controls flex flex-wrap gap-2"><Button variant="outline" onClick={() => window.print()}><FileText className="h-4 w-4" />Save PDF</Button><Button onClick={exportReport}><Download className="h-4 w-4" />Download report</Button></div></div>
+    <div className="mt-8"><ReportWorkspace /></div>
+    <h2 className="mt-10 text-xl font-semibold">Constituency overview — separate period scope</h2>
     <div className="report-controls mt-6 flex flex-wrap items-center gap-3 border-y py-3"><label className="text-sm font-medium">Period <select aria-label="Reporting period" value={days} onChange={e => { setDays(Number(e.target.value) as Period); setSelected(null); }} className="ml-2 h-9 rounded-lg border bg-card px-3"><option value={0}>All time</option><option value={7}>7 days</option><option value={30}>30 days</option><option value={90}>90 days</option><option value={365}>1 year</option></select></label><p className="text-xs text-muted-foreground">Updated {new Date(r.generated_at).toLocaleString('en-IN')}</p><Button className="ml-auto" variant="ghost" size="icon" aria-label="Refresh report" onClick={() => q.refetch()}><RefreshCw className={`h-4 w-4 ${q.isFetching ? 'animate-spin' : ''}`} /></Button></div>
     <div className="grid grid-cols-2 gap-x-6 gap-y-6 border-b py-7 lg:grid-cols-4"><Metric label="Unique cases" value={r.summary.total} /><Metric label="Active" value={r.summary.active} /><Metric label="Resolved / closed" value={r.summary.resolved} /><Metric label="Resolution rate" value={resolutionRate(r.summary) === null ? '—' : `${resolutionRate(r.summary)}%`} /></div>
     <div className="grid grid-cols-2 gap-5 border-b py-5 sm:grid-cols-4"><Metric small label="Past promised / target date" value={r.summary.overdue} /><Metric small label="Acknowledged" value={r.summary.acknowledged} /><Metric small label="Rejected" value={r.summary.rejected} /><Metric small label="Average days to resolution" value={r.summary.average_resolution_days ?? '—'} /></div>
