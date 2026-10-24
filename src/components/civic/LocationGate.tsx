@@ -69,7 +69,7 @@ export function LocationGate() {
             <div>
               <h1 className="text-xl font-bold">{location.label === 'Current location' ? 'Your location' : location.label}</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {routing?.ward ? `${routing.ward.name} · Ward ${routing.ward.ward_number}${routing.ward.zone ? ` · ${routing.ward.zone}` : ''}` : point ? 'Outside the published ward boundaries' : 'Approximate location — refine it from the map anytime'}
+                {routing?.ward ? `${routing.ward.name} · Ward ${routing.ward.ward_number}${routing.ward.zone ? ` · ${routing.ward.zone}` : ''}` : directory.isPending ? 'Checking your ward…' : directory.isError ? 'Ward lookup is unavailable right now' : point ? 'Outside the published ward boundaries' : 'Approximate location — refine it from the map anytime'}
               </p>
             </div>
           </div>
