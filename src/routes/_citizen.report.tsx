@@ -50,7 +50,7 @@ function ReportPage(){
     return new Promise(resolve=>navigator.geolocation.getCurrentPosition(p=>resolve({lat:p.coords.latitude,lng:p.coords.longitude,accuracy:p.coords.accuracy,acquiredAt:new Date(p.timestamp).toISOString(),source:'device-session'}),()=>resolve(null),{enableHighAccuracy:true,maximumAge:0,timeout:10000}));
   }
   function liveGps():PhotoMetadata['gps']{const f=live.fix;return f&&Date.now()-f.at<60000?{lat:f.lat,lng:f.lng,accuracy:f.accuracy,acquiredAt:new Date(f.at).toISOString(),source:'device-session'}:null;}
-  async function takePhoto(){const now=liveGps();if(now&&now.accuracy!==undefined&&now.accuracy<=100){captureGps.current=now;camera.current?.click();return;}setPreparing(true);captureGps.current=(await freshGps())??now;setPreparing(false);camera.current?.click();}
+  async function takePhoto(){const now=liveGps();if(now&&(now.accuracy??Infinity)<=100){captureGps.current=now;camera.current?.click();return;}setPreparing(true);captureGps.current=(await freshGps())??now;setPreparing(false);camera.current?.click();}
   async function chooseFile(next?:File,source:'camera'|'gallery'='gallery'){
     if(!next)return;
     if(!['image/jpeg','image/png','image/webp'].includes(next.type)||next.size>25*1024*1024){toast.error('Choose a JPG, PNG or WebP photo up to 25 MB.');return;}
