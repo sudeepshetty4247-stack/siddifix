@@ -169,6 +169,13 @@
       "when": 1792853498736,
       "tag": "0023_public_transparency_metrics",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792853844896,
+      "tag": "0024_correct_transparency_escalation",
+      "breakpoints": true
     }
   ]
 }
