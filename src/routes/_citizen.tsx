@@ -4,6 +4,9 @@ import { Camera, Globe, Menu, X, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/civic/Logo";
 import { useI18n, LANGS, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { LocationProvider } from "@/lib/location";
+import { LocationSelector } from "@/components/civic/LocationSelector";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_citizen")({
   component: CitizenLayout,
@@ -17,14 +20,19 @@ const NAV: { to: "/" | "/report" | "/map" | "/explore" | "/track"; key: TKey }[]
 ];
 
 function CitizenLayout() {
+  return <LocationProvider><CitizenShell /></LocationProvider>;
+}
+
+function CitizenShell() {
   const { t, lang, setLang } = useI18n();
   const [open, setOpen] = useState(false);
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-[1000] border-b bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6">
+        <div className="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center gap-2 px-4 py-2 sm:gap-4 sm:px-6">
           <Logo />
-          <nav className="hidden items-center gap-1 md:flex">
+          <div className="order-3 w-full border-t pt-1 sm:order-none sm:w-auto sm:border-0 sm:pt-0"><LocationSelector /></div>
+          <nav className="hidden items-center gap-1 lg:flex">
             {NAV.map((n) => (
               <Link
                 key={n.to}
@@ -52,12 +60,12 @@ function CitizenLayout() {
             <Link to="/report" className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90">
               <Camera className="h-4 w-4" /> <span className="hidden sm:inline">{t("report")}</span><span className="sm:hidden">Report</span>
             </Link>
-            <button className="rounded-lg p-2 md:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
+            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            </Button>
           </div>
         </div>
-        <div className={cn("border-t bg-background md:hidden", open ? "block" : "hidden")}>
+        <div className={cn("border-t bg-background lg:hidden", open ? "block" : "hidden")}>
           <nav className="mx-auto flex max-w-7xl flex-col p-2">
             {NAV.map((n) => (
               <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-lg px-3 py-3 text-sm font-medium" activeOptions={{ exact: n.to === "/" }} activeProps={{ className: "bg-secondary" }}>
