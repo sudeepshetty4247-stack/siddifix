@@ -2,9 +2,10 @@ import type { Json } from '@/integrations/supabase/types';
 export type Coverage = { id: string; name: string; state: string; bounds: Json; notice: string; source_url: string | null; verified_at: string | null };
 export type Authority = { id: string; coverage_id: string | null; name: string; kind: string; website_url: string; reporting_url: string | null; phone: string | null; source_url: string; verified_at: string; notes: string };
 export type ServiceRule = { authority_id: string; category: string; subcategory: string | null; notes: string; confidence: string };
-export type Ward = { name: string; identifier: string; corporation: string; boundary: Json; source_url: string; verified_at: string; representative: string | null; representative_source_url: string | null };
-export type Directory = { coverage: Coverage[]; authorities: Authority[]; rules: ServiceRule[]; wards: Ward[] };
-export type CivicRouting = { coverage: Coverage | null; candidates: Authority[]; ward: Omit<Ward, 'boundary'> | null; ownershipVerified: boolean };
+export type Ward = { id: string; name: string; identifier: string; corporation: string; boundary: Json; source_url: string; verified_at: string; representative: string | null; representative_source_url: string | null; ward_number: number | null; name_kn: string | null; official_name: string | null; zone: string | null; assembly_no: number | null; assembly: string | null; mla: string | null; mla_party: string | null; lok_sabha: string | null; mp: string | null; population: number | null; verification_status: string; representative_status: string; flags: string[]; notes: string; active: boolean };
+export type DepartmentRoute = { id: string; coverage_id: string; category: string; receiving_office: string; fixing_team: string; officer_role: string; contact_label: string | null; contact_phone: string | null; source_url: string | null; verification_status: string; verified_at: string | null; notes: string; active: boolean };
+export type Directory = { coverage: Coverage[]; authorities: Authority[]; rules: ServiceRule[]; wards: Ward[]; routes: DepartmentRoute[] };
+export type CivicRouting = { coverage: Coverage | null; candidates: Authority[]; ward: Omit<Ward, 'boundary'> | null; route: DepartmentRoute | null; ownershipVerified: boolean };
 
 function inRing(lng: number, lat: number, ring: number[][]) {
   let inside = false;
@@ -30,8 +31,10 @@ export function resolveCivicRouting(directory: Directory, lat: number, lng: numb
     const b = c.bounds as { south?: number; north?: number; west?: number; east?: number };
     return typeof b.south === 'number' && typeof b.north === 'number' && typeof b.west === 'number' && typeof b.east === 'number' && lat >= b.south && lat <= b.north && lng >= b.west && lng <= b.east;
   }) ?? null;
-  const wardRow = directory.wards.find(w => pointInGeometry(lat, lng, w.boundary));
-  const ward = wardRow ? { ...wardRow, boundary: undefined } : null;
+  const wardRow = directory.wards.find(w => w.active && pointInGeometry(lat, lng, w.boundary));
+  let ward: Omit<Ward, 'boundary'> | null = null;
+  if (wardRow) { const { boundary: _b, ...rest } = wardRow; ward = rest; }
+  const route = coverage ? (directory.routes.find(r => r.active && r.coverage_id === coverage.id && r.category === category) ?? directory.routes.find(r => r.active && r.coverage_id === coverage.id && r.category === 'other') ?? null) : null;
   const ids = new Set(directory.rules.filter(r => r.category === category && (!r.subcategory || r.subcategory === subcategory)).map(r => r.authority_id));
-  return { coverage, ward, candidates: coverage ? directory.authorities.filter(a => a.coverage_id === coverage.id && ids.has(a.id)) : [], ownershipVerified: false };
+  return { coverage, ward, candidates: coverage ? directory.authorities.filter(a => a.coverage_id === coverage.id && ids.has(a.id)) : [], route, ownershipVerified: false };
 }

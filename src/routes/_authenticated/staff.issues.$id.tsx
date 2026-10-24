@@ -185,7 +185,7 @@ function StaffIssue() {
             <p className="mt-1"><span className="text-muted-foreground">Linked reports:</span> {i.support_count}</p>
           </div>
           <div className="h-56 overflow-hidden rounded-2xl border"><LazyMap center={{ lat: i.lat, lng: i.lng }} zoom={16} picked={{ lat: i.lat, lng: i.lng }} /></div>
-          <CivicInfo lat={i.lat} lng={i.lng} category={i.category} subcategory={i.subcategory} />
+          <CivicInfo lat={i.lat} lng={i.lng} category={i.category} subcategory={i.subcategory} snapshot={i.routing_snapshot} />
           <p className="text-xs text-muted-foreground">Status options: {STATUSES.length} lifecycle states; only valid next steps are shown.</p>
         </aside>
       </div>

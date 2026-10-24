@@ -43,6 +43,13 @@
       "when": 1792827963214,
       "tag": "0005_ward_civic_details",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792828265266,
+      "tag": "0006_directory_management_audit",
+      "breakpoints": true
     }
   ]
 }

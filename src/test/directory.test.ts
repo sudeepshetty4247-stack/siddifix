@@ -3,7 +3,7 @@ import { pointInGeometry, resolveCivicRouting, type Directory } from '@/lib/dire
 const directory: Directory = {
   coverage: [{ id: 'bengaluru', name: 'Bengaluru', state: 'partial', bounds: { south: 12.7, north: 13.25, west: 77.35, east: 77.85 }, source_url: 'https://bbmptax.karnataka.gov.in/', verified_at: '2026-10-24', notice: 'Partial directory coverage' }],
   authorities: [{ id: 'bescom', coverage_id: 'bengaluru', name: 'BESCOM', kind: 'electricity', website_url: 'https://bescom.karnataka.gov.in/', reporting_url: null, phone: '1912', source_url: 'https://bescom.karnataka.gov.in/', verified_at: '2026-10-24', notes: '' }],
-  rules: [{ authority_id: 'bescom', category: 'electricity', subcategory: null, confidence: 'candidate', notes: '' }], wards: [],
+  rules: [{ authority_id: 'bescom', category: 'electricity', subcategory: null, confidence: 'candidate', notes: '' }], wards: [], routes: [],
 };
 describe('source-based civic routing', () => {
   it('never claims verified ownership without asset and service boundaries', () => {
