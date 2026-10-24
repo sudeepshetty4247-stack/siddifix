@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_permissions: {
+        Row: {
+          can_manage_admins: boolean
+          created_by: string | null
+          is_super_admin: boolean
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          can_manage_admins?: boolean
+          created_by?: string | null
+          is_super_admin?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          can_manage_admins?: boolean
+          created_by?: string | null
+          is_super_admin?: boolean
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       civic_ai_state: {
         Row: {
           id: string
@@ -1019,31 +1046,67 @@ export type Database = {
         }
         Relationships: []
       }
+      siddi_owner_setup: {
+        Row: {
+          completed_at: string | null
+          id: boolean
+          owner_email: string
+          owner_user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: boolean
+          owner_email: string
+          owner_user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          id?: boolean
+          owner_email?: string
+          owner_user_id?: string | null
+        }
+        Relationships: []
+      }
       staff_profiles: {
         Row: {
+          active: boolean
           categories: string[]
+          corporations: string[]
+          created_by: string | null
           department: string
           designation: string
           display_name: string
+          team_ids: string[]
           updated_at: string
+          updated_by: string | null
           user_id: string
           wards: string[]
         }
         Insert: {
+          active?: boolean
           categories?: string[]
+          corporations?: string[]
+          created_by?: string | null
           department?: string
           designation?: string
           display_name?: string
+          team_ids?: string[]
           updated_at?: string
+          updated_by?: string | null
           user_id: string
           wards?: string[]
         }
         Update: {
+          active?: boolean
           categories?: string[]
+          corporations?: string[]
+          created_by?: string | null
           department?: string
           designation?: string
           display_name?: string
+          team_ids?: string[]
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
           wards?: string[]
         }
@@ -1075,6 +1138,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      account_active: { Args: { _user: string }; Returns: boolean }
+      admin_set_account_state: {
+        Args: { _active: boolean; _reason: string; _user: string }
+        Returns: number
+      }
+      admin_set_delegation: {
+        Args: { _allow: boolean; _user: string }
+        Returns: undefined
+      }
       admin_set_staff_profile: {
         Args: {
           _categories: string[]
@@ -1122,11 +1194,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      can_manage_admins: { Args: { _user: string }; Returns: boolean }
       citizen_change_issue: {
         Args: { _action: string; _note: string; _ref: string; _token: string }
         Returns: string
       }
       civic_case_metrics: { Args: never; Returns: Json }
+      complete_siddi_owner_setup: {
+        Args: { _user: string }
+        Returns: undefined
+      }
       consume_civic_request: {
         Args: { _key: string; _limit: number }
         Returns: boolean
@@ -1260,6 +1337,21 @@ export type Database = {
       staff_record_evidence: {
         Args: { _id: string; _kind: string; _note: string; _path: string }
         Returns: string
+      }
+      staff_scope_matches: {
+        Args: {
+          _case_department: string
+          _categories: string[]
+          _category: string
+          _corporation: string
+          _corporations: string[]
+          _department: string
+          _team: string
+          _teams: string[]
+          _ward: string
+          _wards: string[]
+        }
+        Returns: boolean
       }
       staff_update_eta: {
         Args: { _eta: string; _id: string; _reason: string }
