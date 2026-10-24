@@ -97,6 +97,101 @@ export type Database = {
         }
         Relationships: []
       }
+      civic_department_routes: {
+        Row: {
+          active: boolean
+          category: string
+          contact_label: string | null
+          contact_phone: string | null
+          coverage_id: string
+          fixing_team: string
+          id: string
+          notes: string
+          officer_role: string
+          receiving_office: string
+          source_url: string | null
+          updated_at: string
+          updated_by: string | null
+          verification_status: string
+          verified_at: string | null
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          contact_label?: string | null
+          contact_phone?: string | null
+          coverage_id: string
+          fixing_team: string
+          id?: string
+          notes?: string
+          officer_role: string
+          receiving_office: string
+          source_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          verification_status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          contact_label?: string | null
+          contact_phone?: string | null
+          coverage_id?: string
+          fixing_team?: string
+          id?: string
+          notes?: string
+          officer_role?: string
+          receiving_office?: string
+          source_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          verification_status?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "civic_department_routes_coverage_id_fkey"
+            columns: ["coverage_id"]
+            isOneToOne: false
+            referencedRelation: "civic_coverage"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      civic_directory_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          new_row: Json | null
+          old_row: Json | null
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_row?: Json | null
+          old_row?: Json | null
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_row?: Json | null
+          old_row?: Json | null
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       civic_service_rules: {
         Row: {
           authority_id: string
@@ -143,6 +238,7 @@ export type Database = {
           boundary: Json
           corporation: string
           coverage_id: string
+          flags: string[]
           id: string
           identifier: string
           lok_sabha: string | null
@@ -151,10 +247,16 @@ export type Database = {
           mp: string | null
           name: string
           name_kn: string | null
+          notes: string
+          official_name: string | null
           population: number | null
           representative: string | null
           representative_source_url: string | null
+          representative_status: string
           source_url: string
+          updated_at: string
+          updated_by: string | null
+          verification_status: string
           verified_at: string
           ward_number: number | null
           zone: string | null
@@ -166,6 +268,7 @@ export type Database = {
           boundary: Json
           corporation: string
           coverage_id: string
+          flags?: string[]
           id?: string
           identifier: string
           lok_sabha?: string | null
@@ -174,10 +277,16 @@ export type Database = {
           mp?: string | null
           name: string
           name_kn?: string | null
+          notes?: string
+          official_name?: string | null
           population?: number | null
           representative?: string | null
           representative_source_url?: string | null
+          representative_status?: string
           source_url: string
+          updated_at?: string
+          updated_by?: string | null
+          verification_status?: string
           verified_at: string
           ward_number?: number | null
           zone?: string | null
@@ -189,6 +298,7 @@ export type Database = {
           boundary?: Json
           corporation?: string
           coverage_id?: string
+          flags?: string[]
           id?: string
           identifier?: string
           lok_sabha?: string | null
@@ -197,10 +307,16 @@ export type Database = {
           mp?: string | null
           name?: string
           name_kn?: string | null
+          notes?: string
+          official_name?: string | null
           population?: number | null
           representative?: string | null
           representative_source_url?: string | null
+          representative_status?: string
           source_url?: string
+          updated_at?: string
+          updated_by?: string | null
+          verification_status?: string
           verified_at?: string
           ward_number?: number | null
           zone?: string | null
@@ -581,6 +697,16 @@ export type Database = {
           _severity: Database["public"]["Enums"]["issue_severity"]
         }
         Returns: undefined
+      }
+      ward_case_counts: {
+        Args: never
+        Returns: {
+          reports: number
+          resolved: number
+          unique_issues: number
+          unresolved: number
+          ward_identifier: string
+        }[]
       }
     }
     Enums: {
