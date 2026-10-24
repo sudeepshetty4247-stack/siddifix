@@ -468,6 +468,44 @@ export type Database = {
           },
         ]
       }
+      issue_evidence: {
+        Row: {
+          actor_id: string
+          id: string
+          issue_id: string
+          kind: string
+          note: string
+          recorded_at: string
+          storage_path: string
+        }
+        Insert: {
+          actor_id: string
+          id?: string
+          issue_id: string
+          kind: string
+          note: string
+          recorded_at?: string
+          storage_path: string
+        }
+        Update: {
+          actor_id?: string
+          id?: string
+          issue_id?: string
+          kind?: string
+          note?: string
+          recorded_at?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_evidence_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_secrets: {
         Row: {
           created_at: string
@@ -504,6 +542,7 @@ export type Database = {
           created_at: string
           department: string | null
           description: string | null
+          duplicate_candidate_id: string | null
           duplicate_of: string | null
           escalated_at: string | null
           id: string
@@ -534,6 +573,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           description?: string | null
+          duplicate_candidate_id?: string | null
           duplicate_of?: string | null
           escalated_at?: string | null
           id?: string
@@ -564,6 +604,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           description?: string | null
+          duplicate_candidate_id?: string | null
           duplicate_of?: string | null
           escalated_at?: string | null
           id?: string
@@ -591,6 +632,13 @@ export type Database = {
             columns: ["authority_id"]
             isOneToOne: false
             referencedRelation: "civic_authorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_duplicate_candidate_id_fkey"
+            columns: ["duplicate_candidate_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
             referencedColumns: ["id"]
           },
           {
@@ -697,6 +745,10 @@ export type Database = {
           _severity: Database["public"]["Enums"]["issue_severity"]
         }
         Returns: undefined
+      }
+      staff_record_evidence: {
+        Args: { _id: string; _kind: string; _note: string; _path: string }
+        Returns: string
       }
       ward_case_counts: {
         Args: never
