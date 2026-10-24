@@ -49,7 +49,7 @@ export const getDemoDatasetStatus = createServerFn({ method: 'GET' })
     ]);
     const tally = (rows: { demo_dataset_id: string | null }[] | null) => {
       const m = new Map<string, number>();
-      for (const r of rows ?? []) m.set(r.demo_dataset_id, (m.get(r.demo_dataset_id) ?? 0) + 1);
+      for (const r of rows ?? []) { if (r.demo_dataset_id) m.set(r.demo_dataset_id, (m.get(r.demo_dataset_id) ?? 0) + 1); }
       return m;
     };
     const ti = tally(issues.data), tt = tally(teams.data), tp = tally(profiles.data);
