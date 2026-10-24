@@ -27,7 +27,7 @@ export function NearbyCaseSummary() {
     <div className="flex flex-col gap-4 rounded-2xl border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <h2 id="nearby-title" className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">Around {label}</span></h2>
-        <p className="mt-0.5 text-xs text-muted-foreground">{!point ? (locating ? 'Finding your location…' : 'Choose a location to see nearby cases') : coverage === 'checking' ? 'Checking coverage…' : !supported ? 'Outside Siddi\'s Bengaluru service area — no local numbers to show' : `Within ${km} km${approximate ? ` of an approximate point (±${Math.round(location?.accuracy ?? 0)} m)` : ''}${location?.method === 'demo' ? ' · demo location' : ''}`}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{!point ? (locating ? 'Finding your location…' : 'Choose a location to see nearby cases') : coverage === 'checking' ? 'Checking coverage…' : !supported ? 'Outside Siddi\'s Bengaluru service area — no local numbers to show' : `Within ${km} km${approximate ? ` of an approximate point (±${Math.round(location?.accuracy ?? 0)} m)` : ''}`}</p>
       </div>
       {point && supported && <dl className="flex gap-6">
         {[{l:'Active',v:counts.data?.active,t:'text-primary'},{l:'Resolved',v:counts.data?.resolved,t:'text-success'},{l:'Overdue',v:counts.data?.overdue,t:'text-warning-foreground'}].map(i=><div key={i.l}><dt className="text-[11px] text-muted-foreground">{i.l}</dt><dd className={`text-lg font-bold tabular-nums ${i.t}`}>{counts.isPending?'…':counts.isError?'—':i.v}</dd></div>)}

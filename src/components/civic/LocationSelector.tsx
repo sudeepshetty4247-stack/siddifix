@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
-import { MapPin, ChevronDown, LocateFixed, Loader2, PlayCircle, Search } from 'lucide-react';
+import { MapPin, ChevronDown, LocateFixed, Loader2, Search } from 'lucide-react';
 import { useLocation } from '@/lib/location';
 import { BENGALURU, isInIndia } from '@/lib/civic';
-import { supabase } from '@/integrations/supabase/client';
 import { searchAddress } from '@/lib/geocoding.functions';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { LazyMap } from './LazyMap';
 
 export function LocationSelector() {
-  const { location, select, open, setOpen, locating, detect, notice, recent, coverage, enterDemo, exitDemo } = useLocation();
+  const { location, select, open, setOpen, locating, detect, notice, recent, coverage } = useLocation();
   const findAddress = useServerFn(searchAddress);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{ lat: number; lng: number; label: string }[]>([]);
@@ -22,19 +21,14 @@ export function LocationSelector() {
   const [checking, setChecking] = useState(false);
   function applyCoordinates() {
     const [lat, lng] = coordinates.split(',').map(Number);
-    if (lat === undefined || lng === undefined || !Number.isFinite(lat) || !Number.isFinite(lng) || !isInIndia(lat, lng)) { setError('Enter an Indian location as latitude, longitude.'); return; }
+    if (lat === undefined || lng === undefined || !Number.isFinite(lat) || !Number.isFinite(lng) || !isInIndia(lat, lng)) { setError('Enter a location as latitude, longitude.'); return; }
     setPin({ lat, lng }); setError('');
   }
   async function confirmPin() {
     if (!pin) return;
     setChecking(true); setError('');
     try {
-      const result = await supabase.rpc('ward_at_point', { _lat: pin.lat, _lng: pin.lng });
-      const wards = result.error ? [] : (result.data as unknown[]);
-      if (wards.length === 0) {
-        setError("We're not in your city yet — Siddi currently serves Bengaluru, and we'd love to reach you soon. Till then, pick a point inside Bengaluru to explore.");
-        return;
-      }
+      // Outside places are accepted; the coverage screen then explains service isn't available there yet.
       select({ ...pin, label: label.trim() || `${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}`, method: 'manual' });
     } finally {
       setChecking(false);
@@ -43,18 +37,14 @@ export function LocationSelector() {
   return <>
     {<Button variant="ghost" onClick={() => setOpen(true)} className="h-auto min-w-0 justify-start gap-2 px-2 py-2 text-left" aria-label="Change location">
       <MapPin className="h-5 w-5 shrink-0 text-primary" />
-      <span className="min-w-0"><span className="flex items-center gap-1"><span className="max-w-[180px] truncate text-sm font-semibold">{location?.label === 'Current location' ? 'Selected location' : location?.label || 'Choose your location'}</span><ChevronDown className="h-3 w-3 shrink-0" /></span><span className="block text-[11px] font-normal text-muted-foreground">{location ? location.method === 'demo' ? 'Demo location · Tap to change' : coverage === 'outside' ? 'Outside service area · Tap to change' : location.method === 'device' ? `GPS estimate ±${Math.round(location.accuracy??0)} m · Tap to change` : 'Chosen by you · Tap to change' : 'Issues and services around you'}</span></span>
+      <span className="min-w-0"><span className="flex items-center gap-1"><span className="max-w-[180px] truncate text-sm font-semibold">{location?.label === 'Current location' ? 'Selected location' : location?.label || 'Choose your location'}</span><ChevronDown className="h-3 w-3 shrink-0" /></span><span className="block text-[11px] font-normal text-muted-foreground">{location ? coverage === 'outside' ? 'Outside service area · Tap to change' : location.method === 'device' ? `GPS estimate ±${Math.round(location.accuracy??0)} m · Tap to change` : 'Chosen by you · Tap to change' : 'Issues and services around you'}</span></span>
     </Button>}
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-xl overflow-y-auto">
         <DialogTitle>Choose your location</DialogTitle>
         <DialogDescription>Siddi currently serves Bengaluru. Pick the place you want to report in — it stays on this device.</DialogDescription>
         {notice && <p role="status" className="text-sm text-warning-foreground">{notice}</p>}
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Button variant="outline" onClick={() => detect()} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}Use current location</Button>
-          <Button variant="outline" onClick={enterDemo}><PlayCircle className="h-4 w-4" />Try Bengaluru demo</Button>
-        </div>
-        {location?.method === 'demo' && <Button variant="ghost" onClick={exitDemo}>Exit demo mode</Button>}
+        <Button variant="outline" onClick={() => detect()} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}Use current location</Button>
         <form className="flex gap-2" onSubmit={async e => { e.preventDefault(); if (query.trim().length < 3) return; setSearching(true); setError(''); try { const r = await findAddress({ data: { query } }); setResults(r.results); if (!r.results.length && r.notice) setError(r.notice); } catch { setError('Address search is unavailable right now. Place a pin instead.'); } finally { setSearching(false); } }}>
           <input aria-label="Search a Bengaluru place" value={query} onChange={e => setQuery(e.target.value)} maxLength={160} placeholder="Search a Bengaluru area or landmark" className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 text-sm" />
           <Button type="submit" variant="outline" disabled={searching}>{searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}Search</Button>

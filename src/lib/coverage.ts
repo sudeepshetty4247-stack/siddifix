@@ -1,10 +1,7 @@
 /**
  * Service coverage: a city is supported only when it is explicitly enabled in the
  * verified directory (civic_coverage) AND the point lies inside an active ward polygon.
- * The Bengaluru demo point is a fixed, labelled location used only by explicit choice.
  */
-export const DEMO_LOCATION = { lat: 12.9763, lng: 77.5929, label: 'Bengaluru demo · Cubbon Park area' } as const;
-
 export type CoverageStatus = 'supported' | 'boundary_review' | 'outside';
 export function coverageFromWardMatches(matchCount: number): CoverageStatus {
   if (matchCount === 1) return 'supported';

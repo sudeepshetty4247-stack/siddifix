@@ -2,20 +2,19 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { suggestedReportLocation } from './report-location';
 import { reverseGeocode } from './geocoding.functions';
 import { supabase } from '@/integrations/supabase/client';
-import { DEMO_LOCATION, coverageFromWardMatches, type CoverageStatus } from './coverage';
-export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual' | 'demo'; accuracy?: number };
+import { coverageFromWardMatches, type CoverageStatus } from './coverage';
+export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual'; accuracy?: number };
 type LocationContextValue = {
   location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void;
   locating: boolean; detect: (quiet?: boolean) => void; notice: string; recent: SelectedLocation[];
   /** Coverage of the selected point: supported Bengaluru ward, shared boundary, outside, or still checking. */
   coverage: CoverageStatus | 'checking' | 'unknown';
-  enterDemo: () => void; exitDemo: () => void;
 };
 const LocationContext = createContext<LocationContextValue | null>(null);
 const KEY = 'civicfix-location-v1';
 function valid(v: unknown): v is SelectedLocation {
   const l = v as SelectedLocation | null;
-  return !!l && Number.isFinite(l.lat) && Number.isFinite(l.lng) && Math.abs(l.lat) <= 90 && Math.abs(l.lng) <= 180 && typeof l.label === 'string' && (l.method === 'manual' || l.method === 'device' || l.method === 'demo');
+  return !!l && Number.isFinite(l.lat) && Number.isFinite(l.lng) && Math.abs(l.lat) <= 90 && Math.abs(l.lng) <= 180 && typeof l.label === 'string' && (l.method === 'manual' || l.method === 'device');
 }
 export function LocationProvider({ children }: { children: ReactNode }) {
   const [location, setLocation] = useState<SelectedLocation | null>(null);
@@ -29,17 +28,10 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     if (!valid(l)) return;
     setLocation(l); setOpen(false); setNotice('');
     setRecent(prev => {
-      // Demo points are never stored as a "recent" real place.
-      const next = [l, ...prev.filter(p => p.method !== 'demo' && (p.lat !== l.lat || p.lng !== l.lng))].slice(0, 4);
+      const next = [l, ...prev.filter(p => (p.lat !== l.lat || p.lng !== l.lng))].slice(0, 4);
       persist(next);
       return next;
     });
-  }
-  function enterDemo() { select({ lat: DEMO_LOCATION.lat, lng: DEMO_LOCATION.lng, label: DEMO_LOCATION.label, method: 'demo' }); }
-  function exitDemo() {
-    const real = recent.find(r => r.method !== 'demo') ?? null;
-    setLocation(real); setRecent(prev => { const next = prev.filter(p => p.method !== 'demo'); persist(next); return next; });
-    if (!real) setOpen(true);
   }
   function detect(quiet = false) {
     const ask = () => { if (!quiet) setOpen(true); };
@@ -73,7 +65,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [location?.lat, location?.lng]);
   useEffect(()=>{
-    if(!location||location.method==='demo'||location.label!=='Current location')return;
+    if(!location||location.label!=='Current location')return;
     let cancelled=false;
     reverseGeocode({data:{lat:location.lat,lng:location.lng}}).then(result=>{
       const address=result.address;
@@ -81,6 +73,6 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     }).catch(()=>{/* coordinates remain available */});
     return()=>{cancelled=true;};
   },[location?.lat,location?.lng,location?.label]);
-  return <LocationContext.Provider value={{ location, select, open, setOpen, locating, detect, notice, recent, coverage, enterDemo, exitDemo }}>{children}</LocationContext.Provider>;
+  return <LocationContext.Provider value={{ location, select, open, setOpen, locating, detect, notice, recent, coverage }}>{children}</LocationContext.Provider>;
 }
 export function useLocation() { const value = useContext(LocationContext); if (!value) throw new Error('LocationProvider required'); return value; }
