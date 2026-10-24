@@ -1,0 +1,7 @@
+import { describe,it,expect } from 'vitest';
+import { allowedDirectoryUrl,validPortrait,directoryQuality } from '@/lib/directory-acquisition';
+describe('Officer source validation',()=>{
+ it('rejects arbitrary hosts, local targets and credentials',()=>{expect(allowedDirectoryUrl('https://127.0.0.1/private')).toBe(false);expect(allowedDirectoryUrl('https://kla.kar.nic.in.evil.test/a')).toBe(false);expect(allowedDirectoryUrl('https://user:secret@kla.kar.nic.in/a')).toBe(false);expect(allowedDirectoryUrl('http://kla.kar.nic.in/a')).toBe(false);expect(allowedDirectoryUrl('https://commons.wikimedia.org/wiki/File:R._Ashoka.jpg')).toBe(true);});
+ it('requires bounded real image dimensions and supported formats',()=>{expect(validPortrait(60000,489,521,'jpg')).toBe(true);expect(validPortrait(6*1024*1024,489,521,'jpg')).toBe(false);expect(validPortrait(60000,12,12,'jpg')).toBe(false);expect(validPortrait(60000,489,521,'svg')).toBe(false);});
+ it('does not count ward repeats as separate people or initials as photos',()=>{const row={kind:'mla',full_name:'Verified Person',designation:'MLA — verified constituency',photo_verified:false,photo_url:null,contact_phone:null,contact_email:null,verification_status:'verified'};expect(directoryQuality([row,row])).toEqual({records:2,distinct:1,portraits:0,missing:1,contacts:0,pending:0});});
+});
