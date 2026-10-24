@@ -5,8 +5,8 @@ import { Logo } from "@/components/civic/Logo";
 import { useI18n, LANGS, type TKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { LocationProvider } from "@/lib/location";
-import { LocationSelector } from "@/components/civic/LocationSelector";
 import { Button } from "@/components/ui/button";
+
 
 export const Route = createFileRoute("/_citizen")({
   component: CitizenLayout,
