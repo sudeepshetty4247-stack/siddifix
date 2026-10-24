@@ -3,7 +3,6 @@ import { useServerFn } from '@tanstack/react-start';
 import { MapPin, ChevronDown, LocateFixed, Loader2, Search } from 'lucide-react';
 import { useLocation } from '@/lib/location';
 import { BENGALURU, isInIndia } from '@/lib/civic';
-import { supabase } from '@/integrations/supabase/client';
 import { searchAddress } from '@/lib/geocoding.functions';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -22,19 +21,14 @@ export function LocationSelector() {
   const [checking, setChecking] = useState(false);
   function applyCoordinates() {
     const [lat, lng] = coordinates.split(',').map(Number);
-    if (lat === undefined || lng === undefined || !Number.isFinite(lat) || !Number.isFinite(lng) || !isInIndia(lat, lng)) { setError('Enter an Indian location as latitude, longitude.'); return; }
+    if (lat === undefined || lng === undefined || !Number.isFinite(lat) || !Number.isFinite(lng) || !isInIndia(lat, lng)) { setError('Enter a location as latitude, longitude.'); return; }
     setPin({ lat, lng }); setError('');
   }
   async function confirmPin() {
     if (!pin) return;
     setChecking(true); setError('');
     try {
-      const result = await supabase.rpc('ward_at_point', { _lat: pin.lat, _lng: pin.lng });
-      const wards = result.error ? [] : (result.data as unknown[]);
-      if (wards.length === 0) {
-        setError("We're not in your city yet — Siddi currently serves Bengaluru, and we'd love to reach you soon. Till then, pick a point inside Bengaluru to explore.");
-        return;
-      }
+      // Outside places are accepted; the coverage screen then explains service isn't available there yet.
       select({ ...pin, label: label.trim() || `${pin.lat.toFixed(4)}, ${pin.lng.toFixed(4)}`, method: 'manual' });
     } finally {
       setChecking(false);
