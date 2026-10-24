@@ -26,9 +26,10 @@ describe('service targets', () => {
 });
 
 describe('coverage', () => {
-  it('rejects points outside every ward and accepts shared boundaries for review', () => {
+  it('rejects points outside every ward and does not accept ambiguous boundaries', () => {
     expect(canAcceptReport(coverageFromWardMatches(0))).toBe(false);
     expect(coverageFromWardMatches(2)).toBe('boundary_review');
+    expect(canAcceptReport(coverageFromWardMatches(2))).toBe(false);
     expect(canAcceptReport(coverageFromWardMatches(1))).toBe(true);
   });
 });
