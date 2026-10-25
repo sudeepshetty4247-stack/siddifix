@@ -4,6 +4,7 @@ import { ArrowRight, Camera, Map, MapPin, Search, ShieldCheck, FileText, Message
 import { Button } from '@/components/ui/button';
 import { publicCases } from '@/lib/public-cases';
 import { IssueCard } from '@/components/civic/IssueCard';
+import anantapurCover from '@/assets/anantapur-clock-tower.jpg.asset.json';
 import communityCover from '@/assets/siddi-community-cover.png.asset.json';
 import { NearbyCaseSummary } from '@/components/civic/NearbyCaseSummary';
 import { CityOverview } from '@/components/civic/CityOverview';
@@ -33,7 +34,7 @@ function CitizenHome() {
   }, refetchInterval: 30000 });
   return <div>
     <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
-      <img src={communityCover.url} alt="A citizen photographing a damaged Bengaluru pavement near Vidhana Soudha" width={1365} height={768} className="absolute inset-0 -z-20 h-full w-full object-cover object-center" fetchPriority="high" />
+      <img src={activeAreaId==='anantapur'?anantapurCover.url:communityCover.url} alt={activeAreaId==='anantapur'?'Anantapur clock tower at night, photograph by Maheshrig':'A citizen photographing a Bengaluru pavement'} width={1365} height={768} className="absolute inset-0 -z-20 h-full w-full object-cover object-center" fetchPriority="high" />
       <div className="home-photo-shade absolute inset-0 -z-10" />
       <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 sm:py-16 lg:py-20">
         <p className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase"><MapPin className="h-4 w-4" />{activeArea?.name??'Siddhi'}{activeArea ? `, ${areaSettings(activeArea).state_name??''}`:''}</p>
@@ -48,6 +49,7 @@ function CitizenHome() {
       </div>
     </section>
     {activeAreaId==='anantapur'&&<AreaAuthoritySummary/>}
+    {activeAreaId==='anantapur'&&<p className="mx-auto max-w-7xl px-5 py-2 text-[11px] text-muted-foreground">Photo: <a href="https://commons.wikimedia.org/wiki/File:Anantapur_Clock_tower_at_night.jpg" target="_blank" rel="noreferrer" className="underline">Maheshrig · Anantapur Clock tower at night</a> · <a href="https://creativecommons.org/licenses/by-sa/3.0/" className="underline">CC BY-SA 3.0</a> · displayed with cropping.</p>}
     <CityOverview />
     <NearbyCaseSummary />
 
