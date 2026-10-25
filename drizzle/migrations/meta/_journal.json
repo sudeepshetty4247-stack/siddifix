@@ -435,6 +435,13 @@
       "when": 1792898175099,
       "tag": "0061_fix_scoped_case_metrics_single_pass",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1792903191732,
+      "tag": "0062_ward_snapshot_case_counts",
+      "breakpoints": true
     }
   ]
 }
