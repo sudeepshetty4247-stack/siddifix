@@ -32,7 +32,8 @@
 - Admin-editable civic_wards/civic_department_routes and representative rows have trigger-written civic_directory_audit. public/data/bengaluru-wards.json is import source only; cases retain submission ward in routing_snapshot.
 - MLA/MP mapping uses Election Commission results and each ward's official assembly constituency number. Corporators remain not in office until council elections. AuthorityPortrait requires independent verified photos and credits, HTTPS/managed media or initials; profiles are ward-scoped and audited.
 - Ward/routing fixtures stay in tests, never citizen controls.
-- Manifest/icons support installation without a service worker; BrandOpening has a bounded per-load timer and never caches private pages.
+- Manifest/icons allow installation, not offline use; never cache private pages.
+- README images use asset pointers and absolute URLs so GitHub renders hosted media.
 - Visit-only assistant uses editable opt-in browser speech and public aggregates; no reasoning/private access/writes. Exports share one filtered aggregate snapshot. Directory candidates use protected resumable claims and independent identity/rights review before public portrait serving.
 
 - Recipient notifications reuse issue_notifications with guarded ownership/current-scope RPCs, event keys and 15-second recovery-safe polling; notification_reads stores read/archive state. Public/internal messages are separate event visibility, and reminder timing is explicitly admin-configured.
