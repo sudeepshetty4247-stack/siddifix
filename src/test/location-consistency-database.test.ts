@@ -6,6 +6,7 @@ import {beforeAll,afterAll,describe,it,expect} from 'vitest';
 const db=new PGlite();
 const sql48=readFileSync('drizzle/migrations/0048_report_integrity_and_guarded_review.sql','utf8');
 const sql63=readFileSync('drizzle/migrations/0063_location_consistency_evidence.sql','utf8');
+const sql64=readFileSync('drizzle/migrations/0064_location_consistency_confirmed_key.sql','utf8');
 function source(name:string){const start=sql48.indexOf(`CREATE OR REPLACE FUNCTION public.${name}(`);const end=sql48.indexOf('$$;',sql48.indexOf('AS $$',start))+3;if(start<0||end<3)throw new Error('Missing SQL fixture');return sql48.slice(start,end);}
 
 let seq=0;
@@ -36,6 +37,7 @@ describe('Server-side location consistency evidence',()=>{
   CREATE FUNCTION create_civic_report_core(jsonb,text) RETURNS jsonb LANGUAGE plpgsql AS $$ BEGIN INSERT INTO issues(id,ref_code,status,idempotency_key) VALUES(gen_random_uuid(),$1->>'ref_code',($1->>'status')::issue_status,$1->>'idempotency_key');RETURN jsonb_build_object('ref',$1->>'ref_code','duplicate',false);END $$;`);
   await db.exec(source('create_civic_report'));
   await db.exec(sql63);
+  await db.exec(sql64);
  },30000);
  afterAll(()=>db.close());
 
