@@ -1290,6 +1290,7 @@ export type Database = {
         Row: {
           image_hash: string | null
           issue_id: string
+          location_consistency: Json | null
           request_fingerprint: string | null
           review_reason: string | null
           reviewed_at: string | null
@@ -1303,6 +1304,7 @@ export type Database = {
         Insert: {
           image_hash?: string | null
           issue_id: string
+          location_consistency?: Json | null
           request_fingerprint?: string | null
           review_reason?: string | null
           reviewed_at?: string | null
@@ -1316,6 +1318,7 @@ export type Database = {
         Update: {
           image_hash?: string | null
           issue_id?: string
+          location_consistency?: Json | null
           request_fingerprint?: string | null
           review_reason?: string | null
           reviewed_at?: string | null
