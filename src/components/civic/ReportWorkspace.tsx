@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CATEGORIES, STATUSES, STATUS_META, SEVERITIES } from '@/lib/civic';
 import { getReportSnapshot } from '@/lib/transparency.functions';
 import { EMPTY_FILTERS, filterSummary, METHODOLOGY, type ReportFilters } from '@/lib/report-snapshot';
+import { useShowcase } from '@/lib/showcase';
 import { downloadReport, reportLabel } from '@/lib/report-export';
 import fontUrl from '@fontsource/public-sans/files/public-sans-latin-400-normal.woff?url';
 
@@ -13,7 +14,8 @@ export function ReportWorkspace() {
   const [filters,setFilters]=useState<ReportFilters>(EMPTY_FILTERS);const [draft,setDraft]=useState<ReportFilters>(EMPTY_FILTERS);
   const [exporting,setExporting]=useState('');const [error,setError]=useState('');
   const [ready,setReady]=useState<{blob:Blob;name:string}|null>(null);
-  const q=useQuery({queryKey:['report-snapshot',filters],queryFn:()=>getReportSnapshot({data:filters}),staleTime:30000});
+  const { showcase } = useShowcase();
+  const q=useQuery({queryKey:['report-snapshot',filters,showcase],queryFn:()=>getReportSnapshot({data:{...filters,include_demo:showcase}}),staleTime:30000});
   const r=q.data;
   async function prepare(kind:'pdf'|'xlsx') {
     if(!r||exporting)return;setExporting(kind);setError('');setReady(null);
@@ -38,7 +40,7 @@ export function ReportWorkspace() {
         ['severity','Severity',[['','All severities'],...SEVERITIES.map(s=>[s,s])]],
         ['resolution','Resolution',[['','All outcomes'],['resolved','Resolved / closed'],['unresolved','Not resolved / closed']]],
         ['records','Counting scope',[['canonical','Canonical cases'],['linked','Linked duplicate reports'],['all','All actual submissions']]],
-      ] as [keyof ReportFilters,string,string[][]][]).map(([key,label,values])=><label key={key} className="text-xs font-medium">{label}<select aria-label={`Report ${label}`} value={draft[key]??''} onChange={e=>change(key,e.target.value)} className="mt-1 h-10 w-full rounded-md border bg-card px-3">{values.map(([value,text])=><option key={value} value={value}>{text}</option>)}</select></label>)}
+      ] as [Exclude<keyof ReportFilters, 'include_demo'>,string,string[][]][]).map(([key,label,values])=><label key={key} className="text-xs font-medium">{label}<select aria-label={`Report ${label}`} value={draft[key]??''} onChange={e=>change(key,e.target.value)} className="mt-1 h-10 w-full rounded-md border bg-card px-3">{values.map(([value,text])=><option key={value} value={value}>{text}</option>)}</select></label>)}
       <label className="text-xs font-medium">Corporation<input aria-label="Report corporation" placeholder="Exact configured name" className="mt-1 h-10 w-full rounded-md border bg-card px-3" value={draft.corporation} onChange={e=>change('corporation',e.target.value)}/></label><label className="text-xs font-medium">Ward identifier<input aria-label="Report ward" placeholder="e.g. south-60" className="mt-1 h-10 w-full rounded-md border bg-card px-3" value={draft.ward} onChange={e=>change('ward',e.target.value)}/></label>
       <div className="flex items-end gap-2"><Button type="submit">Apply filters</Button><Button type="button" variant="outline" aria-label="Reset report filters" title="Reset filters" onClick={()=>{setFilters(EMPTY_FILTERS);setDraft(EMPTY_FILTERS);setReady(null);}}><RotateCcw className="h-4 w-4"/></Button><Button type="button" variant="ghost" aria-label="Refresh snapshot" disabled={q.isFetching} onClick={()=>{setReady(null);void q.refetch();}}><RefreshCw className="h-4 w-4"/></Button></div>
     </form>

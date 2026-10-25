@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/civic/BackButton";
 import { CoverageNotice } from "@/components/civic/CoverageNotice";
 import { AskSiddhiLauncher } from "@/components/civic/AskSiddhiLauncher";
+import { ShowcaseProvider, ShowcaseToggle } from "@/lib/showcase";
 
 
 export const Route = createFileRoute("/_citizen")({
@@ -28,9 +29,11 @@ const NAV: { to: "/" | "/report" | "/map" | "/explore" | "/track" | "/transparen
 function CitizenLayout() {
   return (
     <LocationProvider>
-      <CitizenShell />
-      <CoverageNotice />
-      <AskSiddhiLauncher />
+      <ShowcaseProvider>
+        <CitizenShell />
+        <CoverageNotice />
+        <AskSiddhiLauncher />
+      </ShowcaseProvider>
     </LocationProvider>
   );
 }
@@ -60,6 +63,7 @@ function CitizenShell() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <ShowcaseToggle />
             <label className="relative hidden items-center sm:flex">
               <Globe className="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground" />
               <select

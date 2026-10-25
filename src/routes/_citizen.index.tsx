@@ -7,6 +7,7 @@ import { IssueCard } from '@/components/civic/IssueCard';
 import communityCover from '@/assets/siddi-community-cover.png.asset.json';
 import { NearbyCaseSummary } from '@/components/civic/NearbyCaseSummary';
 import { CityOverview } from '@/components/civic/CityOverview';
+import { useShowcase, ShowcaseBadge } from '@/lib/showcase';
 export const Route = createFileRoute('/_citizen/')({
   head: () => ({ meta: [
     {title:'Siddhi — Report a problem. Track the progress.'},
@@ -20,8 +21,9 @@ export const Route = createFileRoute('/_citizen/')({
 });
 
 function CitizenHome() {
-  const recent = useQuery({ queryKey: ['home-recent-issues'], queryFn: async () => {
-    return (await publicCases()).slice(0, 3);
+  const { showcase } = useShowcase();
+  const recent = useQuery({ queryKey: ['home-recent-issues', showcase], queryFn: async () => {
+    return (await publicCases(undefined, showcase)).slice(0, 3);
   }, refetchInterval: 30000 });
   return <div>
     <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
@@ -58,7 +60,7 @@ function CitizenHome() {
     <section className="border-b bg-primary-soft"><div className="mx-auto grid max-w-7xl gap-6 px-5 py-7 sm:px-6 md:grid-cols-2"><Link to="/transparency" className="flex items-start gap-4"><ChartNoAxesCombined className="mt-1 h-6 w-6 shrink-0 text-primary" /><div><h2 className="flex items-center gap-3 text-lg font-semibold">Public transparency report<ArrowRight className="h-4 w-4" /></h2><p className="mt-2 text-sm text-muted-foreground">City, ward and constituency progress. Real numbers, downloadable records.</p></div></Link><Link to="/assistant" className="flex items-start gap-4"><MessageCircle className="mt-1 h-6 w-6 shrink-0 text-primary" /><div><h2 className="flex items-center gap-3 text-lg font-semibold">Ask Siddhi<ArrowRight className="h-4 w-4" /></h2><p className="mt-2 text-sm text-muted-foreground">Your questions. Your language.</p></div></Link></div></section>
 
     <section className="mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-12">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="mb-2 text-xs font-semibold uppercase text-primary">From the community</p><h2 className="text-2xl font-semibold">Latest reported problems</h2></div><Button asChild variant="outline"><Link to="/explore">All reports<ArrowRight className="h-4 w-4" /></Link></Button></div>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="mb-2 text-xs font-semibold uppercase text-primary">From the community</p><h2 className="flex flex-wrap items-center gap-3 text-2xl font-semibold">Latest reported problems<ShowcaseBadge /></h2></div><Button asChild variant="outline"><Link to="/explore">All reports<ArrowRight className="h-4 w-4" /></Link></Button></div>
       {recent.isPending ? <p role="status" className="py-8 text-sm text-muted-foreground">Loading recent reports…</p> : recent.isError ? <div role="alert" className="border-y py-6"><p className="text-sm">Recent reports couldn't be loaded.</p><Button className="mt-3" variant="outline" onClick={() => recent.refetch()}>Try again</Button></div> : recent.data.length ? <div className="grid gap-4 md:grid-cols-3">{recent.data.map(issue => <IssueCard key={issue.id} issue={issue} />)}</div> : <div className="flex flex-col items-start justify-between gap-5 border-y py-8 sm:flex-row sm:items-center"><div><h3 className="text-lg font-semibold">Every better street starts with one report.</h3><p className="mt-2 max-w-lg text-sm text-muted-foreground">No Siddhi reports yet. If you spot a local problem, give it a photo, a location and a voice.</p></div><Button asChild><Link to="/report"><Camera className="h-4 w-4" />Be the first to report</Link></Button></div>}
     </section>
   </div>;
