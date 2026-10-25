@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { te } from './locales/te';
+import { kn } from './locales/kn';
 import { preferredAreaLanguage } from './service-area';
 
 export type Lang = "en" | "hi" | "kn" | "te";
@@ -56,6 +57,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = l;
   };
   function suggestLang(suggestion?:string){const saved=localStorage.getItem("civicfix.lang");const next=preferredAreaLanguage(saved,suggestion) as Lang;if(["en","hi","kn","te"].includes(next)){setLangState(next);document.documentElement.lang=next;}}
-  return <Ctx.Provider value={{ lang, setLang, suggestLang, t: (k) => lang==='te'?te[k]:dict[k][lang], tx:k=>lang==='te'?te[k]:english[k]??(k in dict?dict[k as TKey][lang]:k) }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ lang, setLang, suggestLang, t: (k) => lang==='te'?te[k]:dict[k][lang], tx:k=>lang==='te'?te[k]:lang==='kn'?kn[k]:english[k]??(k in dict?dict[k as TKey][lang]:k) }}>{children}</Ctx.Provider>;
 }
 export const useI18n = () => useContext(Ctx);
