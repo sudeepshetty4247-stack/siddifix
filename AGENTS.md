@@ -41,3 +41,8 @@
 - Recipient notifications reuse issue_notifications with guarded ownership/current-scope RPCs, event keys and 15-second recovery-safe polling; notification_reads stores read/archive state. Public/internal messages are separate event visibility, and reminder timing is explicitly admin-configured.
 - Unresolved report ownership is null, not a routing department; the legacy review label is treated as unknown so unique category/ward team routing remains possible without inventing ownership.
 - Shared incidentCoverage validates enabled coverage and unique ward polygons for location UI and submission; unresolved text stays a separate session draft and validated address provenance persists in routing_snapshot.
+
+- Active browsing area lives in LocationProvider, separate from incident coordinates and language; query keys include area ID to prevent stale cross-area display.
+- Persist report coverage_id from server-resolved routing snapshots; area scope constrains staff_can_work and team routing independently of UI selection.
+- Reuse civic_coverage.settings for area metadata; reporting_enabled stays false until verified jurisdiction polygons exist.
+- Extend existing i18n resources rather than introducing a second translation engine; dynamic citizen content remains unchanged.

@@ -76,7 +76,7 @@ export const submitIssue = createServerFn({ method: "POST" })
     const directory={coverage:coverageRows.data??[],wards:wardRows.data??[],authorities:authorityRows.data??[],rules:ruleRows.data??[],routes:routeRows.data??[]};
     if (!isInIndia(data.lat, data.lng)) throw new Error("CivicFix currently accepts locations within India only.");
     const incidentCheck=incidentCoverage(directory,data.lat,data.lng);
-    if(incidentCheck.status!=='supported')throw new Error(incidentCheck.status==='unknown'?"We couldn't verify this location yet. Confirm a point inside a single supported ward.":"Siddhi currently accepts reports only inside its configured Bengaluru service area. Change the incident location.");
+    if(incidentCheck.status!=='supported')throw new Error(incidentCheck.status==='unknown'?"We couldn't verify this location yet. Confirm a point inside a single supported ward.":"Siddhi currently accepts reports only inside a configured, verified service area. Change the incident location.");
 
     // Idempotency: repeated taps / retries return the original report.
     const existing = await supabaseAdmin
@@ -133,12 +133,12 @@ export const submitIssue = createServerFn({ method: "POST" })
     const coverage = coverageFromWardMatches(routing.ward ? 1 : routing.reviewReason?.startsWith('This pin touches') ? 2 : 0);
     if (!routing.coverage || !canAcceptReport(coverage)) {
       if(path)await supabaseAdmin.storage.from('issue-photos').remove([path]);
-      throw new Error("This location is outside Siddhi's current service area. Siddhi accepts reports inside Bengaluru's wards only.");
+      throw new Error("This location is outside Siddhi's current service area. Choose a point within a verified reporting boundary.");
     }
     const targetRows = await supabaseAdmin.from('service_targets').select('category,severity,ack_hours,resolve_hours,version,active').eq('active', true);
     const { computeTargets } = await import('./service-targets');
     const targets = computeTargets((targetRows.data ?? []) as never, data.category, severity, new Date());
-    const refCode = `BLR-${randomString(6)}`;
+    const refCode = `${routing.coverage?.id === 'anantapur' ? 'ATP' : 'BLR'}-${randomString(6)}`;
     const token = randomToken();
 
     const { data: result, error } = await supabaseAdmin.rpc('create_civic_report', {
@@ -156,7 +156,7 @@ export const submitIssue = createServerFn({ method: "POST" })
         original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
         photo_source:data.photoMetadata?.source??'gallery',photo_metadata:data.photoMetadata ? JSON.parse(JSON.stringify(data.photoMetadata)) : null,
         integrity_fingerprint:fingerprint,integrity_image_hash:originalHash,integrity_session:identity.session,integrity_burst:identity.burst,
-        integrity_location_mismatch:!!(data.photoMetadata?.gps&&Math.hypot(data.photoMetadata.gps.lat-data.lat,data.photoMetadata.gps.lng-data.lng)>0.02)||!!(data.incidentLocation?.state&&!/karnataka|ಕರ್ನಾಟಕ|कर्नाटक/i.test(data.incidentLocation.state)),
+        integrity_location_mismatch:!!(data.photoMetadata?.gps&&Math.hypot(data.photoMetadata.gps.lat-data.lat,data.photoMetadata.gps.lng-data.lng)>0.02)||!!(data.incidentLocation?.state&&!(routing.coverage?.id==='anantapur'?/andhra|ఆంధ్ర/i:/karnataka|ಕರ್ನಾಟಕ|कर्नाटक/i).test(data.incidentLocation.state)),
       },
     });
     if (error) {

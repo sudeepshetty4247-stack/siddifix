@@ -358,6 +358,27 @@
       "when": 1792892700197,
       "tag": "0050_integrity_notifications_and_cleanup_safety",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1792893387918,
+      "tag": "0051_multi_service_area_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1792893779572,
+      "tag": "0052_area_directory_and_configuration_guards",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1792894033811,
+      "tag": "0053_area_scoped_provisioning_and_admin_guards",
+      "breakpoints": true
     }
   ]
 }

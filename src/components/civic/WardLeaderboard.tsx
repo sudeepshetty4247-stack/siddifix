@@ -3,20 +3,22 @@ import { Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDirectory } from '@/lib/directory.functions';
 import { rankWards, type WardCount } from '@/lib/wards';
+import {useLocation} from '@/lib/location';
 import { useShowcase, ShowcaseBadge } from '@/lib/showcase';
 
 export function WardLeaderboard() {
   const { showcase } = useShowcase();
+  const {activeAreaId}=useLocation();
   const dir = useQuery({ queryKey: ['civic-directory'], queryFn: () => getDirectory(), staleTime: 300000 });
   const counts = useQuery({ queryKey: ['ward-case-counts', showcase], refetchInterval: 60000, queryFn: async () => {
     const { data, error } = await supabase.rpc('ward_case_counts', { _include_demo: showcase }); if (error) throw error;
     return (data ?? []).map(r => ({ ...r, reports: Number(r.reports), unique_issues: Number(r.unique_issues), unresolved: Number(r.unresolved), resolved: Number(r.resolved) })) as WardCount[];
   } });
-  const wards = dir.data?.wards ?? [];
+  const wards = (dir.data?.wards ?? []).filter(w=>(w as typeof w & {coverage_id?:string}).coverage_id===activeAreaId);
   if (!wards.length) return null;
   const names = new Map(wards.map(w => [w.identifier, `${w.name}`]));
   const meta = new Map(wards.map(w => [w.identifier, `${w.corporation.replace('Bengaluru ', '').replace(' City Corporation', '')} #${w.ward_number ?? ''}`]));
-  const all = counts.data ?? [];
+  const all = (counts.data ?? []).filter(c=>names.has(c.ward_identifier));
   const rows = rankWards(all, names);
   const totals = all.reduce((s, r) => ({ reports: s.reports + r.reports, unique: s.unique + r.unique_issues, open: s.open + r.unresolved, done: s.done + r.resolved }), { reports: 0, unique: 0, open: 0, done: 0 });
   return <section className="border-t p-4">

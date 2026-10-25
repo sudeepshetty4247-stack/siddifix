@@ -17,6 +17,7 @@ export type Database = {
       admin_permissions: {
         Row: {
           can_manage_admins: boolean
+          coverage_ids: string[]
           created_by: string | null
           is_super_admin: boolean
           updated_at: string
@@ -25,6 +26,7 @@ export type Database = {
         }
         Insert: {
           can_manage_admins?: boolean
+          coverage_ids?: string[]
           created_by?: string | null
           is_super_admin?: boolean
           updated_at?: string
@@ -33,6 +35,7 @@ export type Database = {
         }
         Update: {
           can_manage_admins?: boolean
+          coverage_ids?: string[]
           created_by?: string | null
           is_super_admin?: boolean
           updated_at?: string
@@ -119,6 +122,8 @@ export type Database = {
           id: string
           name: string
           notice: string
+          reporting_enabled: boolean
+          settings: Json
           source_url: string | null
           state: string
           verified_at: string | null
@@ -129,6 +134,8 @@ export type Database = {
           id: string
           name: string
           notice: string
+          reporting_enabled?: boolean
+          settings?: Json
           source_url?: string | null
           state?: string
           verified_at?: string | null
@@ -139,6 +146,8 @@ export type Database = {
           id?: string
           name?: string
           notice?: string
+          reporting_enabled?: boolean
+          settings?: Json
           source_url?: string | null
           state?: string
           verified_at?: string | null
@@ -328,10 +337,14 @@ export type Database = {
           contact_email: string | null
           contact_phone: string | null
           corporation: string | null
+          coverage_id: string | null
           designation: string
           full_name: string
           id: string
+          identity_source_verified: boolean
+          jurisdiction: string | null
           kind: string
+          office_address: string | null
           photo_credit: string | null
           photo_license_url: string | null
           photo_source_type: string | null
@@ -354,10 +367,14 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           corporation?: string | null
+          coverage_id?: string | null
           designation: string
           full_name: string
           id?: string
+          identity_source_verified?: boolean
+          jurisdiction?: string | null
           kind?: string
+          office_address?: string | null
           photo_credit?: string | null
           photo_license_url?: string | null
           photo_source_type?: string | null
@@ -380,10 +397,14 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           corporation?: string | null
+          coverage_id?: string | null
           designation?: string
           full_name?: string
           id?: string
+          identity_source_verified?: boolean
+          jurisdiction?: string | null
           kind?: string
+          office_address?: string | null
           photo_credit?: string | null
           photo_license_url?: string | null
           photo_source_type?: string | null
@@ -399,7 +420,15 @@ export type Database = {
           ward_identifier?: string | null
           zone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "civic_people_coverage_id_fkey"
+            columns: ["coverage_id"]
+            isOneToOne: false
+            referencedRelation: "civic_coverage"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       civic_request_limits: {
         Row: {
@@ -463,6 +492,7 @@ export type Database = {
           categories: string[]
           contact_label: string | null
           contact_phone: string | null
+          coverage_id: string | null
           created_at: string
           demo_dataset_id: string | null
           department: string
@@ -480,6 +510,7 @@ export type Database = {
           categories?: string[]
           contact_label?: string | null
           contact_phone?: string | null
+          coverage_id?: string | null
           created_at?: string
           demo_dataset_id?: string | null
           department: string
@@ -497,6 +528,7 @@ export type Database = {
           categories?: string[]
           contact_label?: string | null
           contact_phone?: string | null
+          coverage_id?: string | null
           created_at?: string
           demo_dataset_id?: string | null
           department?: string
@@ -509,7 +541,15 @@ export type Database = {
           updated_by?: string | null
           wards?: string[]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "civic_teams_coverage_id_fkey"
+            columns: ["coverage_id"]
+            isOneToOne: false
+            referencedRelation: "civic_coverage"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       civic_wards: {
         Row: {
@@ -1038,6 +1078,7 @@ export type Database = {
           assignment_state: string
           authority_id: string | null
           category: string
+          coverage_id: string | null
           created_at: string
           demo_dataset_id: string | null
           department: string | null
@@ -1079,6 +1120,7 @@ export type Database = {
           assignment_state?: string
           authority_id?: string | null
           category?: string
+          coverage_id?: string | null
           created_at?: string
           demo_dataset_id?: string | null
           department?: string | null
@@ -1120,6 +1162,7 @@ export type Database = {
           assignment_state?: string
           authority_id?: string | null
           category?: string
+          coverage_id?: string | null
           created_at?: string
           demo_dataset_id?: string | null
           department?: string | null
@@ -1156,6 +1199,13 @@ export type Database = {
             columns: ["authority_id"]
             isOneToOne: false
             referencedRelation: "civic_authorities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_coverage_id_fkey"
+            columns: ["coverage_id"]
+            isOneToOne: false
+            referencedRelation: "civic_coverage"
             referencedColumns: ["id"]
           },
           {
@@ -1479,6 +1529,7 @@ export type Database = {
           active: boolean
           categories: string[]
           corporations: string[]
+          coverage_ids: string[]
           created_by: string | null
           demo_dataset_id: string | null
           department: string
@@ -1494,6 +1545,7 @@ export type Database = {
           active?: boolean
           categories?: string[]
           corporations?: string[]
+          coverage_ids?: string[]
           created_by?: string | null
           demo_dataset_id?: string | null
           department?: string
@@ -1509,6 +1561,7 @@ export type Database = {
           active?: boolean
           categories?: string[]
           corporations?: string[]
+          coverage_ids?: string[]
           created_by?: string | null
           demo_dataset_id?: string | null
           department?: string
@@ -1583,6 +1636,17 @@ export type Database = {
         Args: { _grant: boolean; _role: string; _user: string }
         Returns: undefined
       }
+      admin_create_area_team: {
+        Args: {
+          _active?: boolean
+          _area: string
+          _categories: string[]
+          _department: string
+          _name: string
+          _wards: string[]
+        }
+        Returns: string
+      }
       admin_feedback_summary: { Args: never; Returns: Json }
       admin_integrity_settings: {
         Args: { _settings: Json }
@@ -1602,9 +1666,24 @@ export type Database = {
         }
         Returns: string
       }
+      admin_save_service_area: {
+        Args: {
+          _bounds: Json
+          _id: string
+          _name: string
+          _reporting: boolean
+          _settings: Json
+          _source: string
+        }
+        Returns: undefined
+      }
       admin_set_account_state: {
         Args: { _active: boolean; _reason: string; _user: string }
         Returns: number
+      }
+      admin_set_area_scope: {
+        Args: { _areas: string[]; _user: string }
+        Returns: undefined
       }
       admin_set_delegation: {
         Args: { _allow: boolean; _user: string }
@@ -1683,7 +1762,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      can_access_service_area: {
+        Args: { _area: string; _user: string }
+        Returns: boolean
+      }
       can_manage_admins: { Args: { _user: string }; Returns: boolean }
+      can_manage_service_area: {
+        Args: { _area: string; _user: string }
+        Returns: boolean
+      }
       citizen_change_issue: {
         Args: { _action: string; _note: string; _ref: string; _token: string }
         Returns: string
@@ -1822,6 +1909,10 @@ export type Database = {
       }
       preview_demo_purge: { Args: { _dataset: string }; Returns: Json }
       process_deadline_reminders: { Args: never; Returns: number }
+      public_area_case_rows: {
+        Args: { _area: string; _include_demo?: boolean }
+        Returns: Json
+      }
       public_case_events: { Args: { _id: string }; Returns: Json }
       public_case_rows:
         | { Args: { _ref?: string }; Returns: Json }

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 // Only visible text is accepted. Clients cannot inject system roles, tools or private context.
 export const assistantInput = z.object({
+  serviceArea: z.string().regex(/^[a-z0-9-]{2,60}$/).optional(),
   messages: z.array(z.object({
     id: z.string().min(1).max(160),
     role: z.enum(['user', 'assistant']),

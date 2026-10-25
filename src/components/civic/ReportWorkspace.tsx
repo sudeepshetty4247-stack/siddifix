@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CATEGORIES, STATUSES, STATUS_META, SEVERITIES } from '@/lib/civic';
 import { getReportSnapshot } from '@/lib/transparency.functions';
 import { EMPTY_FILTERS, filterSummary, METHODOLOGY, type ReportFilters } from '@/lib/report-snapshot';
+import {useLocation} from '@/lib/location';
 import { useShowcase } from '@/lib/showcase';
 import { downloadReport, reportLabel } from '@/lib/report-export';
 import fontUrl from '@fontsource/public-sans/files/public-sans-latin-400-normal.woff?url';
@@ -15,7 +16,8 @@ export function ReportWorkspace() {
   const [exporting,setExporting]=useState('');const [error,setError]=useState('');
   const [ready,setReady]=useState<{blob:Blob;name:string}|null>(null);
   const { showcase } = useShowcase();
-  const q=useQuery({queryKey:['report-snapshot',filters,showcase],queryFn:()=>getReportSnapshot({data:{...filters,include_demo:showcase}}),staleTime:30000});
+  const {activeAreaId}=useLocation();
+  const q=useQuery({queryKey:['report-snapshot',filters,showcase,activeAreaId],queryFn:()=>getReportSnapshot({data:{...filters,coverage_id:activeAreaId,include_demo:showcase}}),staleTime:30000});
   const r=q.data;
   async function prepare(kind:'pdf'|'xlsx') {
     if(!r||exporting)return;setExporting(kind);setError('');setReady(null);

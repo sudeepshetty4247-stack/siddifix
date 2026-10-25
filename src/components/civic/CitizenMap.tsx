@@ -5,6 +5,7 @@ import { Camera, LocateFixed, Loader2, X, ArrowRight, ChevronDown, Search, BarCh
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { BENGALURU, CATEGORIES, OPEN_STATUSES, categoryById, isOverdue, SEVERITY_META, type Severity } from '@/lib/civic';
+import {areaCenter} from '@/lib/service-area';
 import { useLocation } from '@/lib/location';
 import { useLiveGps } from '@/lib/live-gps';
 import { LazyMap } from './LazyMap';
@@ -26,7 +27,7 @@ type Fly = { lat: number; lng: number; zoom: number; nonce: number };
 const nearbySchema = z.object({ total: z.number(), active: z.number(), resolved: z.number(), overdue: z.number(), critical: z.number() });
 
 export function CitizenMap() {
-  const { location, select } = useLocation();
+  const { location, select, activeArea,activeAreaId } = useLocation();
   const { showcase } = useShowcase();
   const gps = useLiveGps(true);
   const [category, setCategory] = useState('all');
@@ -43,7 +44,7 @@ export function CitizenMap() {
   const sharedOnce = useRef(false);
 
   const dir = useQuery({ queryKey: ['civic-directory'], queryFn: () => getDirectory(), staleTime: 300000 });
-  const wards = dir.data?.wards ?? [];
+  const wards = (dir.data?.wards ?? []).filter(w=>(w as typeof w & {coverage_id?:string}).coverage_id===activeAreaId);
   const wardCounts = useQuery({
     queryKey: ['ward-case-counts', showcase], refetchInterval: 30000,
     queryFn: async () => {
@@ -52,11 +53,13 @@ export function CitizenMap() {
       return (data ?? []).map(r => ({ ...r, reports: Number(r.reports), unique_issues: Number(r.unique_issues), unresolved: Number(r.unresolved), resolved: Number(r.resolved) })) as WardCount[];
     },
   });
+  useEffect(()=>{setFly({...areaCenter(activeArea),zoom:12,nonce:Date.now()});setSelected(null);setTappedWard(null);flewToFix.current=false;},[activeAreaId,activeArea?.id]);
   const countByWard = useMemo(() => new Map((wardCounts.data ?? []).map(c => [c.ward_identifier, c])), [wardCounts.data]);
 
   // Where the device is right now, against the published ward boundaries.
-  const place = describeLiveFix(dir.data, gps.fix);
-  const savedFocus = citizenMapFocus(dir.data, location);
+  const areaDirectory=dir.data?{...dir.data,wards,coverage:dir.data.coverage.filter(c=>c.id===activeAreaId),routes:dir.data.routes.filter(r=>r.coverage_id===activeAreaId),authorities:dir.data.authorities.filter(a=>a.coverage_id===activeAreaId)}:undefined;
+  const place = describeLiveFix(areaDirectory, gps.fix);
+  const savedFocus = citizenMapFocus(areaDirectory, location);
   const savedWard = savedFocus ? wards.find(w => w.active && pointInGeometry(savedFocus.lat, savedFocus.lng, w.boundary)) ?? null : null;
   const yourWard = place?.kind === 'ward' ? place.ward : null;
   const youPoint = gps.fix && place && place.kind !== 'outside' ? gps.fix : null;
@@ -64,7 +67,7 @@ export function CitizenMap() {
   // Fly to the first live fix inside Bengaluru, like a maps app.
   useEffect(() => {
     if (!gps.fix || !place || flewToFix.current) return;
-    if (place.kind === 'outside') return;
+    if (place.kind === 'outside' || location?.method==='manual') return;
     flewToFix.current = true;
     setFly({ lat: gps.fix.lat, lng: gps.fix.lng, zoom: place.precise ? 16 : 14, nonce: Date.now() });
     // Never silently replace a manually chosen place or the explicit demo point with GPS.
@@ -80,7 +83,7 @@ export function CitizenMap() {
     setFly({ ...savedFocus, zoom: 15, nonce: Date.now() });
   }, [gps.state, savedFocus?.lat, savedFocus?.lng]);
 
-  const q = useQuery({ queryKey: ['citizen-map', showcase], refetchInterval: 30000, queryFn: async () => (await publicCases(undefined, showcase)) as MapIssue[] });
+  const q = useQuery({ queryKey: ['citizen-map', showcase,activeAreaId], refetchInterval: 30000, queryFn: async () => (await publicCases(undefined, showcase,activeAreaId)) as MapIssue[] });
   const issueWard = useMemo(() => {
     const m = new Map<string, string | null>();
     for (const i of q.data ?? []) m.set(i.id, wards.find(w => w.active && pointInGeometry(i.lat, i.lng, w.boundary))?.identifier ?? null);
@@ -151,7 +154,7 @@ export function CitizenMap() {
     gps.state === 'locating' && !gps.fix ? { icon: <Loader2 className="h-4 w-4 animate-spin text-primary" />, text: 'Locating you on the map…' }
     : gps.state === 'denied' ? { icon: <MapPinOff className="h-4 w-4 text-warning-foreground" />, text: 'Location is off. Allow it in your browser, or tap a ward.' }
     : gps.state === 'unavailable' && !gps.fix ? { icon: <MapPinOff className="h-4 w-4 text-warning-foreground" />, text: 'Couldn’t find your location. Tap ◎ to try again.' }
-    : place?.kind === 'outside' ? { icon: <Info className="h-4 w-4 text-warning-foreground" />, text: 'You’re outside Bengaluru. Showing the city.' }
+    : place?.kind === 'outside' ? { icon: <Info className="h-4 w-4 text-warning-foreground" />, text: `You’re outside the selected area. Showing ${activeArea?.name??'the area'}.` }
     : place?.kind === 'boundary' ? { icon: <Info className="h-4 w-4 text-warning-foreground" />, text: 'You’re on a ward border. Tap your ward to choose.' }
     : null;
 
@@ -187,7 +190,8 @@ export function CitizenMap() {
             {...(yourWard && !tappedWard ? { highlightWard: yourWard.identifier } : {})}
             {...(tappedWard ? { selectedWard: tappedWard.id } : {})}
             onWardSelect={(id, point) => focusWard(id, point)}
-            center={BENGALURU}
+            key={`${activeAreaId}-${activeArea?.id??'loading'}`}
+            center={areaCenter(activeArea)}
             zoom={12}
             recenter={fly}
             you={youPoint}
