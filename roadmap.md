@@ -1,5 +1,10 @@
 # CivicFix roadmap
 
+## Current request — final Anantapur demonstration and verification
+- [ ] Obtain source-verified municipal geometry; align map, validation and demonstration coordinates.
+- [ ] Seed approximately 500 total linked, labelled Anantapur demonstration entities with category images and scoped staff.
+- [ ] Verify citizen, staff, notifications, administration, Bengaluru preservation and automated tests; record exact results and blockers.
+
 ## Current request — Anantapur multi-area extension
 - [x] Audit location/localization/routing dependencies; preserved 2,101 Bengaluru reports.
 - [x] Shared configurable area, independent language preference and area-filtered citizen lists/maps/aggregates.
