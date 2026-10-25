@@ -77,7 +77,7 @@ function IssuePage() {
       if(!wardId)return null;
       const { data, error } = await supabase.rpc('public_ward_snapshot', { _identifier: wardId });
       if (error) throw error;
-      return data as { name: string; ward_number: number | null; zone: string | null; corporation: string | null; assembly: string | null; mla: string | null; lok_sabha: string | null; mp: string | null; representative: string | null } | null;
+      return data as { name: string; ward_number: number | null; zone: string | null; corporation: string | null; assembly: string | null; mla: string | null; lok_sabha: string | null; mp: string | null; representative: string | null; ward_resolved: number; ward_total: number; assembly_resolved: number; assembly_total: number; lok_sabha_resolved: number; lok_sabha_total: number } | null;
     },
   });
 
