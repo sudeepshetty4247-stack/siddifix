@@ -5,7 +5,7 @@
 - [ ] Approximately 500 Anantapur entities and hosted lifecycle — blocked by absent verified municipal geometry and authorized Anantapur staff session; reporting remains safely disabled.
 - [x] Fix area-specific seeding, atomic staff/admin geographic scopes, hidden passwords, published officer contacts, unresolved-location distinction and Kannada shared resources.
 - [x] Close district-admin scope broadening via staff profiles and require active accounts for directory administration.
-- [x] Run 310 automated tests across 43 files, verify public area/language switching and mobile layout, preserve all 2,101 Bengaluru reports; detailed final acceptance records remaining blockers.
+- [x] Run 311 automated tests across 43 files, verify public area/language switching and mobile layout, preserve all 2,101 Bengaluru reports; docs/FINAL_ANANTAPUR_VERIFICATION.md records exact results and blockers.
 
 ## Current request — Anantapur multi-area extension
 - [x] Audit location/localization/routing dependencies; preserved 2,101 Bengaluru reports.
