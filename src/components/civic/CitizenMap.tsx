@@ -17,6 +17,7 @@ import { citizenMapFocus, corporationShort, describeLiveFix } from '@/lib/map-lo
 import { CivicInfo } from './CivicInfo';
 import { NEARBY_RADIUS_METRES } from '@/lib/nearby-cases';
 import { publicCases } from '@/lib/public-cases';
+import { useShowcase } from '@/lib/showcase';
 import { wardPreviewPoint } from '@/lib/bengaluru-map';
 import type { WardCount } from '@/lib/wards';
 
@@ -26,6 +27,7 @@ const nearbySchema = z.object({ total: z.number(), active: z.number(), resolved:
 
 export function CitizenMap() {
   const { location, select } = useLocation();
+  const { showcase } = useShowcase();
   const gps = useLiveGps(true);
   const [category, setCategory] = useState('all');
   const [severity, setSeverity] = useState('all');
@@ -43,9 +45,9 @@ export function CitizenMap() {
   const dir = useQuery({ queryKey: ['civic-directory'], queryFn: () => getDirectory(), staleTime: 300000 });
   const wards = dir.data?.wards ?? [];
   const wardCounts = useQuery({
-    queryKey: ['ward-case-counts'], refetchInterval: 30000,
+    queryKey: ['ward-case-counts', showcase], refetchInterval: 30000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('ward_case_counts');
+      const { data, error } = await supabase.rpc('ward_case_counts', { _include_demo: showcase });
       if (error) throw error;
       return (data ?? []).map(r => ({ ...r, reports: Number(r.reports), unique_issues: Number(r.unique_issues), unresolved: Number(r.unresolved), resolved: Number(r.resolved) })) as WardCount[];
     },
@@ -78,7 +80,7 @@ export function CitizenMap() {
     setFly({ ...savedFocus, zoom: 15, nonce: Date.now() });
   }, [gps.state, savedFocus?.lat, savedFocus?.lng]);
 
-  const q = useQuery({ queryKey: ['citizen-map'], refetchInterval: 30000, queryFn: async () => (await publicCases()) as MapIssue[] });
+  const q = useQuery({ queryKey: ['citizen-map', showcase], refetchInterval: 30000, queryFn: async () => (await publicCases(undefined, showcase)) as MapIssue[] });
   const issueWard = useMemo(() => {
     const m = new Map<string, string | null>();
     for (const i of q.data ?? []) m.set(i.id, wards.find(w => w.active && pointInGeometry(i.lat, i.lng, w.boundary))?.identifier ?? null);
@@ -105,11 +107,11 @@ export function CitizenMap() {
 
   const nearbyPoint = youPoint ?? savedFocus;
   const nearby = useQuery({
-    queryKey: ['nearby-case-summary', nearbyPoint && Math.round(nearbyPoint.lat * 2000), nearbyPoint && Math.round(nearbyPoint.lng * 2000)],
+    queryKey: ['nearby-case-summary', nearbyPoint && Math.round(nearbyPoint.lat * 2000), nearbyPoint && Math.round(nearbyPoint.lng * 2000), showcase],
     enabled: !!nearbyPoint, refetchInterval: 15000,
     queryFn: async () => {
       if (!nearbyPoint) throw new Error('No location');
-      const r = await supabase.rpc('nearby_case_summary', { _lat: nearbyPoint.lat, _lng: nearbyPoint.lng, _radius_m: NEARBY_RADIUS_METRES });
+      const r = await supabase.rpc('nearby_case_summary', { _lat: nearbyPoint.lat, _lng: nearbyPoint.lng, _radius_m: NEARBY_RADIUS_METRES, _include_demo: showcase });
       if (r.error) throw r.error;
       return nearbySchema.parse(r.data);
     },
