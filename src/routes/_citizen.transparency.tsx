@@ -7,28 +7,30 @@ import { getTransparency } from '@/lib/transparency.functions';
 import { downloadText, resolutionRate, transparencyCsv, type Counts, type RepresentativeReport } from '@/lib/transparency';
 import { categoryById } from '@/lib/civic';
 import { ReportWorkspace } from '@/components/civic/ReportWorkspace';
+import { useShowcase, ShowcaseBadge } from '@/lib/showcase';
 
 type Period = 0 | 7 | 30 | 90 | 365;
-const options = (days: Period) => queryOptions({ queryKey: ['public-transparency', days], queryFn: () => getTransparency({ data: { days } }), staleTime: 30000, refetchInterval: 30000 });
+const options = (days: Period, includeDemo: boolean) => queryOptions({ queryKey: ['public-transparency', days, includeDemo], queryFn: () => getTransparency({ data: { days, includeDemo } }), staleTime: 30000, refetchInterval: 30000 });
 export const Route = createFileRoute('/_citizen/transparency')({
   head: () => ({ meta: [
     { title: 'Public transparency report — Siddhi' }, { name: 'description', content: 'Real Siddhi case totals, resolution progress and ward, corporation, MLA and MP constituency summaries with downloadable reports.' },
     { property: 'og:title', content: 'Siddhi — Bengaluru public transparency report' }, { property: 'og:description', content: 'See every recorded outcome in aggregate. Independent Siddhi case data, not government performance claims.' },
     { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' },
   ] }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(options(0)),
+  loader: ({ context }) => context.queryClient.ensureQueryData(options(0, typeof window !== 'undefined' && window.localStorage.getItem('siddhi-showcase') !== 'off')),
   component: Transparency,
 });
 function Transparency() {
   const [days, setDays] = useState<Period>(0);
   const [view, setView] = useState('corporation'); const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<RepresentativeReport | null>(null);
-  const q = useSuspenseQuery(options(days)); const r = q.data;
+  const { showcase } = useShowcase();
+  const q = useSuspenseQuery(options(days, showcase)); const r = q.data;
   const reps = r.representatives.filter(g => g.kind === view && `${g.name ?? ''} ${g.constituency}`.toLowerCase().includes(search.toLowerCase()));
   const groups = r.groups.filter(g => g.dimension === view && g.label.toLowerCase().includes(search.toLowerCase()));
   function exportReport() { downloadText(transparencyCsv(r), `Siddhi-public-report-${days || 'all'}-${r.generated_at.slice(0,10)}.csv`); }
   return <div className="public-report mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-    <div className="flex flex-wrap items-start justify-between gap-5"><div><p className="text-xs font-semibold uppercase text-primary">Bengaluru · Public record</p><h1 className="mt-2 text-3xl font-bold sm:text-4xl">The city, in the open.</h1><p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">Real Siddhi reports. Recorded actions. Visible outcomes. Your City. Your Voice.</p></div><div className="report-controls flex flex-wrap gap-2"><Button variant="outline" onClick={() => window.print()}><FileText className="h-4 w-4" />Save PDF</Button><Button onClick={exportReport}><Download className="h-4 w-4" />Download report</Button></div></div>
+    <div className="flex flex-wrap items-start justify-between gap-5"><div><p className="text-xs font-semibold uppercase text-primary">Bengaluru · Public record</p><h1 className="mt-2 flex flex-wrap items-center gap-3 text-3xl font-bold sm:text-4xl">The city, in the open.<ShowcaseBadge /></h1><p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">Real Siddhi reports. Recorded actions. Visible outcomes. Your City. Your Voice.</p></div><div className="report-controls flex flex-wrap gap-2"><Button variant="outline" onClick={() => window.print()}><FileText className="h-4 w-4" />Save PDF</Button><Button onClick={exportReport}><Download className="h-4 w-4" />Download report</Button></div></div>
     <div className="mt-8"><ReportWorkspace /></div>
     <h2 className="mt-10 text-xl font-semibold">Constituency overview — separate period scope</h2>
     <div className="report-controls mt-6 flex flex-wrap items-center gap-3 border-y py-3"><label className="text-sm font-medium">Period <select aria-label="Reporting period" value={days} onChange={e => { setDays(Number(e.target.value) as Period); setSelected(null); }} className="ml-2 h-9 rounded-lg border bg-card px-3"><option value={0}>All time</option><option value={7}>7 days</option><option value={30}>30 days</option><option value={90}>90 days</option><option value={365}>1 year</option></select></label><p suppressHydrationWarning className="text-xs text-muted-foreground">Updated {new Date(r.generated_at).toLocaleString('en-IN')}</p><Button className="ml-auto" variant="ghost" size="icon" aria-label="Refresh report" onClick={() => q.refetch()}><RefreshCw className={`h-4 w-4 ${q.isFetching ? 'animate-spin' : ''}`} /></Button></div>
