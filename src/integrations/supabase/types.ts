@@ -1721,9 +1721,9 @@ export type Database = {
         Args: {
           _network: string
           _nonce?: string
-          _phase: string
+          _phase?: string
           _session: string
-          _user: string
+          _user?: string
         }
         Returns: Json
       }
