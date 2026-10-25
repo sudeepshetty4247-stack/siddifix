@@ -16,6 +16,7 @@ async function submit(locationConsistency:Record<string,unknown>|null){
   const report={title:`Location test ${seq}`,description:'A real incident described for location consistency testing',category:'roads',status:'submitted',lat:12.97,lng:77.59,integrity_fingerprint:`${seq.toString(16).padStart(2,'0')}${'a'.repeat(62)}`,integrity_session:session,idempotency_key:key,ref_code:`BLR-LC${seq}`,...(locationConsistency?{location_consistency:locationConsistency}:{})};
   await db.query('select create_civic_report($1,$2)',[report,'a'.repeat(48)]);
   const row=(await db.query<{risk_score:number;signals:{code:string;points:number}[];location_consistency:Record<string,unknown>|null;state:string}>("select r.risk_score,r.signals,r.location_consistency,r.state from report_integrity r join issues i on i.id=r.issue_id where i.ref_code=$1",[report.ref_code])).rows[0];
+  if(!row)throw new Error('report was not stored');
   return row;
 }
 
