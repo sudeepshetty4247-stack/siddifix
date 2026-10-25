@@ -13,7 +13,12 @@ export function validateReportImage(bytes:Uint8Array,format:string,maxBytes=25*1
   try {
     if(expected==='jpeg')jpeg.decode(bytes,{useTArray:true,tolerantDecoding:false,maxResolutionInMP:20,maxMemoryUsageInMB:128});
     else if(expected==='png')decodePng(bytes,{checkCrc:true});
-    else throw new Error('Please use a JPG or PNG original for verified submission.');
-  } catch {throw new Error('Photo could not be safely decoded. Choose a valid JPG or PNG.');}
+    else if(expected==='webp') {
+      // Bound and inspect every RIFF chunk. WebP pixel decoding still needs an edge-compatible codec.
+      let offset=12;let imageChunk=false;
+      while(offset+8<=bytes.length){const type=String.fromCharCode(...bytes.slice(offset,offset+4));const length=new DataView(bytes.buffer,bytes.byteOffset+offset+4,4).getUint32(0,true);if(offset+8+length>bytes.length)throw new Error('Truncated WebP chunk');if(type==='VP8 '||type==='VP8L')imageChunk=true;offset+=8+length+(length%2);}
+      if(!imageChunk||offset!==bytes.length)throw new Error('Invalid WebP framing');
+    } else throw new Error('Unsupported image');
+  } catch {throw new Error('Photo could not be safely decoded. Choose a valid image.');}
   return size;
 }
