@@ -7,6 +7,7 @@ import { CATEGORIES, STATUSES, STATUS_META } from "@/lib/civic";
 import { IssueCard, ISSUE_COLUMNS, type IssueRow } from "@/components/civic/IssueCard";
 import { WardLeaderboard } from "@/components/civic/WardLeaderboard";
 import { publicCases } from '@/lib/public-cases';
+import { useShowcase, ShowcaseBadge } from '@/lib/showcase';
 
 export const Route = createFileRoute("/_citizen/explore")({
   head: () => ({
@@ -27,10 +28,11 @@ function Explore() {
   const [cat, setCat] = useState("");
   const [status, setStatus] = useState("");
   const [sort, setSort] = useState<"new" | "support">("new");
+  const { showcase } = useShowcase();
   const q = useQuery({
-    queryKey: ["explore", search, cat, status, sort],
+    queryKey: ["explore", search, cat, status, sort, showcase],
     queryFn: async () => {
-      const rows = await publicCases();
+      const rows = await publicCases(undefined, showcase);
       const filtered = rows.filter(i=>(!cat || i.category===cat) && (!status || i.status===status) && (!search.trim() || `${i.title} ${i.landmark ?? ''} ${i.ref_code}`.toLowerCase().includes(search.trim().toLowerCase())));
       return (sort==='support' ? filtered.sort((a,b)=>b.support_count-a.support_count) : filtered).slice(0,60) as IssueRow[];
     },
@@ -40,7 +42,7 @@ function Explore() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <h1 className="text-3xl font-bold sm:text-4xl">Explore issues</h1>
-      <p className="mt-1 text-muted-foreground">Every report submitted to Siddhi, publicly visible.</p>
+      <p className="mt-1 flex flex-wrap items-center gap-3 text-muted-foreground">Every report submitted to Siddhi, publicly visible.<ShowcaseBadge /></p>
       <div className="mt-6 flex flex-col gap-3 md:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />

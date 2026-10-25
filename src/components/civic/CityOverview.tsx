@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ArrowRight, Building2 } from 'lucide-react';
 import { getTransparency } from '@/lib/transparency.functions';
+import { useShowcase, ShowcaseBadge } from '@/lib/showcase';
 import { cn } from '@/lib/utils';
 
 const PERIODS = [{ v: 30, l: '30 days' }, { v: 90, l: '90 days' }, { v: 0, l: 'All time' }] as const;
@@ -10,7 +11,8 @@ const PERIODS = [{ v: 30, l: '30 days' }, { v: 90, l: '90 days' }, { v: 0, l: 'A
 /** Citywide Bengaluru overview from the full canonical-case aggregate (merged duplicates count once). */
 export function CityOverview() {
   const [days, setDays] = useState<0 | 30 | 90>(0);
-  const q = useQuery({ queryKey: ['city-overview', days], queryFn: () => getTransparency({ data: { days } }), refetchInterval: 60000 });
+  const { showcase } = useShowcase();
+  const q = useQuery({ queryKey: ['city-overview', days, showcase], queryFn: () => getTransparency({ data: { days, includeDemo: showcase } }), refetchInterval: 60000 });
   const s = q.data?.summary;
   const items = s ? [
     { label: 'Unique issues', value: s.total, hint: 'Duplicates count once' },
@@ -26,7 +28,7 @@ export function CityOverview() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="flex items-center gap-2 text-xs font-semibold uppercase text-primary"><Building2 className="h-3.5 w-3.5" />Bengaluru · citywide</p>
-            <h2 id="city-overview" className="mt-1 text-xl font-semibold">How the city is doing</h2>
+            <h2 id="city-overview" className="mt-1 flex flex-wrap items-center gap-3 text-xl font-semibold">How the city is doing<ShowcaseBadge /></h2>
           </div>
           <div role="group" aria-label="Reporting period" className="flex rounded-lg border p-0.5">
             {PERIODS.map(p => <button key={p.v} onClick={() => setDays(p.v)} aria-pressed={days === p.v} className={cn('rounded-md px-3 py-1.5 text-xs font-medium', days === p.v ? 'bg-secondary text-foreground' : 'text-muted-foreground')}>{p.l}</button>)}
