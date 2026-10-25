@@ -47,3 +47,4 @@
 - Reuse civic_coverage.settings for area metadata; reporting_enabled stays false until verified jurisdiction polygons exist.
 - Extend existing i18n resources rather than introducing a second translation engine; dynamic citizen content remains unchanged.
 - Demo dataset administration is Super Admin-only; seeding filters one verified service area and provisions matching geographic scopes to prevent cross-area contamination.
+- Administrators derive area access exclusively from protected admin permissions, never their operational staff profile; suspension also blocks directory management.

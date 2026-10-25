@@ -2,7 +2,7 @@
 import {PGlite} from '@electric-sql/pglite';
 import {readFileSync} from 'node:fs';
 import {beforeAll,afterAll,describe,it,expect} from 'vitest';
-const db=new PGlite();const sql=readFileSync('drizzle/migrations/0051_multi_service_area_foundation.sql','utf8');
+const db=new PGlite();const sql=readFileSync('drizzle/migrations/0055_exclusive_admin_area_permission_checks.sql','utf8');
 function source(name:string){const start=sql.indexOf(`CREATE OR REPLACE FUNCTION public.${name}(`);const end=sql.indexOf('$$;',start)+3;if(start<0||end<3)throw new Error('Missing fixture');return sql.slice(start,end);}
 const staff='11111111-1111-4111-8111-111111111111',admin='22222222-2222-4222-8222-222222222222',owner='33333333-3333-4333-8333-333333333333';
 describe('Database service-area authorization',()=>{
@@ -14,4 +14,5 @@ describe('Database service-area authorization',()=>{
  it('allows explicit Super Admin cross-area administration',async()=>{const r=await db.query<{allowed:boolean}>('select can_access_service_area($1,$2) allowed',[owner,'anantapur']);expect(r.rows[0]?.allowed).toBe(true);});
  it('does not authorize unknown report locations',async()=>{const r=await db.query<{allowed:boolean}>('select can_access_service_area($1,NULL) allowed',[owner]);expect(r.rows[0]?.allowed).toBe(false);});
  it('does not authorize an unconfigured account',async()=>{const r=await db.query<{allowed:boolean}>('select can_access_service_area($1,$2) allowed',['55555555-5555-4555-8555-555555555555','anantapur']);expect(r.rows[0]?.allowed).toBe(false);});
+ it('never broadens district admin permission using an unrelated staff profile',async()=>{await db.exec(`INSERT INTO staff_profiles VALUES('${admin}',true,ARRAY['bengaluru']);`);const r=await db.query<{allowed:boolean}>('select can_access_service_area($1,$2) allowed',[admin,'bengaluru']);expect(r.rows[0]?.allowed).toBe(false);});
 });
