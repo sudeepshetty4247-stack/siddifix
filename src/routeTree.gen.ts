@@ -36,6 +36,7 @@ import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminOverdueRouteImport } from './routes/_authenticated/admin.overdue'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
 import { Route as AuthenticatedAdminResponsesRouteImport } from './routes/_authenticated/admin.responses'
+import { Route as AuthenticatedAdminReviewRouteImport } from './routes/_authenticated/admin.review'
 import { Route as AuthenticatedAdminRoutingRouteImport } from './routes/_authenticated/admin.routing'
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
 import { Route as AuthenticatedAdminTargetsRouteImport } from './routes/_authenticated/admin.targets'
@@ -47,6 +48,7 @@ import { Route as AuthenticatedStaffMapRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedStaffNotificationsRouteImport } from './routes/_authenticated/staff.notifications'
 import { Route as AuthenticatedStaffOverdueRouteImport } from './routes/_authenticated/staff.overdue'
 import { Route as AuthenticatedStaffQueueRouteImport } from './routes/_authenticated/staff.queue'
+import { Route as AuthenticatedStaffReviewRouteImport } from './routes/_authenticated/staff.review'
 import { Route as AuthenticatedStaffRoutingRouteImport } from './routes/_authenticated/staff.routing'
 import { Route as AuthenticatedStaffTargetsRouteImport } from './routes/_authenticated/staff.targets'
 import { Route as AuthenticatedStaffTeamRouteImport } from './routes/_authenticated/staff.team'
@@ -197,6 +199,12 @@ const AuthenticatedAdminResponsesRoute =
     path: '/responses',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminReviewRoute =
+  AuthenticatedAdminReviewRouteImport.update({
+    id: '/review',
+    path: '/review',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminRoutingRoute =
   AuthenticatedAdminRoutingRouteImport.update({
     id: '/routing',
@@ -258,6 +266,12 @@ const AuthenticatedStaffQueueRoute = AuthenticatedStaffQueueRouteImport.update({
   path: '/queue',
   getParentRoute: () => AuthenticatedStaffRoute,
 } as any)
+const AuthenticatedStaffReviewRoute =
+  AuthenticatedStaffReviewRouteImport.update({
+    id: '/review',
+    path: '/review',
+    getParentRoute: () => AuthenticatedStaffRoute,
+  } as any)
 const AuthenticatedStaffRoutingRoute =
   AuthenticatedStaffRoutingRouteImport.update({
     id: '/routing',
@@ -330,6 +344,7 @@ export interface FileRoutesByFullPath {
   '/admin/overdue': typeof AuthenticatedAdminOverdueRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/responses': typeof AuthenticatedAdminResponsesRoute
+  '/admin/review': typeof AuthenticatedAdminReviewRoute
   '/admin/routing': typeof AuthenticatedAdminRoutingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/targets': typeof AuthenticatedAdminTargetsRoute
@@ -340,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/staff/notifications': typeof AuthenticatedStaffNotificationsRoute
   '/staff/overdue': typeof AuthenticatedStaffOverdueRoute
   '/staff/queue': typeof AuthenticatedStaffQueueRoute
+  '/staff/review': typeof AuthenticatedStaffReviewRoute
   '/staff/routing': typeof AuthenticatedStaffRoutingRoute
   '/staff/targets': typeof AuthenticatedStaffTargetsRoute
   '/staff/team': typeof AuthenticatedStaffTeamRoute
@@ -374,6 +390,7 @@ export interface FileRoutesByTo {
   '/admin/overdue': typeof AuthenticatedAdminOverdueRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/responses': typeof AuthenticatedAdminResponsesRoute
+  '/admin/review': typeof AuthenticatedAdminReviewRoute
   '/admin/routing': typeof AuthenticatedAdminRoutingRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/targets': typeof AuthenticatedAdminTargetsRoute
@@ -384,6 +401,7 @@ export interface FileRoutesByTo {
   '/staff/notifications': typeof AuthenticatedStaffNotificationsRoute
   '/staff/overdue': typeof AuthenticatedStaffOverdueRoute
   '/staff/queue': typeof AuthenticatedStaffQueueRoute
+  '/staff/review': typeof AuthenticatedStaffReviewRoute
   '/staff/routing': typeof AuthenticatedStaffRoutingRoute
   '/staff/targets': typeof AuthenticatedStaffTargetsRoute
   '/staff/team': typeof AuthenticatedStaffTeamRoute
@@ -423,6 +441,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/overdue': typeof AuthenticatedAdminOverdueRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/responses': typeof AuthenticatedAdminResponsesRoute
+  '/_authenticated/admin/review': typeof AuthenticatedAdminReviewRoute
   '/_authenticated/admin/routing': typeof AuthenticatedAdminRoutingRoute
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/_authenticated/admin/targets': typeof AuthenticatedAdminTargetsRoute
@@ -433,6 +452,7 @@ export interface FileRoutesById {
   '/_authenticated/staff/notifications': typeof AuthenticatedStaffNotificationsRoute
   '/_authenticated/staff/overdue': typeof AuthenticatedStaffOverdueRoute
   '/_authenticated/staff/queue': typeof AuthenticatedStaffQueueRoute
+  '/_authenticated/staff/review': typeof AuthenticatedStaffReviewRoute
   '/_authenticated/staff/routing': typeof AuthenticatedStaffRoutingRoute
   '/_authenticated/staff/targets': typeof AuthenticatedStaffTargetsRoute
   '/_authenticated/staff/team': typeof AuthenticatedStaffTeamRoute
@@ -471,6 +491,7 @@ export interface FileRouteTypes {
     | '/admin/overdue'
     | '/admin/reports'
     | '/admin/responses'
+    | '/admin/review'
     | '/admin/routing'
     | '/admin/staff'
     | '/admin/targets'
@@ -481,6 +502,7 @@ export interface FileRouteTypes {
     | '/staff/notifications'
     | '/staff/overdue'
     | '/staff/queue'
+    | '/staff/review'
     | '/staff/routing'
     | '/staff/targets'
     | '/staff/team'
@@ -515,6 +537,7 @@ export interface FileRouteTypes {
     | '/admin/overdue'
     | '/admin/reports'
     | '/admin/responses'
+    | '/admin/review'
     | '/admin/routing'
     | '/admin/staff'
     | '/admin/targets'
@@ -525,6 +548,7 @@ export interface FileRouteTypes {
     | '/staff/notifications'
     | '/staff/overdue'
     | '/staff/queue'
+    | '/staff/review'
     | '/staff/routing'
     | '/staff/targets'
     | '/staff/team'
@@ -563,6 +587,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/overdue'
     | '/_authenticated/admin/reports'
     | '/_authenticated/admin/responses'
+    | '/_authenticated/admin/review'
     | '/_authenticated/admin/routing'
     | '/_authenticated/admin/staff'
     | '/_authenticated/admin/targets'
@@ -573,6 +598,7 @@ export interface FileRouteTypes {
     | '/_authenticated/staff/notifications'
     | '/_authenticated/staff/overdue'
     | '/_authenticated/staff/queue'
+    | '/_authenticated/staff/review'
     | '/_authenticated/staff/routing'
     | '/_authenticated/staff/targets'
     | '/_authenticated/staff/team'
@@ -788,6 +814,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminResponsesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/review': {
+      id: '/_authenticated/admin/review'
+      path: '/review'
+      fullPath: '/admin/review'
+      preLoaderRoute: typeof AuthenticatedAdminReviewRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/routing': {
       id: '/_authenticated/admin/routing'
       path: '/routing'
@@ -865,6 +898,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffQueueRouteImport
       parentRoute: typeof AuthenticatedStaffRoute
     }
+    '/_authenticated/staff/review': {
+      id: '/_authenticated/staff/review'
+      path: '/review'
+      fullPath: '/staff/review'
+      preLoaderRoute: typeof AuthenticatedStaffReviewRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
     '/_authenticated/staff/routing': {
       id: '/_authenticated/staff/routing'
       path: '/routing'
@@ -935,6 +975,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminOverdueRoute: typeof AuthenticatedAdminOverdueRoute
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminResponsesRoute: typeof AuthenticatedAdminResponsesRoute
+  AuthenticatedAdminReviewRoute: typeof AuthenticatedAdminReviewRoute
   AuthenticatedAdminRoutingRoute: typeof AuthenticatedAdminRoutingRoute
   AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
   AuthenticatedAdminTargetsRoute: typeof AuthenticatedAdminTargetsRoute
@@ -953,6 +994,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminOverdueRoute: AuthenticatedAdminOverdueRoute,
   AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
   AuthenticatedAdminResponsesRoute: AuthenticatedAdminResponsesRoute,
+  AuthenticatedAdminReviewRoute: AuthenticatedAdminReviewRoute,
   AuthenticatedAdminRoutingRoute: AuthenticatedAdminRoutingRoute,
   AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
   AuthenticatedAdminTargetsRoute: AuthenticatedAdminTargetsRoute,
@@ -971,6 +1013,7 @@ interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffNotificationsRoute: typeof AuthenticatedStaffNotificationsRoute
   AuthenticatedStaffOverdueRoute: typeof AuthenticatedStaffOverdueRoute
   AuthenticatedStaffQueueRoute: typeof AuthenticatedStaffQueueRoute
+  AuthenticatedStaffReviewRoute: typeof AuthenticatedStaffReviewRoute
   AuthenticatedStaffRoutingRoute: typeof AuthenticatedStaffRoutingRoute
   AuthenticatedStaffTargetsRoute: typeof AuthenticatedStaffTargetsRoute
   AuthenticatedStaffTeamRoute: typeof AuthenticatedStaffTeamRoute
@@ -986,6 +1029,7 @@ const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
   AuthenticatedStaffNotificationsRoute: AuthenticatedStaffNotificationsRoute,
   AuthenticatedStaffOverdueRoute: AuthenticatedStaffOverdueRoute,
   AuthenticatedStaffQueueRoute: AuthenticatedStaffQueueRoute,
+  AuthenticatedStaffReviewRoute: AuthenticatedStaffReviewRoute,
   AuthenticatedStaffRoutingRoute: AuthenticatedStaffRoutingRoute,
   AuthenticatedStaffTargetsRoute: AuthenticatedStaffTargetsRoute,
   AuthenticatedStaffTeamRoute: AuthenticatedStaffTeamRoute,
