@@ -4,14 +4,18 @@ import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { CATEGORIES } from '@/lib/civic';
 export const staffPasswordRule=(pw:string)=>pw.length>=12&&/[a-z]/.test(pw)&&/[A-Z]/.test(pw)&&/\d/.test(pw);
 async function assertAdmin(context:{supabase:any;userId:string}){const r=await context.supabase.rpc('has_role',{_user_id:context.userId,_role:'admin'});if(!r.data)throw new Error('Administrator access required.');}
-const schema=z.object({email:z.string().trim().toLowerCase().email(),fullName:z.string().trim().min(2).max(120),designation:z.string().trim().min(2).max(120),department:z.string().trim().min(2).max(160),role:z.enum(['field_worker','supervisor','admin']),categories:z.array(z.string()).max(30),wards:z.array(z.string()).max(400),teamIds:z.array(z.string().uuid()).default([]),corporations:z.array(z.string()).default([])});
+const schema=z.object({email:z.string().trim().toLowerCase().email(),fullName:z.string().trim().min(2).max(120),designation:z.string().trim().min(2).max(120),department:z.string().trim().min(2).max(160),role:z.enum(['field_worker','supervisor','admin']),categories:z.array(z.string()).max(30),wards:z.array(z.string()).max(400),teamIds:z.array(z.string().uuid()).default([]),corporations:z.array(z.string()).default([]),coverageIds:z.array(z.string().regex(/^[a-z0-9-]{2,60}$/)).min(1).default(['bengaluru'])});
 export const createStaffAccount=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((input:z.input<typeof schema>)=>schema.parse(input)).handler(async({data,context})=>{
  await assertAdmin(context);
+ const permission=await context.supabase.from('admin_permissions').select('is_super_admin').eq('user_id',context.userId).maybeSingle();
+ if(!permission.data?.is_super_admin)throw new Error('Super Admin access is required to provision service-area accounts.');
+ const areas=await context.supabase.from('civic_coverage').select('id').in('id',data.coverageIds).eq('enabled',true);
+ if(areas.error||new Set(areas.data?.map(a=>a.id)).size!==new Set(data.coverageIds).size)throw new Error('Choose configured service areas.');
  if(data.role==='admin'){const r=await context.supabase.rpc('can_manage_admins',{_user:context.userId});if(!r.data)throw new Error('Administrator creation has not been delegated to you.');}
  if(data.categories.some(c=>!CATEGORIES.some(x=>x.id===c)))throw new Error('Unsupported category.');
  if(data.role!=='admin'){
  const r=await context.supabase.from('civic_teams').select('*').eq('active',true).eq('department',data.department);
- const eligible=(r.data??[]).filter(t=>data.categories.every(c=>t.categories.includes(c)));
+ const eligible=(r.data??[]).filter(t=>data.coverageIds.includes(t.coverage_id??'')&&data.categories.every(c=>t.categories.includes(c)));
  if(!data.categories.length||!eligible.length||data.teamIds.some(id=>!eligible.some(t=>t.id===id)))throw new Error('Select categories and teams from a configured department.');
  }
  const {supabaseAdmin}=await import('@/integrations/supabase/client.server');

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useRoles } from "./staff";
 import { CATEGORIES, categoryById, timeAgo } from "@/lib/civic";
+import { useLocation } from '@/lib/location';
 
 export const Route = createFileRoute("/_authenticated/admin/staff")({
   head: () => ({ meta: [{ title: "Team access management — Siddhi" }, { name: "description", content: "Manage authorized Siddhi staff roles, designations and work areas." }, { property: "og:title", content: "Team access management — Siddhi" }, { property: "og:description", content: "Manage authorized Siddhi staff roles, designations and work areas." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -255,11 +256,13 @@ function ProfileForm({ member, onSaved }: { member: Member; onSaved: () => void 
 }
 
 function CreateStaffForm({ onDone }: { onDone: () => void }) {
+  const { areas, activeAreaId } = useLocation();
+  const [areaId,setAreaId]=useState(activeAreaId);
   const create = useServerFn(createStaffAccount);
   const [f, setF] = useState({ email: "", fullName: "", designation: "", department: "", role: "field_worker" as "field_worker" | "supervisor", wards: "", teamId: "", corporations: "" });
   const list = useServerFn(listTeams);
   const teams = useQuery({queryKey:["teams"],queryFn:()=>list()});
-  const configured = (teams.data ?? []).filter(t => t.active);
+  const configured = (teams.data ?? []).filter(t => t.active && t.coverage_id===areaId);
   const departments = [...new Set(configured.map(t => t.department))];
   const [cats, setCats] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -270,7 +273,7 @@ function CreateStaffForm({ onDone }: { onDone: () => void }) {
 
     setBusy(true);
     try {
-      await create({ data: { ...f, categories: cats, wards: f.wards.split(",").map(w => w.trim()).filter(Boolean), teamIds: f.teamId ? [f.teamId] : [], corporations:f.corporations.split(",").map(c=>c.trim()).filter(Boolean) } });
+      await create({ data: { ...f, coverageIds:[areaId], categories: cats, wards: f.wards.split(",").map(w => w.trim()).filter(Boolean), teamIds: f.teamId ? [f.teamId] : [], corporations:f.corporations.split(",").map(c=>c.trim()).filter(Boolean) } });
       toast.success("Secure invitation sent. The staff member sets their own private password.");
       onDone();
     } catch (err) { toast.error((err as Error).message); } finally { setBusy(false); }
@@ -279,6 +282,7 @@ function CreateStaffForm({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={submit} className="grid gap-3 rounded-2xl border bg-card p-4 shadow-soft sm:grid-cols-3">
       <h2 className="text-lg font-bold sm:col-span-3">New staff account</h2>
+      <label className="text-sm">Service area<select aria-label="Staff service area" value={areaId} onChange={e=>{setAreaId(e.target.value);setF(previous=>({...previous,department:'',teamId:''}));setCats([]);}} className={field}>{areas.map(a=><option value={a.id} key={a.id}>{a.name}</option>)}</select></label>
       <label className="text-sm"><span className="text-muted-foreground">Full name</span><input required value={f.fullName} onChange={set("fullName")} className={field} /></label>
       <label className="text-sm"><span className="text-muted-foreground">Work email</span><input required type="email" value={f.email} onChange={set("email")} className={field} /></label>
       <label className="text-sm"><span className="text-muted-foreground">Role</span><select value={f.role} onChange={set("role")} className={field}><option value="field_worker">Field team</option><option value="supervisor">Supervisor</option></select></label>
