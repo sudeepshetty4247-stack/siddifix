@@ -414,6 +414,13 @@
       "when": 1792896680218,
       "tag": "0058_anantapur_deactivate_stale_routes",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1792896708808,
+      "tag": "0059_anantapur_fix_roads_drainage_water_routes",
+      "breakpoints": true
     }
   ]
 }
