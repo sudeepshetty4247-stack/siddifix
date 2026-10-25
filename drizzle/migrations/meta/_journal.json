@@ -407,6 +407,13 @@
       "when": 1792896648412,
       "tag": "0057_anantapur_coverage_and_routing",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1792896680218,
+      "tag": "0058_anantapur_deactivate_stale_routes",
+      "breakpoints": true
     }
   ]
 }
