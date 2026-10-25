@@ -6,6 +6,7 @@ import { useLocation } from '@/lib/location';
 import { BENGALURU, isInIndia } from '@/lib/civic';
 import { suggestedReportLocation } from '@/lib/report-location';
 import { NEARBY_RADIUS_METRES } from '@/lib/nearby-cases';
+import { useShowcase } from '@/lib/showcase';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Logo } from './Logo';
@@ -32,6 +33,7 @@ function hadStoredLocation() {
  */
 export function LocationGate() {
   const { location, select, locating, detect, notice, coverage } = useLocation();
+  const { showcase } = useShowcase();
   const [mounted, setMounted] = useState(false);
   const [returning] = useState(hadStoredLocation);
   const [dismissed, setDismissed] = useState(false);
@@ -56,11 +58,11 @@ export function LocationGate() {
   const wards = wardQuery.data ?? [];
   const ward = wards.length === 1 ? wards[0] : null;
   const counts = useQuery({
-    queryKey: ['nearby-case-summary', point?.lat, point?.lng],
+    queryKey: ['nearby-case-summary', point?.lat, point?.lng, showcase],
     enabled: !!point,
     queryFn: async () => {
       if (!point) throw new Error('Select a location');
-      const result = await supabase.rpc('nearby_case_summary', { _lat: point.lat, _lng: point.lng, _radius_m: NEARBY_RADIUS_METRES });
+      const result = await supabase.rpc('nearby_case_summary', { _lat: point.lat, _lng: point.lng, _radius_m: NEARBY_RADIUS_METRES, _include_demo: showcase });
       if (result.error) throw result.error;
       return summarySchema.parse(result.data);
     },
