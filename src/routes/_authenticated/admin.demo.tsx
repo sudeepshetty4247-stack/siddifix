@@ -43,8 +43,8 @@ function DemoPage() {
     setBusy(true); setProgress("Preparing teams and staff…");
     try {
       let offset = 0;
-      for (let guard = 0; guard < 20; guard++) {
-        const r = await seedFn({ data: { count: Number(count), staffPerDepartment: Number(perDept), datasetId, offset, limit: 250 } });
+      for (let guard = 0; guard < 100; guard++) {
+        const r = await seedFn({ data: { count: Number(count), staffPerDepartment: Number(perDept), datasetId, offset, limit: 25 } });
         const received = r.credentials; if (received) setCredentials(prev => [...prev, ...received]);
         const admin = r.adminCredential; if (admin) setCredentials(prev => [...prev, { ...admin, role: 'admin' }]);
         if (r.samples) setSamples(r.samples);

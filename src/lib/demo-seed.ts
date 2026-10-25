@@ -155,7 +155,7 @@ export function buildDemoDataset(args: {
     if (!isDuplicate && (OPEN_STATUSES.has(status) || status === 'resolved' || status === 'closed')) {
       const list = canonicalByCategory.get(cat.id) ?? []; list.push(i); canonicalByCategory.set(cat.id, list);
     }
-    secrets.push({ issue_index: i, token: `demo-token-${datasetId}-${i + 1}` });
+    secrets.push({ issue_index: i, token: `${datasetSeed(datasetId).toString(16).padStart(8,'0')}${(i+1).toString(16).padStart(40,'0')}` });
 
     events.push({ issue_index: i, kind: 'created', from_status: null, to_status: status, note: 'Synthetic demo report recorded.', actor_label: 'Demo citizen', created_at: new Date(created).toISOString(), visibility: 'public' });
     if (acknowledged_at) events.push({ issue_index: i, kind: 'acknowledged', from_status: 'submitted', to_status: status === 'submitted' ? 'assigned' : status, note: 'Demo acknowledgement.', actor_label: handler?.name ?? 'Demo staff', created_at: acknowledged_at, visibility: 'public' });

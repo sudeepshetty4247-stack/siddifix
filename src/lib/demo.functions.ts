@@ -75,7 +75,7 @@ const seedSchema = z.object({
   staffPerDepartment: z.number().int().min(2).max(25).default(10),
   datasetId: z.string().trim().regex(/^[a-z0-9-]{3,40}$/).default('demo-v1'),
   offset: z.number().int().min(0).default(0),
-  limit: z.number().int().min(50).max(500).default(500),
+  limit: z.number().int().min(1).max(500).default(500),
 });
 
 /** Licensed demo photographs (see public/demo-media/CREDITS.md), matched to report category. */
