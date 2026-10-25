@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Database, ShieldAlert, FlaskConical, Trash2, CircleCheck, CircleAlert, Info, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMasterDataValidation, getDemoDatasetStatus, seedDemoDataset, purgeDemoDataset, previewDemoPurge, resetDemoCredentials } from "@/lib/demo.functions";
+import { useLocation } from '@/lib/location';
 
 export const Route = createFileRoute("/_authenticated/admin/demo")({
   head: () => ({ meta: [{ title: "Data health & demo — Siddhi" }, { name: "description", content: "Master-data validation and labelled demo dataset controls." }, { property: "og:title", content: "Data health & demo — Siddhi" }, { property: "og:description", content: "Master-data validation and demo dataset controls." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -22,6 +23,8 @@ type Cred = { email: string; password: string; department?: string; role?: strin
 type Sample = { ref: string; token: string; status: string };
 
 function DemoPage() {
+  const { areas, activeAreaId } = useLocation();
+  const [areaId, setAreaId] = useState(activeAreaId);
   const validateFn = useServerFn(getMasterDataValidation);
   const statusFn = useServerFn(getDemoDatasetStatus);
   const seedFn = useServerFn(seedDemoDataset);
@@ -45,7 +48,7 @@ function DemoPage() {
     try {
       let offset = 0;
       for (let guard = 0; guard < 100; guard++) {
-        const r = await seedFn({ data: { count: Number(count), staffPerDepartment: Number(perDept), datasetId, offset, limit: 25 } });
+        const r = await seedFn({ data: { areaId, count: Number(count), staffPerDepartment: Number(perDept), datasetId, offset, limit: 25 } });
         const received = r.credentials; if (received) setCredentials(prev => [...prev, ...received]);
         const admin = r.adminCredential; if (admin) setCredentials(prev => [...prev, { ...admin, role: 'admin' }]);
         if (r.samples) setSamples(r.samples);
@@ -140,6 +143,7 @@ function DemoPage() {
         {status.data?.enabled && (
           <div className="space-y-3 border-t pt-4">
             <div className="flex flex-wrap gap-3 text-sm">
+              <label className="flex items-center gap-2">Service area <select aria-label="Dataset service area" value={areaId} onChange={e => setAreaId(e.target.value)} className="h-9 rounded-md border bg-background px-2">{areas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
               <label className="flex items-center gap-2">Dataset id <input aria-label="Dataset id" value={datasetId} onChange={e => setDatasetId(e.target.value)} className="h-9 w-32 rounded-md border bg-background px-2" /></label>
               <label className="flex items-center gap-2">Reports <input aria-label="Report count" type="number" min={50} max={5000} value={count} onChange={e => setCount(e.target.value)} className="h-9 w-24 rounded-md border bg-background px-2" /></label>
               <label className="flex items-center gap-2">Staff per department <input aria-label="Staff per department" type="number" min={2} max={25} value={perDept} onChange={e => setPerDept(e.target.value)} className="h-9 w-20 rounded-md border bg-background px-2" /></label>
@@ -154,7 +158,7 @@ function DemoPage() {
             <p className="text-sm font-semibold">Demo sign-in details (shown until the next purge)</p>
             <Button variant="outline" onClick={()=>{const blob=new Blob([JSON.stringify(credentials,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Siddhi-demo-credentials.json';a.click();URL.revokeObjectURL(url);}}>Download demo sign-in details</Button>
             <ul className="max-h-64 space-y-1 overflow-y-auto font-mono text-xs">
-              {credentials.map(c => <li key={c.email}>{c.email} · {c.password} · {c.role}</li>)}
+              {credentials.map(c => <li key={c.email}>{c.email} · {c.role}</li>)}
             </ul>
           </div>
         )}

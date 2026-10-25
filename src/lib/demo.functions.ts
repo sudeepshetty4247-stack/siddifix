@@ -2,13 +2,17 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 import { CATEGORIES } from '@/lib/civic';
-import { buildDemoDataset, wardCentroid, type DemoStaff, type DemoTeam } from '@/lib/demo-seed';
+import { buildDemoDataset, type DemoStaff, type DemoTeam } from '@/lib/demo-seed';
+import { wardPreviewPoint } from '@/lib/bengaluru-map';
+import { pointInGeometry } from '@/lib/directory';
 
 const DEMO_EMAIL_DOMAIN = 'siddhi-demo.invalid';
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
   const r = await context.supabase.rpc('has_role', { _user_id: context.userId, _role: 'admin' });
   if (!r.data) throw new Error('Administrator access required.');
+  const permission = await context.supabase.from('admin_permissions').select('is_super_admin').eq('user_id', context.userId).maybeSingle();
+  if (!permission.data?.is_super_admin) throw new Error('Super Admin access required for cross-area dataset management.');
 }
 function assertDemoEnabled() {
   if (process.env['DEMO_SEED_ENABLED'] !== 'true')
@@ -98,6 +102,7 @@ export const resetDemoCredentials = createServerFn({ method: 'POST' })
   });
 
 const seedSchema = z.object({
+  areaId: z.string().regex(/^[a-z0-9-]{2,60}$/).default('bengaluru'),
   count: z.number().int().min(50).max(5000).default(2100),
   staffPerDepartment: z.number().int().min(2).max(25).default(10),
   datasetId: z.string().trim().regex(/^[a-z0-9-]{3,40}$/).default('demo-v1'),
@@ -130,13 +135,17 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
     assertDemoEnabled();
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
 
+    const area = await supabaseAdmin.from('civic_coverage').select('enabled,reporting_enabled').eq('id', data.areaId).maybeSingle();
+    if (!area.data?.enabled || !area.data.reporting_enabled) throw new Error('Verified reporting boundaries must be configured for this service area before seeding.');
+    const prior = await supabaseAdmin.from('issues').select('coverage_id').eq('demo_dataset_id', data.datasetId).neq('coverage_id', data.areaId).limit(1);
+    if (prior.error || prior.data?.length) throw new Error('This dataset belongs to another service area. Use a distinct dataset ID.');
     const [wardsR, routesR, targetsR] = await Promise.all([
-      supabaseAdmin.from('civic_wards').select('identifier,name,corporation,coverage_id,boundary').eq('active', true).order('identifier'),
-      supabaseAdmin.from('civic_department_routes').select('category,receiving_office').eq('active', true).order('category'),
+      supabaseAdmin.from('civic_wards').select('identifier,name,corporation,coverage_id,boundary').eq('coverage_id', data.areaId).eq('verification_status','verified').eq('active', true).order('identifier'),
+      supabaseAdmin.from('civic_department_routes').select('category,receiving_office').eq('coverage_id', data.areaId).eq('active', true).order('category'),
       supabaseAdmin.from('service_targets').select('category,severity,ack_hours,resolve_hours').eq('active', true),
     ]);
     const wards = (wardsR.data ?? [])
-      .map(w => ({ identifier: w.identifier as string, name: w.name as string, corporation: (w.corporation as string) ?? null, coverage_id: (w.coverage_id as string) ?? null, c: wardCentroid(w.boundary) }))
+      .map(w => ({ identifier: w.identifier as string, name: w.name as string, corporation: (w.corporation as string) ?? null, coverage_id: (w.coverage_id as string) ?? null, c: wardPreviewPoint(w) }))
       .flatMap(w => w.c ? [{ identifier: w.identifier, name: w.name, corporation: w.corporation, coverage_id: w.coverage_id, lng: w.c.lng, lat: w.c.lat }] : []);
     const routes = routesR.data ?? [];
     if (!wards.length) throw new Error('No active wards with usable boundaries — configure geographic master data first.');
@@ -154,6 +163,7 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
           id, name: `[DEMO] ${office}`.slice(0, 120), department: office, categories: cats, wards: [],
           is_fallback: false, active: true, notes: `Synthetic demo team (${data.datasetId}). Not a real government team.`,
           demo_dataset_id: data.datasetId,
+          coverage_id: data.areaId,
         });
         if (ins.error) throw new Error(`Demo team creation failed: ${ins.error.message}`);
       }
@@ -192,7 +202,7 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
         }
         const provision = await supabaseAdmin.rpc('admin_provision_account', {
           _user: created.data.user.id, _role: c.role,
-          _profile: { fullName: c.name, designation: c.role === 'supervisor' ? 'Demo Supervisor' : 'Demo Field Officer', department: c.team.department, categories: c.team.categories, wards: [], teamIds: [c.team.id], corporations: [] },
+          _profile: { fullName: c.name, designation: c.role === 'supervisor' ? 'Demo Supervisor' : 'Demo Field Officer', department: c.team.department, categories: c.team.categories, wards: [], teamIds: [c.team.id], corporations: [], coverageIds: [data.areaId] },
           _actor: context.userId,
         });
         if (provision.error) { await supabaseAdmin.auth.admin.deleteUser(created.data.user.id); throw new Error(`Demo provisioning failed: ${provision.error.message}`); }
@@ -217,7 +227,7 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
         if (!created.error && created.data.user) {
           const provision = await supabaseAdmin.rpc('admin_provision_account', {
             _user: created.data.user.id, _role: 'admin',
-            _profile: { fullName: 'Demo Administrator', designation: 'Demo Administrator', department: 'Demo Administration', categories: [], wards: [], teamIds: [], corporations: [] },
+            _profile: { fullName: 'Demo Administrator', designation: 'Demo Administrator', department: 'Demo Administration', categories: [], wards: [], teamIds: [], corporations: [], coverageIds: [data.areaId] },
             _actor: context.userId,
           });
           if (!provision.error) {
@@ -234,6 +244,7 @@ export const seedDemoDataset = createServerFn({ method: 'POST' })
     const categories = CATEGORIES.filter(c => routes.some(r => r.category === c.id)).map(c => ({ id: c.id, subs: [...c.subs] }));
     staff.sort((a,b) => a.name.localeCompare(b.name));
     const dataset = buildDemoDataset({ datasetId: data.datasetId, count: data.count, wards, teams, staff, targets: targetsR.data ?? [], categories, photos: DEMO_PHOTOS });
+    if (dataset.issues.some(i => !wardsR.data?.some(w => pointInGeometry(i.lat, i.lng, w.boundary)))) throw new Error('Demo coordinate outside verified service boundary; nothing inserted.');
     const slice = dataset.issues.slice(data.offset, data.offset + data.limit);
     const issueId = (index: number) => dataset.issues[index]?.id ?? null;
     const indices = new Set(slice.map(i => i.id));
