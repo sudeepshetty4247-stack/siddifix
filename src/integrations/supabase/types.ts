@@ -1595,6 +1595,17 @@ export type Database = {
         Returns: undefined
       }
       route_issue_to_team: { Args: { _issue: string }; Returns: string }
+      seed_demo_batch: {
+        Args: {
+          _dataset: string
+          _events: Json
+          _feedback: Json
+          _issues: Json
+          _notifications: Json
+          _secrets: Json
+        }
+        Returns: Json
+      }
       set_notification_state: {
         Args: { _action: string; _id?: string }
         Returns: number

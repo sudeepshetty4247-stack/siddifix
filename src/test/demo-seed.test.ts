@@ -18,6 +18,20 @@ const NOW = new Date('2026-10-24T12:00:00Z').getTime();
 const build = (count = 1500, id = 'demo-v1') => buildDemoDataset({ datasetId: id, count, now: NOW, wards, teams, staff, targets, categories });
 
 describe('demo dataset generator', () => {
+  it('creates the exact requested 2,100 lifecycle distribution', () => {
+    const d = build(2100);
+    const counts: Record<string, number> = {};
+    for (const i of d.issues) { const b = String(i.routing_snapshot['lifecycle_bucket']); counts[b] = (counts[b] ?? 0) + 1; }
+    expect(counts).toEqual({ closed:350, resolved:250, in_progress:350, pending_ack:200, assigned_unack:200, overdue:200, unassigned:150, reopened:150, new:250 });
+  });
+  it('keeps persisted ids stable across resumed batches', () => {
+    expect(build(2100).issues.map(i=>i.id)).toEqual(build(2100).issues.map(i=>i.id));
+  });
+  it('routing exceptions have no synthetic team or handler', () => {
+    const rows = build(2100).issues.filter(i=>i.routing_snapshot['lifecycle_bucket']==='unassigned');
+    expect(rows).toHaveLength(150);
+    expect(rows.every(i=>i.team_id===null && i.assigned_to===null && i.department===null)).toBe(true);
+  });
   it('creates exactly the requested number of reports, all labelled with the dataset id', () => {
     const d = build(1500);
     expect(d.issues).toHaveLength(1500);

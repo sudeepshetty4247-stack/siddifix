@@ -57,13 +57,16 @@ export function datasetSeed(datasetId: string) {
 }
 
 export function bucketForIndex(i: number, count: number): BucketKey {
-  const pos = i / count;
-  let acc = 0;
-  for (const b of STATUS_MIX) { acc += b.fraction; if (pos < acc) return b.key; }
+  let end = 0;
+  for (const b of STATUS_MIX) { end += Math.round(b.fraction * count); if (i < end) return b.key; }
   return 'new';
 }
 
-const pick = <T,>(rnd: () => number, list: readonly T[]) => list[Math.floor(rnd() * list.length)]!;
+const pick = <T,>(rnd: () => number, list: readonly T[]): T => { const item = list[Math.floor(rnd() * list.length)]; if (item === undefined) throw new Error('Demo master data list is empty'); return item; };
+export function demoIssueId(datasetId: string, index: number) {
+ const h = datasetSeed(datasetId).toString(16).padStart(8, '0');
+ return `${h}-0000-4000-a000-${(index+1).toString(16).padStart(12,'0')}`;
+}
 const hoursAgo = (now: number, h: number) => new Date(now - h * 3600000).toISOString();
 
 export function buildDemoDataset(args: {
@@ -74,7 +77,7 @@ export function buildDemoDataset(args: {
 }): DemoDataset {
   const { datasetId, count, wards, teams, staff, targets, categories } = args;
   const photos = args.photos ?? {};
-  const now = args.now ?? Date.now();
+  const now = args.now ?? Date.parse('2026-10-25T00:00:00Z');
   const rnd = mulberry32(datasetSeed(datasetId));
   const issues: DemoIssue[] = [];
   const events: DemoEvent[] = [];
@@ -100,14 +103,16 @@ export function buildDemoDataset(args: {
     // Timeline: created first, then acknowledgement, progress, resolution — never out of order.
     const createdHoursBack = bucket === 'new' ? rnd() * 20 : 24 + rnd() * 90 * 24;
     let created = now - createdHoursBack * 3600000;
+    if (['pending_ack','assigned_unack','in_progress'].includes(bucket)) created = now - Math.min(createdHoursBack,target.resolve_hours * 0.5) * 3600000;
+    if (bucket === 'overdue') created = now - (target.resolve_hours + 24 + rnd()*120) * 3600000;
     // Duplicate linking is decided before the timeline so a linked report never predates its incident.
     const isDuplicate = bucket !== 'unassigned' && rnd() < 0.05 && (canonicalByCategory.get(cat.id)?.length ?? 0) > 0;
-    const duplicateTarget = isDuplicate ? issues[pick(rnd, canonicalByCategory.get(cat.id)!)]! : null;
+    const duplicateTarget = isDuplicate ? issues[pick(rnd, canonicalByCategory.get(cat.id) ?? [])] ?? null : null;
     if (duplicateTarget) created = Math.max(created, new Date(duplicateTarget.created_at).getTime() + 3600000);
     const ackDue = created + target.ack_hours * 3600000;
     const resolveDue = created + target.resolve_hours * 3600000;
-    const lat = ward.lat + (rnd() - 0.5) * 0.004;
-    const lng = ward.lng + (rnd() - 0.5) * 0.004;
+    const lat = duplicateTarget?.lat ?? ward.lat;
+    const lng = duplicateTarget?.lng ?? ward.lng;
     const sub = pick(rnd, cat.subs);
     const ref = `DEMO-${datasetId.toUpperCase()}-${String(i + 1).padStart(5, '0')}`;
 
@@ -133,24 +138,24 @@ export function buildDemoDataset(args: {
 
     const catPhotos = photos[cat.id] ?? [];
     issues.push({
-      id: crypto.randomUUID(),
+      id: demoIssueId(datasetId, i),
       photo_url: catPhotos.length && rnd() < 0.7 ? pick(rnd, catPhotos) : null,
       ref_code: ref, idempotency_key: ref, title: `${sub} near ${ward.name}`, summary: `${sub} reported in ${ward.name}.`,
       description: `Synthetic demonstration report (${datasetId}). ${sub} observed near ${ward.name}; generated for workflow testing only.`,
       category: cat.id, subcategory: sub, severity, status, lat, lng,
       landmark: `Demo landmark ${Math.floor(rnd() * 900) + 100}, ${ward.name}`,
-      department, assigned_to: handler?.id ?? null, team_id: team?.id ?? null,
+      department, assigned_to: bucket === 'unassigned' ? null : handler?.id ?? null, team_id: bucket === 'unassigned' ? null : team?.id ?? null,
       duplicate_of: duplicateTarget?.id ?? null, support_count: 1 + Math.floor(rnd() * 3),
       sla_due_at: new Date(resolveDue).toISOString(), ack_due_at: new Date(ackDue).toISOString(),
       acknowledged_at, acknowledged_by: acknowledged_at ? handler?.id ?? null : null,
       resolved_at, escalated_at, created_at: new Date(created).toISOString(), updated_at: new Date(Math.min(now, created + 3600000)).toISOString(),
-      routing_snapshot: { ward: { identifier: ward.identifier, name: ward.name }, coverage: ward.coverage_id ? { id: ward.coverage_id } : undefined, source: 'demo', demo: true },
+      routing_snapshot: { synthetic: true, lifecycle_bucket: bucket, ward: { identifier: ward.identifier, name: ward.name }, coverage: ward.coverage_id ? { id: ward.coverage_id } : undefined, source: 'demo', demo: true },
       assignment_state, demo_dataset_id: datasetId,
     });
     if (!isDuplicate && (OPEN_STATUSES.has(status) || status === 'resolved' || status === 'closed')) {
       const list = canonicalByCategory.get(cat.id) ?? []; list.push(i); canonicalByCategory.set(cat.id, list);
     }
-    secrets.push({ issue_index: i, token: `demo-token-${datasetId}-${i + 1}` });
+    secrets.push({ issue_index: i, token: `${datasetSeed(datasetId).toString(16).padStart(8,'0')}${(i+1).toString(16).padStart(40,'0')}` });
 
     events.push({ issue_index: i, kind: 'created', from_status: null, to_status: status, note: 'Synthetic demo report recorded.', actor_label: 'Demo citizen', created_at: new Date(created).toISOString(), visibility: 'public' });
     if (acknowledged_at) events.push({ issue_index: i, kind: 'acknowledged', from_status: 'submitted', to_status: status === 'submitted' ? 'assigned' : status, note: 'Demo acknowledgement.', actor_label: handler?.name ?? 'Demo staff', created_at: acknowledged_at, visibility: 'public' });
@@ -164,7 +169,7 @@ export function buildDemoDataset(args: {
     if (escalated_at) events.push({ issue_index: i, kind: 'escalated', from_status: null, to_status: null, note: 'Demo deadline escalation.', actor_label: 'System', created_at: escalated_at, visibility: 'internal' });
 
     if (handler && acknowledged_at) notifications.push({ issue_index: i, recipient_index: staff.indexOf(handler), notification_type: 'assignment', title: `Demo case ${ref} assigned`, detail: `${sub} in ${ward.name}`, priority: severity === 'critical' ? 'critical' : 'normal', created_at: new Date(created + 60000).toISOString() });
-    if (severity === 'critical' && OPEN_STATUSES.has(status)) notifications.push({ issue_index: i, recipient_index: handler ? staff.indexOf(handler) : 0, notification_type: 'critical_alert', title: `Critical demo case ${ref}`, detail: `${sub} in ${ward.name} needs immediate acknowledgement.`, priority: 'critical', created_at: new Date(created + 30000).toISOString() });
+    if (severity === 'critical' && handler && OPEN_STATUSES.has(status)) notifications.push({ issue_index: i, recipient_index: handler ? staff.indexOf(handler) : 0, notification_type: 'critical_alert', title: `Critical demo case ${ref}`, detail: `${sub} in ${ward.name} needs immediate acknowledgement.`, priority: 'critical', created_at: new Date(created + 30000).toISOString() });
   }
   return { issues, events, notifications, feedback, secrets };
 }
@@ -176,7 +181,7 @@ export function wardCentroid(boundary: unknown): { lng: number; lat: number } | 
     const ring = b?.coordinates?.[0]?.[0];
     if (!Array.isArray(ring) || !ring.length) return null;
     let sx = 0, sy = 0;
-    for (const [x, y] of ring) { sx += x!; sy += y!; }
+    for (const [x, y] of ring) { if (typeof x !== 'number' || typeof y !== 'number') return null; sx += x; sy += y; }
     return { lng: sx / ring.length, lat: sy / ring.length };
   } catch { return null; }
 }

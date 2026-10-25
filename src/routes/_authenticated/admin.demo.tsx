@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Database, ShieldAlert, FlaskConical, Trash2, CircleCheck, CircleAlert, Info, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getMasterDataValidation, getDemoDatasetStatus, seedDemoDataset, purgeDemoDataset, previewDemoPurge } from "@/lib/demo.functions";
+import { getMasterDataValidation, getDemoDatasetStatus, seedDemoDataset, purgeDemoDataset, previewDemoPurge, resetDemoCredentials } from "@/lib/demo.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/demo")({
   head: () => ({ meta: [{ title: "Data health & demo — Siddhi" }, { name: "description", content: "Master-data validation and labelled demo dataset controls." }, { property: "og:title", content: "Data health & demo — Siddhi" }, { property: "og:description", content: "Master-data validation and demo dataset controls." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -27,6 +27,7 @@ function DemoPage() {
   const seedFn = useServerFn(seedDemoDataset);
   const purgeFn = useServerFn(purgeDemoDataset);
   const previewFn = useServerFn(previewDemoPurge);
+  const resetFn = useServerFn(resetDemoCredentials);
   const qc = useQueryClient();
   const validation = useQuery({ queryKey: ["master-data-validation"], queryFn: () => validateFn(), retry: false });
   const status = useQuery({ queryKey: ["demo-dataset-status"], queryFn: () => statusFn(), retry: false });
@@ -43,12 +44,12 @@ function DemoPage() {
     setBusy(true); setProgress("Preparing teams and staff…");
     try {
       let offset = 0;
-      for (let guard = 0; guard < 20; guard++) {
-        const r = await seedFn({ data: { count: Number(count), staffPerDepartment: Number(perDept), datasetId, offset, limit: 250 } });
-        if (r.credentials) setCredentials(prev => [...prev, ...r.credentials!]);
-        if (r.adminCredential) setCredentials(prev => [...prev, { ...r.adminCredential!, role: 'admin' }]);
+      for (let guard = 0; guard < 100; guard++) {
+        const r = await seedFn({ data: { count: Number(count), staffPerDepartment: Number(perDept), datasetId, offset, limit: 25 } });
+        const received = r.credentials; if (received) setCredentials(prev => [...prev, ...received]);
+        const admin = r.adminCredential; if (admin) setCredentials(prev => [...prev, { ...admin, role: 'admin' }]);
         if (r.samples) setSamples(r.samples);
-        if (r.rejected?.length) toast.warning(`${r.rejected.length} batches rejected: ${r.rejected[0]}`);
+        if (r.rejected?.length) throw new Error(`Seed incomplete: ${r.rejected[0]}`);
         setProgress(`Inserted up to report ${Math.min(r.nextOffset ?? Number(count), Number(count))} of ${count}…`);
         if (r.done) break;
         offset = r.nextOffset ?? Number(count);
@@ -120,7 +121,7 @@ function DemoPage() {
             {status.data.datasets.map(d => (
               <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm">
                 <span><strong>{d.id}</strong> — {d.issues} reports · {d.teams} teams · {d.staff} staff</span>
-                {status.data.enabled && <span className="flex gap-2"><Button size="sm" variant="outline" disabled={busy} onClick={() => dryRun(d.id)}>Preview cleanup</Button><Button size="sm" variant="outline" disabled={busy} onClick={() => purge(d.id)}><Trash2 className="mr-1 h-3.5 w-3.5" />Purge</Button></span>}
+                {status.data.enabled && <span className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={busy} onClick={async () => { setBusy(true); try {setCredentials(await resetFn({data:{datasetId:d.id}}));} catch(e) {toast.error(e instanceof Error?e.message:'Reset failed');} finally {setBusy(false);} }}>Reset demo passwords</Button><Button size="sm" variant="outline" disabled={busy} onClick={() => dryRun(d.id)}>Preview cleanup</Button><Button size="sm" variant="outline" disabled={busy} onClick={() => purge(d.id)}><Trash2 className="mr-1 h-3.5 w-3.5" />Purge</Button></span>}
               </li>
             ))}
           </ul>
@@ -151,6 +152,7 @@ function DemoPage() {
         {credentials.length > 0 && (
           <div className="space-y-2 rounded-lg border border-warning bg-secondary p-4">
             <p className="text-sm font-semibold">Demo sign-in details (shown until the next purge)</p>
+            <Button variant="outline" onClick={()=>{const blob=new Blob([JSON.stringify(credentials,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Siddhi-demo-credentials.json';a.click();URL.revokeObjectURL(url);}}>Download demo sign-in details</Button>
             <ul className="max-h-64 space-y-1 overflow-y-auto font-mono text-xs">
               {credentials.map(c => <li key={c.email}>{c.email} · {c.password} · {c.role}</li>)}
             </ul>
@@ -161,7 +163,7 @@ function DemoPage() {
           <div className="space-y-2 rounded-lg border p-4">
             <p className="flex items-center gap-2 text-sm font-semibold"><Link2 className="h-4 w-4" />Presenter tracking links (synthetic)</p>
             <ul className="space-y-1 font-mono text-xs">
-              {samples.map(s => <li key={s.ref}><a className="text-primary underline" href={`/track?ref=${s.ref}&token=${s.token}`} target="_blank" rel="noreferrer">{s.ref}</a> · {s.status}</li>)}
+              {samples.map(s => <li key={s.ref}><a className="text-primary underline" href={`/issues/${s.ref}#t=${s.token}`} target="_blank" rel="noreferrer">{s.ref}</a> · {s.status}</li>)}
             </ul>
           </div>
         )}
