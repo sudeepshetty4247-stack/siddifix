@@ -1,0 +1,4 @@
+import {createFileRoute} from '@tanstack/react-router';
+import {IntegrityQueue} from '@/components/portals/IntegrityQueue';
+import {IntegritySettings} from '@/components/portals/IntegritySettings';
+export const Route=createFileRoute('/_authenticated/admin/review')({head:()=>({meta:[{title:'Report integrity control — Siddhi administration'},{name:'description',content:'Configure temporary submission protections and review civic report integrity.'},{property:'og:title',content:'Report integrity control — Siddhi administration'},{property:'og:description',content:'Audited configuration and authorized report verification.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'},{name:'robots',content:'noindex'}]}),component:()=> <><IntegrityQueue admin/><IntegritySettings/></>});

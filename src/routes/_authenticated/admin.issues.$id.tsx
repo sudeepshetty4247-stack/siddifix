@@ -19,6 +19,7 @@ import { CaseHandlerAssignment } from "@/components/portals/CaseHandlerAssignmen
 import { CaseCommunication } from "@/components/portals/CaseCommunication";
 import { Button } from "@/components/ui/button";
 import { FIELD_TARGETS } from "@/lib/civic";
+import { IntegrityReview } from '@/components/civic/IntegrityReview';
 
 export const Route = createFileRoute("/_authenticated/admin/issues/$id")({
   head: () => ({ meta: [{ title: "Admin case operations — Siddhi" }, { name: "description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:title", content: "Admin case operations — Siddhi" }, { property: "og:description", content: "Review evidence and record auditable civic issue status changes." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -163,6 +164,7 @@ function StaffIssue() {
             </div>
           )}
           {canWork && <StaffCommitment issue={i} onDone={refresh} />}
+          {canWork && supervisor && <IntegrityReview issueId={i.id} onDone={refresh}/>}
           {canWork && <div className="rounded-2xl border bg-card p-5 shadow-soft">
             <h2 className="font-semibold">Move the case forward</h2>
             {!options.length && <p className="mt-2 text-sm text-muted-foreground">{i.duplicate_of ? "This report is linked to a canonical issue — work on that one." : "No further step for your role here."}</p>}

@@ -10,6 +10,8 @@
 <!-- LOVABLE:END -->
 
 ## CivicFix architecture
+- Report integrity is a separate audited state from the operational lifecycle; server-issued reservations and atomic SQL scoring/review protect anonymous submissions without treating uncertainty as fraud.
+- Submission identities use an HTTP-only session and daily keyed network pseudonyms; database-backed temporary limits and one-use signed challenges are enforced server-side, never client flags.
 - Citizens use `_citizen`; protected administration uses `_authenticated/admin*`, operations `_authenticated/staff*`. BackButton dismisses overlays and handles same-page/redirect fallback.
 - Citizen submit/confirm/dispute use public `issues.functions.ts` server functions with privileged writes; anonymous users never write tables. Safe case/event projections, hashed reporter capabilities and persistent request limits protect public access.
 - `issue_secrets` holds recovery tokens with no client grants. Service-only `create_civic_report` atomically persists report, secret and creation event; retries never return existing credentials.

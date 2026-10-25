@@ -1,0 +1,3 @@
+import {createFileRoute} from '@tanstack/react-router';
+import {IntegrityQueue} from '@/components/portals/IntegrityQueue';
+export const Route=createFileRoute('/_authenticated/staff/review')({head:()=>({meta:[{title:'Report verification queue — Siddhi staff'},{name:'description',content:'Scoped report integrity checks and explainable human review.'},{property:'og:title',content:'Report verification queue — Siddhi staff'},{property:'og:description',content:'Authorized staff review of report signals and citizen clarification.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'},{name:'robots',content:'noindex'}]}),component:()=> <IntegrityQueue/>});
