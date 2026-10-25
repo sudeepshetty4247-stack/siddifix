@@ -372,6 +372,13 @@
       "when": 1792893779572,
       "tag": "0052_area_directory_and_configuration_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1792894033811,
+      "tag": "0053_area_scoped_provisioning_and_admin_guards",
+      "breakpoints": true
     }
   ]
 }
