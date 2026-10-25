@@ -379,6 +379,13 @@
       "when": 1792894033811,
       "tag": "0053_area_scoped_provisioning_and_admin_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1792895006945,
+      "tag": "0054_area_scoped_atomic_account_provisioning",
+      "breakpoints": true
     }
   ]
 }
