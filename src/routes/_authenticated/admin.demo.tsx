@@ -22,7 +22,7 @@ import {
   previewDemoPurge,
   resetDemoCredentials,
 } from "@/lib/demo.functions";
-import { useLocation } from "@/lib/location";
+import { getServiceAreas } from "@/lib/service-area.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/demo")({
   head: () => ({
