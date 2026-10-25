@@ -1,5 +1,9 @@
 # CivicFix roadmap
 
+## Current request — hackathon presentation research pack
+- [x] Delivered fifteen-slide content, notes, pitches, 23 judge answers, inspected screenshots and evidence register; freshly ran 260 tests and checked 2,100 synthetic plus 1 genuine report.
+- [ ] Exact organizer wording and institution/event identity require independent source confirmation; do not substitute implementation prompts.
+
 ## Active request — finish shared-database 2,100-report demonstration
 - [x] Repaired provisioning, atomically seeded 2,100 reports; 71 synthetic accounts, 7 teams and 1 genuine report preserved.
 - [x] Dataset-matched routing/recipients; public lists/metrics remain 1 genuine report; guarded dry-run verified.
