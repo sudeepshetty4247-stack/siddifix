@@ -34,33 +34,33 @@ describe('Showcase visibility opt-in', () => {
 
   it('public case list hides demonstration rows by default', async () => {
     const r = await db.query<{ rows: unknown }>(`SELECT public_case_rows(NULL, false) AS rows`);
-    expect(JSON.stringify(r.rows[0].rows)).toContain('REAL-1');
-    expect(JSON.stringify(r.rows[0].rows)).not.toContain('DEMO-1');
+    expect(JSON.stringify(r.rows[0]!.rows)).toContain('REAL-1');
+    expect(JSON.stringify(r.rows[0]!.rows)).not.toContain('DEMO-1');
   });
 
   it('public case list includes demonstration rows only when requested', async () => {
     const r = await db.query<{ rows: unknown }>(`SELECT public_case_rows(NULL, true) AS rows`);
-    expect(JSON.stringify(r.rows[0].rows)).toContain('DEMO-1');
+    expect(JSON.stringify(r.rows[0]!.rows)).toContain('DEMO-1');
   });
 
   it('nearby summary counts demonstration rows only when requested', async () => {
     const off = await db.query<{ s: { total: number } }>(`SELECT nearby_case_summary(12.97, 77.59, 2000, false) AS s`);
     const on = await db.query<{ s: { total: number } }>(`SELECT nearby_case_summary(12.97, 77.59, 2000, true) AS s`);
-    expect(off.rows[0].s.total).toBe(1);
-    expect(on.rows[0].s.total).toBe(2);
+    expect(off.rows[0]!.s.total).toBe(1);
+    expect(on.rows[0]!.s.total).toBe(2);
   });
 
   it('ward counts include demonstration rows only when requested', async () => {
     const off = await db.query<{ reports: number }>(`SELECT reports FROM ward_case_counts(false)`);
     const on = await db.query<{ reports: number }>(`SELECT reports FROM ward_case_counts(true)`);
-    expect(Number(off.rows[0].reports)).toBe(1);
-    expect(Number(on.rows[0].reports)).toBe(2);
+    expect(Number(off.rows[0]!.reports)).toBe(1);
+    expect(Number(on.rows[0]!.reports)).toBe(2);
   });
 
   it('ward snapshot returns MLA and MP names for a ward', async () => {
     const r = await db.query<{ s: { mla: string; mp: string; name: string } }>(`SELECT public_ward_snapshot('west-19') AS s`);
-    expect(r.rows[0].s.mla).toBe('S. T. Somashekar');
-    expect(r.rows[0].s.mp).toBe('Shobha Karandlaje');
-    expect(r.rows[0].s.name).toBe('Shivanapalya');
+    expect(r.rows[0]!.s.mla).toBe('S. T. Somashekar');
+    expect(r.rows[0]!.s.mp).toBe('Shobha Karandlaje');
+    expect(r.rows[0]!.s.name).toBe('Shivanapalya');
   });
 });
