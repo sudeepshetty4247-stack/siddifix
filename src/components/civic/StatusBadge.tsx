@@ -1,5 +1,6 @@
 import { STATUS_META, SEVERITY_META, type IssueStatus, type Severity } from "@/lib/civic";
 import { cn } from "@/lib/utils";
+import {useI18n,type LocaleKey} from '@/lib/i18n';
 
 const tones = {
   neutral: "bg-secondary text-secondary-foreground border-border",
@@ -11,11 +12,13 @@ const tones = {
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
+  const {tx,lang}=useI18n();
+  const keys:Record<string,LocaleKey>={submitted:'submitted',assigned:'assigned',in_progress:'inProgress',under_review:'underReview',resolved:'resolved',closed:'closed',rejected:'rejected',reopened:'reopened',awaiting_verification:'awaitingVerification',needs_classification:'needsClassification',accepted:'accepted',inspection_scheduled:'inspectionScheduled'};
   const meta = STATUS_META[status as IssueStatus] ?? STATUS_META.submitted;
   return (
     <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium", tones[meta.tone], className)}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {meta.label}
+      {lang==='te'?tx(keys[status]??'submitted'):meta.label}
     </span>
   );
 }

@@ -1,8 +1,10 @@
 import { ArrowLeft } from 'lucide-react';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
+import {useI18n} from '@/lib/i18n';
 
 export function BackButton({ fallback = '/', beforeBack }: { fallback?: '/' | '/staff' | '/admin'; beforeBack?: () => void }) {
+  const {tx}=useI18n();
   const router = useRouter();
   const pathname = useRouterState({ select: (st) => st.location.pathname });
   if (pathname === '/') return null;
@@ -16,5 +18,5 @@ export function BackButton({ fallback = '/', beforeBack }: { fallback?: '/' | '/
         if (window.location.pathname === previous) void router.navigate({ to: fallback, replace: true });
       }, 700);
     } else void router.navigate({ to: fallback, replace: true });
-  }}><ArrowLeft className="h-4 w-4"/><span>Back</span></Button>;
+  }}><ArrowLeft className="h-4 w-4"/><span>{tx('back')}</span></Button>;
 }
