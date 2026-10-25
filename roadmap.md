@@ -1,5 +1,11 @@
 # CivicFix roadmap
 
+## Active request — finish shared-database 2,100-report demonstration
+- [ ] Repair live account provisioning and atomic resumable seed; generate and reconcile 2,100 labelled reports.
+- [ ] Enforce synthetic-only routing/recipients, public-statistic isolation and transactional cleanup refusal.
+- [ ] Verify citizen tracking, staff/admin views, permissions and workflow tests; provide actual accounts and acceptance results.
+- [ ] External government delivery remains blocked by authorized credentials and recipient mappings; no delivery claims.
+
 ## Current request — voice, enterprise reports and officer acquisition
 - [x] Existing assistant voice controls and public snapshot grounding; desktop/mobile text flow verified. Physical speech-engine acceptance remains blocked on actual devices.
 - [x] Filtered public snapshots, structured PDF and real Excel/native charts downloaded and inspected; independent totals agree. Detailed authorized premium exports remain outstanding.
