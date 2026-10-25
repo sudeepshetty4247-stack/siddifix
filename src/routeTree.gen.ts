@@ -38,6 +38,7 @@ import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminResponsesRouteImport } from './routes/_authenticated/admin.responses'
 import { Route as AuthenticatedAdminReviewRouteImport } from './routes/_authenticated/admin.review'
 import { Route as AuthenticatedAdminRoutingRouteImport } from './routes/_authenticated/admin.routing'
+import { Route as AuthenticatedAdminServiceAreasRouteImport } from './routes/_authenticated/admin.service-areas'
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
 import { Route as AuthenticatedAdminTargetsRouteImport } from './routes/_authenticated/admin.targets'
 import { Route as AuthenticatedStaffIndexRouteImport } from './routes/_authenticated/staff.index'
@@ -211,6 +212,12 @@ const AuthenticatedAdminRoutingRoute =
     path: '/routing',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminServiceAreasRoute =
+  AuthenticatedAdminServiceAreasRouteImport.update({
+    id: '/service-areas',
+    path: '/service-areas',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminStaffRoute = AuthenticatedAdminStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
@@ -346,6 +353,7 @@ export interface FileRoutesByFullPath {
   '/admin/responses': typeof AuthenticatedAdminResponsesRoute
   '/admin/review': typeof AuthenticatedAdminReviewRoute
   '/admin/routing': typeof AuthenticatedAdminRoutingRoute
+  '/admin/service-areas': typeof AuthenticatedAdminServiceAreasRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/targets': typeof AuthenticatedAdminTargetsRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
@@ -392,6 +400,7 @@ export interface FileRoutesByTo {
   '/admin/responses': typeof AuthenticatedAdminResponsesRoute
   '/admin/review': typeof AuthenticatedAdminReviewRoute
   '/admin/routing': typeof AuthenticatedAdminRoutingRoute
+  '/admin/service-areas': typeof AuthenticatedAdminServiceAreasRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/targets': typeof AuthenticatedAdminTargetsRoute
   '/staff/audit': typeof AuthenticatedStaffAuditRoute
@@ -443,6 +452,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/responses': typeof AuthenticatedAdminResponsesRoute
   '/_authenticated/admin/review': typeof AuthenticatedAdminReviewRoute
   '/_authenticated/admin/routing': typeof AuthenticatedAdminRoutingRoute
+  '/_authenticated/admin/service-areas': typeof AuthenticatedAdminServiceAreasRoute
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/_authenticated/admin/targets': typeof AuthenticatedAdminTargetsRoute
   '/_authenticated/staff/audit': typeof AuthenticatedStaffAuditRoute
@@ -493,6 +503,7 @@ export interface FileRouteTypes {
     | '/admin/responses'
     | '/admin/review'
     | '/admin/routing'
+    | '/admin/service-areas'
     | '/admin/staff'
     | '/admin/targets'
     | '/staff/audit'
@@ -539,6 +550,7 @@ export interface FileRouteTypes {
     | '/admin/responses'
     | '/admin/review'
     | '/admin/routing'
+    | '/admin/service-areas'
     | '/admin/staff'
     | '/admin/targets'
     | '/staff/audit'
@@ -589,6 +601,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/responses'
     | '/_authenticated/admin/review'
     | '/_authenticated/admin/routing'
+    | '/_authenticated/admin/service-areas'
     | '/_authenticated/admin/staff'
     | '/_authenticated/admin/targets'
     | '/_authenticated/staff/audit'
@@ -828,6 +841,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRoutingRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/service-areas': {
+      id: '/_authenticated/admin/service-areas'
+      path: '/service-areas'
+      fullPath: '/admin/service-areas'
+      preLoaderRoute: typeof AuthenticatedAdminServiceAreasRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/staff': {
       id: '/_authenticated/admin/staff'
       path: '/staff'
@@ -977,6 +997,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminResponsesRoute: typeof AuthenticatedAdminResponsesRoute
   AuthenticatedAdminReviewRoute: typeof AuthenticatedAdminReviewRoute
   AuthenticatedAdminRoutingRoute: typeof AuthenticatedAdminRoutingRoute
+  AuthenticatedAdminServiceAreasRoute: typeof AuthenticatedAdminServiceAreasRoute
   AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
   AuthenticatedAdminTargetsRoute: typeof AuthenticatedAdminTargetsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -996,6 +1017,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminResponsesRoute: AuthenticatedAdminResponsesRoute,
   AuthenticatedAdminReviewRoute: AuthenticatedAdminReviewRoute,
   AuthenticatedAdminRoutingRoute: AuthenticatedAdminRoutingRoute,
+  AuthenticatedAdminServiceAreasRoute: AuthenticatedAdminServiceAreasRoute,
   AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
   AuthenticatedAdminTargetsRoute: AuthenticatedAdminTargetsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
