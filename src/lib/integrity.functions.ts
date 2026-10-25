@@ -1,5 +1,4 @@
 import {createServerFn} from '@tanstack/react-start';
-import {getRequestHeader} from '@tanstack/react-start/server';
 import {z} from 'zod';
 import {requireSupabaseAuth} from '@/integrations/supabase/auth-middleware';
 import {integrityConfigSchema,DEFAULT_INTEGRITY_CONFIG} from './report-integrity';
@@ -9,7 +8,7 @@ export const reportChallenge=createServerFn({method:'POST'}).handler(async()=>{
   const secret=process.env['REPORT_INTEGRITY_SECRET'];if(!secret)throw new Error('Report protection is temporarily unavailable.');
   const {integrityIdentity,digest}=await import('./report-integrity.server');const identity=await integrityIdentity(secret);
   const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
-  const rate=await supabaseAdmin.rpc('consume_report_limits',{_session:identity.session,_network:identity.network,_user:null,_phase:'challenge'});
+  const rate=await supabaseAdmin.rpc('consume_report_limits',{_session:identity.session,_network:identity.network,_phase:'challenge'});
   if(rate.error||!(rate.data as {allowed?:boolean})?.allowed)throw new Error('Please wait before requesting another verification.');
   const a=crypto.getRandomValues(new Uint8Array(1))[0]??1;const b=crypto.getRandomValues(new Uint8Array(1))[0]??2;
   const x=a%9+1,y=b%9+1;const payload={nonce:crypto.randomUUID(),session:identity.session,expires:Date.now()+300000,a:x,b:y};
