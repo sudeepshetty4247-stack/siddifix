@@ -12,6 +12,7 @@ export const recordEvidence = createServerFn({ method: 'POST' })
     const scope = await context.supabase.rpc('staff_can_work', { _user_id: context.userId, _issue: data.issueId });
     if (!scope.data) throw new Error('This case is outside your authorized scope.');
     const { bytes, mime, extension } = decodeEvidenceImage(data.imageDataUrl);
+    const {validateReportImage}=await import('./report-image.server');validateReportImage(bytes,mime,5500000);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const request=data.requestId??crypto.randomUUID();
     const existing=await context.supabase.from('issue_evidence').select('id').eq('issue_id',data.issueId).eq('actor_id',context.userId).eq('request_key',request).maybeSingle();

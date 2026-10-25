@@ -32,3 +32,11 @@ export const citizenIntegrityResponse=createServerFn({method:'POST'}).inputValid
   const {consumeRequest}=await import('./civic-security.server');await consumeRequest('integrity-response',10);
   const {supabaseAdmin}=await import('@/integrations/supabase/client.server');const r=await supabaseAdmin.rpc('citizen_integrity_response',{_ref:data.ref,_token:data.token,_note:data.note});if(r.error)throw new Error(r.error.message);return {ok:true};
 });
+
+export const cleanExpiredReportUploads=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).handler(async({context})=>{
+  const active=await context.supabase.rpc('account_active',{_user:context.userId});const admin=await context.supabase.rpc('has_role',{_user_id:context.userId,_role:'admin'});
+  if(!active.data||!admin.data)throw new Error('Active administrator required');
+  const {supabaseAdmin}=await import('@/integrations/supabase/client.server');const expired=await supabaseAdmin.rpc('list_expired_report_uploads');if(expired.error)throw new Error('Cleanup list unavailable');let removed=0;
+  for(const row of expired.data??[]){if(row.original_path){const result=await supabaseAdmin.storage.from('issue-photos').remove([row.original_path]);if(result.error)continue;}const result=await supabaseAdmin.rpc('complete_expired_report_upload',{_key:row.key});if(!result.error)removed++;}
+  return {removed};
+});

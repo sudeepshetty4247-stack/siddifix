@@ -23,6 +23,7 @@ export const reportInputSchema = z.object({
   photoMetadata: photoMetadataSchema.optional(),
   challenge:z.object({token:z.string().max(2000),answer:z.string().max(3)}).optional(),
 }).superRefine((input, context) => {
+  if(!input.imageDataUrl&&(input.originalPath||input.photoMetadata))context.addIssue({code:'custom',path:['originalPath'],message:'Photo metadata must accompany a photo.'});
   if(!input.imageDataUrl&&(!input.description||input.description.length<10))context.addIssue({code:'custom',path:['description'],message:'Describe the incident in at least 10 characters when reporting without a photo.'});
   if (!input.subcategory) return;
   const category = CATEGORIES.find(item => item.id === input.category);
