@@ -6,9 +6,12 @@ export const prepareOriginalUpload=createServerFn({method:'POST'}).inputValidato
   const secret=process.env['REPORT_INTEGRITY_SECRET'];if(!secret)throw new Error('Upload protection unavailable.');
   const {protectSubmission}=await import('./submission-security.server');const identity=await protectSubmission(secret,'upload',data.challenge);
   const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
-  const path=`originals/${data.key}/original.${data.mime==='image/png'?'png':data.mime==='image/webp'?'webp':'jpg'}`;
+  const path=`originals/${data.key}/${crypto.randomUUID()}.${data.mime==='image/png'?'png':data.mime==='image/webp'?'webp':'jpg'}`;
   const reservation=await supabaseAdmin.from('report_upload_reservations').insert({key:data.key,session_hash:identity.session,original_path:path,expected_mime:data.mime,expected_size:data.size});
-  if(reservation.error){const old=await supabaseAdmin.from('report_upload_reservations').select('*').eq('key',data.key).maybeSingle();if(!old.data||old.data.session_hash!==identity.session||old.data.original_path!==path||old.data.expected_size!==data.size||old.data.consumed||new Date(old.data.expires_at).getTime()<Date.now())throw new Error('Upload reservation does not match this session.');}
+  if(reservation.error){const old=await supabaseAdmin.from('report_upload_reservations').select('*').eq('key',data.key).maybeSingle();if(!old.data||old.data.session_hash!==identity.session||old.data.consumed||new Date(old.data.expires_at).getTime()<Date.now())throw new Error('Upload reservation does not match this session.');
+    const changed=await supabaseAdmin.from('report_upload_reservations').update({original_path:path,expected_mime:data.mime,expected_size:data.size}).eq('key',data.key).eq('session_hash',identity.session).eq('consumed',false).select('key').maybeSingle();if(changed.error||!changed.data)throw new Error('Photo reservation changed; try again.');
+    if(old.data.original_path){const attached=await supabaseAdmin.from('issue_photos').select('id').eq('original_path',old.data.original_path).maybeSingle();if(!attached.error&&!attached.data)await supabaseAdmin.storage.from('issue-photos').remove([old.data.original_path]);}
+  }
   const signed=await supabaseAdmin.storage.from('issue-photos').createSignedUploadUrl(path,{upsert:false});
   if(signed.error)throw new Error('Photo upload could not be prepared.');return {path,token:signed.data.token};
 });
