@@ -45,10 +45,10 @@ function DemoPage() {
       let offset = 0;
       for (let guard = 0; guard < 20; guard++) {
         const r = await seedFn({ data: { count: Number(count), staffPerDepartment: Number(perDept), datasetId, offset, limit: 250 } });
-        if (r.credentials) setCredentials(prev => [...prev, ...r.credentials!]);
-        if (r.adminCredential) setCredentials(prev => [...prev, { ...r.adminCredential!, role: 'admin' }]);
+        const received = r.credentials; if (received) setCredentials(prev => [...prev, ...received]);
+        const admin = r.adminCredential; if (admin) setCredentials(prev => [...prev, { ...admin, role: 'admin' }]);
         if (r.samples) setSamples(r.samples);
-        if (r.rejected?.length) toast.warning(`${r.rejected.length} batches rejected: ${r.rejected[0]}`);
+        if (r.rejected?.length) throw new Error(`Seed incomplete: ${r.rejected[0]}`);
         setProgress(`Inserted up to report ${Math.min(r.nextOffset ?? Number(count), Number(count))} of ${count}…`);
         if (r.done) break;
         offset = r.nextOffset ?? Number(count);
@@ -161,7 +161,7 @@ function DemoPage() {
           <div className="space-y-2 rounded-lg border p-4">
             <p className="flex items-center gap-2 text-sm font-semibold"><Link2 className="h-4 w-4" />Presenter tracking links (synthetic)</p>
             <ul className="space-y-1 font-mono text-xs">
-              {samples.map(s => <li key={s.ref}><a className="text-primary underline" href={`/track?ref=${s.ref}&token=${s.token}`} target="_blank" rel="noreferrer">{s.ref}</a> · {s.status}</li>)}
+              {samples.map(s => <li key={s.ref}><a className="text-primary underline" href={`/issues/${s.ref}#t=${s.token}`} target="_blank" rel="noreferrer">{s.ref}</a> · {s.status}</li>)}
             </ul>
           </div>
         )}
