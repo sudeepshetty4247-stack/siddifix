@@ -8,11 +8,11 @@ const DISMISS = 'siddi-coverage-dismissed';
 
 /** Shown when the selected place is outside Bengaluru: service not available yet, change the place. */
 export function CoverageNotice() {
-  const { location, coverage, setOpen } = useLocation();
+  const { location, coverage, setOpen,activeArea } = useLocation();
   const [dismissedFor, setDismissedFor] = useState<string | null>(null);
   useEffect(() => { try { setDismissedFor(sessionStorage.getItem(DISMISS)); } catch { /* optional */ } }, []);
   const key = location ? `${location.lat.toFixed(3)},${location.lng.toFixed(3)}` : '';
-  if (!location || coverage !== 'outside' || dismissedFor === key) return null;
+  if (activeArea?.id==='anantapur' || !location || coverage !== 'outside' || dismissedFor === key) return null;
   const dismiss = () => { setDismissedFor(key); try { sessionStorage.setItem(DISMISS, key); } catch { /* optional */ } };
   const place = location.label && location.label !== 'Current location' ? location.label : 'your area';
   return (

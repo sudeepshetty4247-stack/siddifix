@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Bricolage Grotesque", "Public Sans", ui-sans-serif, sans-serif;
+  --font-sans: "Public Sans", "Noto Sans Telugu", "Noto Sans Kannada", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Public Sans", "Noto Sans Telugu", "Noto Sans Kannada", ui-sans-serif, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --font-brand: "Fraunces", Georgia, serif;
 
