@@ -53,7 +53,7 @@ export function CitizenMap() {
       return (data ?? []).map(r => ({ ...r, reports: Number(r.reports), unique_issues: Number(r.unique_issues), unresolved: Number(r.unresolved), resolved: Number(r.resolved) })) as WardCount[];
     },
   });
-  useEffect(()=>{setFly({...areaCenter(activeArea),zoom:12,nonce:Date.now()});setSelected(null);setTappedWard(null);flewToFix.current=false;},[activeAreaId]);
+  useEffect(()=>{setFly({...areaCenter(activeArea),zoom:12,nonce:Date.now()});setSelected(null);setTappedWard(null);flewToFix.current=false;},[activeAreaId,activeArea?.id]);
   const countByWard = useMemo(() => new Map((wardCounts.data ?? []).map(c => [c.ward_identifier, c])), [wardCounts.data]);
 
   // Where the device is right now, against the published ward boundaries.
@@ -189,7 +189,7 @@ export function CitizenMap() {
             {...(yourWard && !tappedWard ? { highlightWard: yourWard.identifier } : {})}
             {...(tappedWard ? { selectedWard: tappedWard.id } : {})}
             onWardSelect={(id, point) => focusWard(id, point)}
-            key={activeAreaId}
+            key={`${activeAreaId}-${activeArea?.id??'loading'}`}
             center={areaCenter(activeArea)}
             zoom={12}
             recenter={fly}

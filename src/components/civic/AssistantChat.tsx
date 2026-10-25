@@ -11,6 +11,7 @@ import { useAssistantVoice } from '@/lib/use-assistant-voice';
 import { Shimmer } from '@/components/ai-elements/shimmer';
 import { Button } from '@/components/ui/button';
 import brand from '@/assets/siddhi-mark.png.asset.json';
+import {useLocation} from '@/lib/location';
 import { useI18n } from '@/lib/i18n';
 
 const TEXT = {
@@ -20,12 +21,13 @@ const TEXT = {
   kn: { placeholder: 'ಯಾವುದೇ ಭಾಷೆಯಲ್ಲಿ ಪ್ರಶ್ನೆ ಕೇಳಿ…', intro: 'ನೀವು ಏನು ತಿಳಿಯಲು ಬಯಸುತ್ತೀರಿ?', waiting: 'Siddhi ಯೋಚಿಸುತ್ತಿದೆ…', note: 'AI ಉತ್ತರಗಳು ತಪ್ಪಾಗಿರಬಹುದು. ಇದು ತುರ್ತು ಸೇವೆಯಲ್ಲ. ಈ ಭೇಟಿಯ ಸಮಯದಲ್ಲಿ ಮಾತ್ರ ಸಂಭಾಷಣೆ ಉಳಿಯುತ್ತದೆ.', questions: ['ರಸ್ತೆಯ ಗುಂಡಿಯನ್ನು ಹೇಗೆ ವರದಿ ಮಾಡುವುದು?', 'ಎಷ್ಟು ಸಕ್ರಿಯ ಪ್ರಕರಣಗಳಿವೆ?', 'ವರದಿ ಸಲ್ಲಿಸಿದ ನಂತರ ಏನಾಗುತ್ತದೆ?'] },
 };
 export default function AssistantChat() {
+  const {activeAreaId}=useLocation();
   const { lang } = useI18n(); const copy = TEXT[lang];
   const textarea = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState(''); const [voiceLanguage, setVoiceLanguage] = useState(`${lang}-IN`);
   const [offline, setOffline] = useState(false); const sending = useRef(false);
   const voice = useAssistantVoice(voiceLanguage, setInput);
-  const transport = useMemo(() => new DefaultChatTransport({ api: '/api/assistant' }), []);
+  const transport = useMemo(() => new DefaultChatTransport({ api: '/api/assistant',body:{serviceArea:activeAreaId} }), [activeAreaId]);
   const { messages, sendMessage, status, error, stop, regenerate } = useChat({ transport, onError: e => toast.error(e.message) });
   const busy = status === 'submitted' || status === 'streaming';
   useEffect(() => { if (!busy) textarea.current?.focus(); }, [busy]);
