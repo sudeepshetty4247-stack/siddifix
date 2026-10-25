@@ -165,7 +165,7 @@ function IssuePage() {
               <p className="flex items-start gap-1.5 text-sm text-muted-foreground"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{i.landmark || `${i.lat.toFixed(5)}, ${i.lng.toFixed(5)}`}</p>
               <div className="flex flex-wrap gap-1.5">
                 <span className="rounded-md bg-success/10 px-2 py-0.5 text-xs font-medium text-success">{cat.emoji} {cat.label}</span>
-                {ward?.name && <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">Ward {ward.ward_number}</span>}
+                {ward?.name && <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{ward.ward_number ? `Ward ${ward.ward_number}` : ward.name}</span>}
                 {(area || ward?.name) && <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{ward?.name ?? area}</span>}
                 {i.support_count > 0 && <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">{i.support_count + 1} reports</span>}
               </div>
@@ -182,7 +182,7 @@ function IssuePage() {
                 <div className="p-3"><dt className="sr-only">Coordinates</dt><dd className="truncate text-xs font-semibold tabular-nums">{i.lat.toFixed(4)}, {i.lng.toFixed(4)}</dd><p className="mt-0.5 text-[11px] text-muted-foreground">Coordinates</p></div>
               </dl>
               <div className="divide-y rounded-2xl border">
-                <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-success/10 text-success"><MapPin className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Ward details</p><p className="truncate text-sm font-semibold">{ward?.name ? `Ward ${ward.ward_number} – ${ward.name}` : 'Ward under staff review'}</p>{ward?.zone && <p className="text-[11px] text-muted-foreground">{ward.zone} zone</p>}</div></div>
+                <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-success/10 text-success"><MapPin className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Ward details</p><p className="truncate text-sm font-semibold">{ward?.name ? `${ward.ward_number ? `Ward ${ward.ward_number} – ` : ''}${ward.name}` : 'Ward under staff review'}</p>{ward?.zone && <p className="text-[11px] text-muted-foreground">{ward.zone} zone</p>}</div></div>
                 <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary"><Users className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Assigned team</p><p className="truncate text-sm font-semibold">{i.department ?? 'Ownership review pending'}</p><p className="text-[11px] text-muted-foreground">Internal Siddhi record — not an official referral</p></div></div>
               </div>
             </div>

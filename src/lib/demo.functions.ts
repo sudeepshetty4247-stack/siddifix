@@ -277,14 +277,18 @@ export const purgeDemoDataset = createServerFn({ method: 'POST' })
     if (preview.error) throw new Error(preview.error.message);
     if (((preview.data as { genuine_records_blocked?: number }).genuine_records_blocked ?? 0) > 0)
       throw new Error('Cleanup refused: genuine citizen records reference this demo dataset. Review those links first.');
-    let removedUsers = 0;
-    for (let page = 1; page <= 20; page++) {
-      const list = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
-      const demoUsers = (list.data?.users ?? []).filter(u => u.email?.startsWith(`demo-${data.datasetId}-`) && u.email.endsWith(`@${DEMO_EMAIL_DOMAIN}`));
-      for (const u of demoUsers) { await supabaseAdmin.auth.admin.deleteUser(u.id); removedUsers++; }
-      if ((list.data?.users?.length ?? 0) < 200) break;
-    }
+    const demoUserIds = await supabaseAdmin.from('staff_profiles').select('user_id').eq('demo_dataset_id',data.datasetId);
+    if(demoUserIds.error) throw new Error('Cleanup account inventory failed');
     const r = await context.supabase.rpc('purge_demo_dataset', { _dataset: data.datasetId });
     if (r.error) throw new Error(r.error.message);
+    let removedUsers = 0;
+    for (const row of demoUserIds.data ?? []) {
+      const account=await supabaseAdmin.auth.admin.getUserById(row.user_id);
+      const email=account.data.user?.email;
+      if(!email?.startsWith(`demo-${data.datasetId}-`) || !email.endsWith(`@${DEMO_EMAIL_DOMAIN}`)) throw new Error('Synthetic account deletion label mismatch');
+      const removed=await supabaseAdmin.auth.admin.deleteUser(row.user_id);
+      if(removed.error) throw new Error('Demo data removed; account cleanup needs retry');
+      removedUsers++;
+    }
     return { ...(r.data as object), authUsersRemoved: removedUsers };
   });
