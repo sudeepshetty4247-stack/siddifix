@@ -1,5 +1,13 @@
 # CivicFix roadmap
 
+## Current request — Anantapur multi-area extension
+- [ ] Audit location, localization, routing and permission dependencies; preserve all Bengaluru records.
+- [ ] Shared configurable service-area selection, independent language preference and location-filtered citizen screens.
+- [ ] Source-backed Anantapur authority records and explicit geographic verification; no guessed boundary activation.
+- [ ] Additive district isolation for reports, teams, staff and administrative configuration.
+- [ ] Telugu localization across existing translation system; regression and running-app acceptance.
+- [ ] Document verified results and remaining boundary, native-language review and authorized staff setup dependencies.
+
 ## Current request — report integrity and abuse prevention
 - [x] JPEG/PNG decoding, bounded WebP checks, upload reservations, atomic integrity persistence and retry fingerprints.
 - [x] Approved configurable temporary limits, keyed identities and accessible signed one-use challenge.
