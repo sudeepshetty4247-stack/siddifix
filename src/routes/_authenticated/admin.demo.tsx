@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Database, ShieldAlert, FlaskConical, Trash2, CircleCheck, CircleAlert, Info, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getMasterDataValidation, getDemoDatasetStatus, seedDemoDataset, purgeDemoDataset, previewDemoPurge } from "@/lib/demo.functions";
+import { getMasterDataValidation, getDemoDatasetStatus, seedDemoDataset, purgeDemoDataset, previewDemoPurge, resetDemoCredentials } from "@/lib/demo.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/demo")({
   head: () => ({ meta: [{ title: "Data health & demo — Siddhi" }, { name: "description", content: "Master-data validation and labelled demo dataset controls." }, { property: "og:title", content: "Data health & demo — Siddhi" }, { property: "og:description", content: "Master-data validation and demo dataset controls." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
@@ -27,6 +27,7 @@ function DemoPage() {
   const seedFn = useServerFn(seedDemoDataset);
   const purgeFn = useServerFn(purgeDemoDataset);
   const previewFn = useServerFn(previewDemoPurge);
+  const resetFn = useServerFn(resetDemoCredentials);
   const qc = useQueryClient();
   const validation = useQuery({ queryKey: ["master-data-validation"], queryFn: () => validateFn(), retry: false });
   const status = useQuery({ queryKey: ["demo-dataset-status"], queryFn: () => statusFn(), retry: false });
@@ -120,7 +121,7 @@ function DemoPage() {
             {status.data.datasets.map(d => (
               <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm">
                 <span><strong>{d.id}</strong> — {d.issues} reports · {d.teams} teams · {d.staff} staff</span>
-                {status.data.enabled && <span className="flex gap-2"><Button size="sm" variant="outline" disabled={busy} onClick={() => dryRun(d.id)}>Preview cleanup</Button><Button size="sm" variant="outline" disabled={busy} onClick={() => purge(d.id)}><Trash2 className="mr-1 h-3.5 w-3.5" />Purge</Button></span>}
+                {status.data.enabled && <span className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={busy} onClick={async () => { setBusy(true); try {setCredentials(await resetFn({data:{datasetId:d.id}}));} catch(e) {toast.error(e instanceof Error?e.message:'Reset failed');} finally {setBusy(false);} }}>Reset demo passwords</Button><Button size="sm" variant="outline" disabled={busy} onClick={() => dryRun(d.id)}>Preview cleanup</Button><Button size="sm" variant="outline" disabled={busy} onClick={() => purge(d.id)}><Trash2 className="mr-1 h-3.5 w-3.5" />Purge</Button></span>}
               </li>
             ))}
           </ul>
@@ -151,6 +152,7 @@ function DemoPage() {
         {credentials.length > 0 && (
           <div className="space-y-2 rounded-lg border border-warning bg-secondary p-4">
             <p className="text-sm font-semibold">Demo sign-in details (shown until the next purge)</p>
+            <Button variant="outline" onClick={()=>{const blob=new Blob([JSON.stringify(credentials,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Siddhi-demo-credentials.json';a.click();URL.revokeObjectURL(url);}}>Download demo sign-in details</Button>
             <ul className="max-h-64 space-y-1 overflow-y-auto font-mono text-xs">
               {credentials.map(c => <li key={c.email}>{c.email} · {c.password} · {c.role}</li>)}
             </ul>

@@ -70,6 +70,28 @@ export const previewDemoPurge = createServerFn({ method: 'POST' })
     return r.data as Record<string, number | string | boolean>;
   });
 
+export const resetDemoCredentials = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { datasetId: string }) => z.object({ datasetId: z.string().regex(/^[a-z0-9-]{3,40}$/) }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context); assertDemoEnabled();
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+    const rows = await supabaseAdmin.from('staff_profiles').select('user_id,department').eq('demo_dataset_id',data.datasetId);
+    if(rows.error) throw new Error('Demo accounts unavailable');
+    const credentials: { email: string; password: string; department: string; role: string }[] = [];
+    for(const row of rows.data ?? []) {
+      const account = await supabaseAdmin.auth.admin.getUserById(row.user_id);
+      const email = account.data.user?.email;
+      if(!email?.startsWith(`demo-${data.datasetId}-`) || !email.endsWith(`@${DEMO_EMAIL_DOMAIN}`)) throw new Error('Account labelling mismatch; reset refused');
+      const password = `Demo!${crypto.randomUUID().replaceAll('-','').slice(0,20)}`;
+      const result = await supabaseAdmin.auth.admin.updateUserById(row.user_id,{password});
+      if(result.error) throw new Error('Demo password reset failed');
+      const role = await supabaseAdmin.from('user_roles').select('role').eq('user_id',row.user_id).single();
+      credentials.push({email,password,department:row.department,role:role.data?.role ?? 'unknown'});
+    }
+    return credentials;
+  });
+
 const seedSchema = z.object({
   count: z.number().int().min(50).max(5000).default(2100),
   staffPerDepartment: z.number().int().min(2).max(25).default(10),
