@@ -76,7 +76,7 @@ function CitizenShell() {
               </select>
             </label>
             <Link to="/report" className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-primary/90">
-              <Camera className="h-4 w-4" /> <span className="hidden sm:inline">{t("report")}</span><span className="sm:hidden">Report</span>
+              <Camera className="h-4 w-4" /> <span className="hidden sm:inline">{t("report")}</span><span className="sm:hidden">{t("reportCta")}</span>
             </Link>
             <Button variant="ghost" size="icon" className="xl:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -105,7 +105,7 @@ function CitizenShell() {
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm space-y-3">
             <Logo />
-            <p className="text-sm text-muted-foreground">Report once. Track every action. Build better communities. Operating in Bengaluru, built for every Indian city.</p>
+            <p className="text-sm text-muted-foreground">Report once. Track every action. Build better communities. Location-aware, built for Indian communities.</p>
             <p className="text-xs text-muted-foreground">Siddhi is an independent civic platform and is not an official government service. Authority names are indicative.</p>
           </div>
           <div className="flex gap-12 text-sm">

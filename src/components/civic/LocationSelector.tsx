@@ -8,9 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { LazyMap } from './LazyMap';
 import { AddressEntry } from './AddressEntry';
+import {areaSettings,areaCenter} from '@/lib/service-area';
+import {useI18n} from '@/lib/i18n';
 
 export function LocationSelector() {
-  const { location, select, open, setOpen, locating, detect, notice, recent, coverage } = useLocation();
+  const { location, select, open, setOpen, locating, detect, notice, recent, coverage, areas,activeArea,activeAreaId,chooseArea,areasLoading,areasError } = useLocation();
+  const {tx}=useI18n();
+  const settings=areaSettings(activeArea);
+  const [stateId,setStateId]=useState('');
   const findAddress = useServerFn(searchAddress);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{ lat: number; lng: number; label: string }[]>([]);
@@ -36,19 +41,21 @@ export function LocationSelector() {
     }
   }
   return <>
-    {<Button variant="ghost" onClick={() => setOpen(true)} className="h-auto min-w-0 justify-start gap-2 px-2 py-2 text-left" aria-label="Change location">
+    {<Button variant="ghost" onClick={() => setOpen(true)} className="h-auto min-w-0 justify-start gap-2 px-2 py-2 text-left" aria-label={tx("changeLocation")}>
       <MapPin className="h-5 w-5 shrink-0 text-primary" />
-      <span className="min-w-0"><span className="flex items-center gap-1"><span className="max-w-[180px] truncate text-sm font-semibold">{location?.label === 'Current location' ? 'Selected location' : location?.label || 'Choose your location'}</span><ChevronDown className="h-3 w-3 shrink-0" /></span><span className="block text-[11px] font-normal text-muted-foreground">{location ? coverage === 'outside' ? 'Outside service area · Tap to change' : location.method === 'device' ? `GPS estimate ±${Math.round(location.accuracy??0)} m · Tap to change` : 'Chosen by you · Tap to change' : 'Issues and services around you'}</span></span>
+      <span className="min-w-0"><span className="flex items-center gap-1"><span className="max-w-[180px] truncate text-sm font-semibold">{activeArea ? `${activeArea.name}, ${settings.state_name??''}` : tx('chooseLocation')}</span><ChevronDown className="h-3 w-3 shrink-0" /></span><span className="block text-[11px] font-normal text-muted-foreground">{location ? coverage === 'outside' ? 'Outside service area · Tap to change' : location.method === 'device' ? `GPS estimate ±${Math.round(location.accuracy??0)} m · Tap to change` : 'Chosen by you · Tap to change' : 'Issues and services around you'}</span></span>
     </Button>}
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-xl overflow-y-auto">
-        <DialogTitle>Choose your location</DialogTitle>
-        <DialogDescription>Siddhi currently serves Bengaluru. Pick the place you want to report in — it stays on this device.</DialogDescription>
+        <DialogTitle>{tx("chooseLocation")}</DialogTitle>
+        <DialogDescription>{tx('locationHelp')}</DialogDescription>
+        {areasLoading?<p role="status">{tx('loading')}</p>:areasError?<p role="alert">{tx('retry')}</p>:<div className="grid gap-3 sm:grid-cols-2"><label className="text-sm">{tx('state')}<select aria-label={tx('state')} className="mt-1 h-10 w-full rounded-md border bg-card px-3" value={stateId||settings.state_id||''} onChange={e=>setStateId(e.target.value)}>{Array.from(new Map(areas.map(a=>[areaSettings(a).state_id,areaSettings(a).state_name])).entries()).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label><label className="text-sm">{tx('serviceArea')}<select aria-label={tx('serviceArea')} className="mt-1 h-10 w-full rounded-md border bg-card px-3" value={activeAreaId} onChange={e=>chooseArea(e.target.value)}><option value="" disabled>{tx('chooseLocation')}</option>{areas.filter(a=>!stateId||areaSettings(a).state_id===stateId).map(a=><option key={a.id} value={a.id}>{a.name} · {areaSettings(a).district_name}</option>)}</select></label></div>}
+        {activeArea&&!activeArea.reporting_enabled&&<p className="border-l-2 border-warning pl-3 text-sm text-warning-foreground">{tx('boundaryPending')}</p>}
         {notice && <p role="status" className="text-sm text-warning-foreground">{notice}</p>}
-        <Button variant="outline" onClick={() => detect()} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}Use current location</Button>
+        <Button variant="outline" onClick={() => detect()} disabled={locating}>{locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <LocateFixed className="h-4 w-4" />}{tx('useGps')}</Button>
         <AddressEntry onDraft={()=>setPin(null)} onSelect={r=>{setPin({lat:r.lat,lng:r.lng});setLabel(r.originalAddress||r.label);}} />
         <label className="space-y-1 text-sm font-medium">Name this place (optional)<input aria-label="Locality or landmark" value={label} onChange={e => setLabel(e.target.value)} maxLength={120} placeholder="e.g. Kudlu Gate" className="h-10 w-full rounded-lg border bg-card px-3 font-normal" /></label>
-        <div className="h-52 overflow-hidden rounded-lg border"><LazyMap center={pin ?? location ?? BENGALURU} picked={pin ?? location} onPick={(lat, lng) => { setPin({ lat, lng }); setError(''); }} recenter={pin} zoom={13} /></div>
+        <div className="h-52 overflow-hidden rounded-lg border"><LazyMap center={pin ?? areaCenter(activeArea)} picked={pin ?? location} onPick={(lat, lng) => { setPin({ lat, lng }); setError(''); }} recenter={pin} zoom={13} /></div>
         <div className="flex gap-2"><input aria-label="Latitude, longitude" value={coordinates} onChange={e => setCoordinates(e.target.value)} placeholder="12.9716, 77.5946" className="h-10 min-w-0 flex-1 rounded-lg border bg-card px-3 text-sm" /><Button variant="outline" onClick={applyCoordinates}>Set pin</Button></div>
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         {pin && <p className="text-xs text-muted-foreground">Report area: {pin.lat.toFixed(5)}, {pin.lng.toFixed(5)} · manually selected</p>}
