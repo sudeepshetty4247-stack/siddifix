@@ -64,7 +64,7 @@ function CitizenShell() {
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <ShowcaseToggle />
-            <label className="relative hidden items-center sm:flex">
+            <label className="relative flex items-center">
               <Globe className="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground" />
               <select
                 aria-label="Language"
