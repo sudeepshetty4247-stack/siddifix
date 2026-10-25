@@ -341,6 +341,7 @@ export type Database = {
           designation: string
           full_name: string
           id: string
+          identity_source_verified: boolean
           jurisdiction: string | null
           kind: string
           office_address: string | null
@@ -370,6 +371,7 @@ export type Database = {
           designation: string
           full_name: string
           id?: string
+          identity_source_verified?: boolean
           jurisdiction?: string | null
           kind?: string
           office_address?: string | null
@@ -399,6 +401,7 @@ export type Database = {
           designation?: string
           full_name?: string
           id?: string
+          identity_source_verified?: boolean
           jurisdiction?: string | null
           kind?: string
           office_address?: string | null
@@ -1633,6 +1636,17 @@ export type Database = {
         Args: { _grant: boolean; _role: string; _user: string }
         Returns: undefined
       }
+      admin_create_area_team: {
+        Args: {
+          _active?: boolean
+          _area: string
+          _categories: string[]
+          _department: string
+          _name: string
+          _wards: string[]
+        }
+        Returns: string
+      }
       admin_feedback_summary: { Args: never; Returns: Json }
       admin_integrity_settings: {
         Args: { _settings: Json }
@@ -1753,6 +1767,10 @@ export type Database = {
         Returns: boolean
       }
       can_manage_admins: { Args: { _user: string }; Returns: boolean }
+      can_manage_service_area: {
+        Args: { _area: string; _user: string }
+        Returns: boolean
+      }
       citizen_change_issue: {
         Args: { _action: string; _note: string; _ref: string; _token: string }
         Returns: string

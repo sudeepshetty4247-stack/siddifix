@@ -365,6 +365,13 @@
       "when": 1792893387918,
       "tag": "0051_multi_service_area_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1792893779572,
+      "tag": "0052_area_directory_and_configuration_guards",
+      "breakpoints": true
     }
   ]
 }
