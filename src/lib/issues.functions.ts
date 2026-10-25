@@ -34,7 +34,9 @@ export const analyzeIssue = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const {consumeRequest}=await import('./civic-security.server');await consumeRequest('analysis',15);
+    const secret=process.env['REPORT_INTEGRITY_SECRET'];if(!secret)throw new Error('Report protection unavailable.');
+    const {protectSubmission}=await import('./submission-security.server');await protectSubmission(secret,'analysis');
+    if(data.imageDataUrl){const {decodeEvidenceImage}=await import('./evidence-validation');const {validateReportImage}=await import('./report-image.server');const decoded=decodeEvidenceImage(data.imageDataUrl.replace('image/jpg','image/jpeg'));validateReportImage(decoded.bytes,decoded.mime,5500000);}
     const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
     const { analyzeIssueWithAI, fallbackAnalysis, AiError } = await import("./ai.server");
     const state=await supabaseAdmin.from('civic_ai_state').select('paused,reason').eq('id','classification').maybeSingle();
@@ -62,11 +64,19 @@ const submitSchema = reportInputSchema;
 export const submitIssue = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof submitSchema>) => submitSchema.parse(input))
   .handler(async ({ data }) => {
-    const {consumeRequest}=await import('./civic-security.server');await consumeRequest('submit',10);
-    if (!isInIndia(data.lat, data.lng)) throw new Error("CivicFix currently accepts locations within India only.");
-    const incidentCheck=incidentCoverage(await getDirectory(),data.lat,data.lng);
-    if(incidentCheck.status!=='supported')throw new Error(incidentCheck.status==='unknown'?"We couldn't verify this location yet. Confirm a point inside a single supported ward.":"Siddhi currently accepts reports only inside its configured Bengaluru service area. Change the incident location.");
+    const secret=process.env['REPORT_INTEGRITY_SECRET'];if(!secret)throw new Error('Report protection unavailable.');
+    const {protectSubmission}=await import('./submission-security.server');const identity=await protectSubmission(secret,'submit',data.challenge);
+    const {digest}=await import('./report-integrity.server');
+    const fingerprint=await digest(JSON.stringify({title:data.title,description:data.description??null,category:data.category,lat:data.lat,lng:data.lng,image:data.imageDataUrl?await digest(data.imageDataUrl):null}));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [coverageRows,wardRows,authorityRows,ruleRows,routeRows]=await Promise.all([
+      supabaseAdmin.from('civic_coverage').select('*').eq('enabled',true),supabaseAdmin.from('civic_wards').select('*').eq('active',true).range(0,999),supabaseAdmin.from('civic_authorities').select('*').eq('active',true),supabaseAdmin.from('civic_service_rules').select('*'),supabaseAdmin.from('civic_department_routes').select('*').eq('active',true)
+    ]);
+    if([coverageRows,wardRows,authorityRows,ruleRows,routeRows].some(r=>r.error))throw new Error('Service area could not be verified. Please try again.');
+    const directory={coverage:coverageRows.data??[],wards:wardRows.data??[],authorities:authorityRows.data??[],rules:ruleRows.data??[],routes:routeRows.data??[]};
+    if (!isInIndia(data.lat, data.lng)) throw new Error("CivicFix currently accepts locations within India only.");
+    const incidentCheck=incidentCoverage(directory,data.lat,data.lng);
+    if(incidentCheck.status!=='supported')throw new Error(incidentCheck.status==='unknown'?"We couldn't verify this location yet. Confirm a point inside a single supported ward.":"Siddhi currently accepts reports only inside its configured Bengaluru service area. Change the incident location.");
 
     // Idempotency: repeated taps / retries return the original report.
     const existing = await supabaseAdmin
@@ -75,42 +85,54 @@ export const submitIssue = createServerFn({ method: "POST" })
       .eq("idempotency_key", data.idempotencyKey)
       .maybeSingle();
     if (existing.error) throw new Error("We couldn't verify this submission. Please try again.");
-    if (existing.data) return { ref: existing.data.ref_code, token: null, duplicate: true };
+    if (existing.data) {
+      const prior=await supabaseAdmin.from('report_integrity').select('session_hash,request_fingerprint').eq('issue_id',existing.data.id).maybeSingle();
+      if(!prior.data||prior.data.session_hash!==identity.session||prior.data.request_fingerprint!==fingerprint)throw new Error('Submission retry does not match the original.');
+      return { ref: existing.data.ref_code, token: null, duplicate: true };
+    }
+
+    const reservation=await supabaseAdmin.from('report_upload_reservations').select('*').eq('key',data.idempotencyKey).maybeSingle();
+    if(data.imageDataUrl&&(!reservation.data||reservation.data.session_hash!==identity.session||reservation.data.original_path!==data.originalPath))throw new Error('Please upload the original photo from this reporting session.');
+    if(!data.imageDataUrl){const reserved=await supabaseAdmin.from('report_upload_reservations').insert({key:data.idempotencyKey,session_hash:identity.session});if(reserved.error&&(!reservation.data||reservation.data.session_hash!==identity.session))throw new Error('Submission reservation unavailable.');}
 
     let originalHash:string|null=null;
     if(data.originalPath){
       if(!data.originalPath.startsWith(`originals/${data.idempotencyKey}/`) || !data.photoMetadata)throw new Error('Original photo does not match this report.');
       const original=await supabaseAdmin.storage.from('issue-photos').download(data.originalPath);
-      if(original.error||!original.data||original.data.size>25*1024*1024)throw new Error('Original photo could not be verified.');
+      if(original.error||!original.data||original.data.size>25*1024*1024||original.data.size!==reservation.data?.expected_size)throw new Error('Original photo could not be verified.');
       const bytes=new Uint8Array(await original.data.arrayBuffer());
       const extension=data.originalPath.split('.').at(-1) ?? '';
-      validateImageContainer(bytes,extension);
+      const {validateReportImage}=await import('./report-image.server');validateReportImage(bytes,extension);
       originalHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
     }
 
     // Upload photo
+    let path:string|null=null;let photoUrl:string|null=null;
+    if(data.imageDataUrl){
     const match = data.imageDataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
     const mime = match?.[1], b64 = match?.[2];
     if (!mime || !b64) throw new Error('Invalid image.');
     const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
     if (bin.length > 5500000) throw new Error('The processed image is too large.');
-    validateImageContainer(bin,mime);
+    const {validateReportImage}=await import('./report-image.server');validateReportImage(bin,mime,5500000);
     const ext = mime === "png" ? "png" : mime === "webp" ? "webp" : "jpg";
-    const path = `reports/${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
+    path = `reports/${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
     const up = await supabaseAdmin.storage.from("issue-photos").upload(path, bin, {
       contentType: `image/${ext === "jpg" ? "jpeg" : ext}`,
       upsert: false,
     });
     if (up.error) throw new Error("Photo upload failed. Please try again.");
     const signed = await supabaseAdmin.storage.from("issue-photos").createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
-    if (signed.error) throw new Error("Photo upload failed. Please try again.");
+    if (signed.error) {await supabaseAdmin.storage.from('issue-photos').remove([path]);throw new Error("Photo upload failed. Please try again.");}
+    photoUrl=signed.data.signedUrl;
+    }
 
     const severity = data.severity as Severity;
-    const routing = resolveCivicRouting(await getDirectory(), data.lat, data.lng, data.category, data.subcategory ?? undefined);
+    const routing = resolveCivicRouting(directory, data.lat, data.lng, data.category, data.subcategory ?? undefined);
     const { coverageFromWardMatches, canAcceptReport } = await import('./coverage');
     const coverage = coverageFromWardMatches(routing.ward ? 1 : routing.reviewReason?.startsWith('This pin touches') ? 2 : 0);
     if (!routing.coverage || !canAcceptReport(coverage)) {
-      await supabaseAdmin.storage.from('issue-photos').remove([path]);
+      if(path)await supabaseAdmin.storage.from('issue-photos').remove([path]);
       throw new Error("This location is outside Siddhi's current service area. Siddhi accepts reports inside Bengaluru's wards only.");
     }
     const targetRows = await supabaseAdmin.from('service_targets').select('category,severity,ack_hours,resolve_hours,version,active').eq('active', true);
@@ -127,21 +149,23 @@ export const submitIssue = createServerFn({ method: "POST" })
         category: data.category, subcategory: data.subcategory ?? null, severity,
         status: data.needsClassification ? 'needs_classification' : 'submitted',
         ai_confidence: data.aiConfidence ?? null, safety_warning: data.safetyWarning ?? null,
-        lat: data.lat, lng: data.lng, landmark: data.landmark ?? null, photo_url: signed.data.signedUrl,
+        lat: data.lat, lng: data.lng, landmark: data.landmark ?? null, photo_url: photoUrl,
         department: null, duplicate_of: data.duplicateOf ?? null,
         sla_due_at: targets.resolveDueAt, ack_due_at:targets.ackDueAt, target_snapshot:JSON.parse(JSON.stringify(targets.snapshot)),
         routing_snapshot: JSON.parse(JSON.stringify({...routing,incident_location:{original_address:data.incidentLocation?.originalAddress??data.landmark??null,normalized_address:data.incidentLocation?.normalizedAddress??null,source:data.incidentLocation?.source??'map',entered_city:data.incidentLocation?.city??null,entered_state:data.incidentLocation?.state??null,entered_pin:data.incidentLocation?.pin??null,directions:data.incidentLocation?.directions??null,verification:'supported',checked_at:new Date().toISOString()}})),
         original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
         photo_source:data.photoMetadata?.source??'gallery',photo_metadata:data.photoMetadata ? JSON.parse(JSON.stringify(data.photoMetadata)) : null,
+        integrity_fingerprint:fingerprint,integrity_image_hash:originalHash,integrity_session:identity.session,integrity_burst:identity.burst,
+        integrity_location_mismatch:!!(data.photoMetadata?.gps&&Math.hypot(data.photoMetadata.gps.lat-data.lat,data.photoMetadata.gps.lng-data.lng)>0.02)||!!(data.incidentLocation?.state&&!/karnataka|ಕರ್ನಾಟಕ|कर्नाटक/i.test(data.incidentLocation.state)),
       },
     });
     if (error) {
-      await supabaseAdmin.storage.from('issue-photos').remove([path]);
+      if(path)await supabaseAdmin.storage.from('issue-photos').remove([path]);
       console.error('Report transaction failed', error.code, error.message);
       throw new Error("We couldn't save your report. Please try again.");
     }
     const saved = result as { ref: string; duplicate: boolean };
-    if (saved.duplicate) await supabaseAdmin.storage.from('issue-photos').remove([path]);
+    if (saved.duplicate&&path) await supabaseAdmin.storage.from('issue-photos').remove([path]);
     return { ref: saved.ref, token: saved.duplicate ? null : token, duplicate: saved.duplicate };
   });
 

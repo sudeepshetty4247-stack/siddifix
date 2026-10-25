@@ -1,0 +1,14 @@
+import {Link} from '@tanstack/react-router';
+import {useQuery} from '@tanstack/react-query';
+import {useState} from 'react';
+import {supabase} from '@/integrations/supabase/client';
+import {Button} from '@/components/ui/button';
+
+export function IntegrityQueue({admin=false}:{admin?:boolean}){
+  const [page,setPage]=useState(0);const [state,setState]=useState('pending_review');
+  const q=useQuery({queryKey:['integrity','queue',state,page],refetchInterval:15000,queryFn:async()=>{const r=await supabase.from('report_integrity').select('issue_id,state,risk_score,signals,updated_at,issues!inner(ref_code,title,category,demo_dataset_id)',{count:'exact'}).eq('state',state).order('updated_at',{ascending:false}).range(page*25,page*25+24);if(r.error)throw r.error;return r;}});
+  return <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-8"><div><p className="text-sm font-semibold text-primary">Trust & verification</p><h1 className="mt-1 text-3xl font-bold">Report review</h1></div><label className="flex items-center gap-3 text-sm">Review state<select aria-label="Review state" className="rounded-md border bg-background p-2" value={state} onChange={e=>{setState(e.target.value);setPage(0);}}>{['pending_review','appealed','information_requested','unverified','verified','invalid'].map(s=><option key={s} value={s}>{s.replaceAll('_',' ')}</option>)}</select></label>
+    {q.isError?<p role="alert">Review queue unavailable. <Button variant="outline" onClick={()=>q.refetch()}>Retry</Button></p>:q.isPending?<p role="status">Loading reports…</p>:!q.data.data.length?<p className="border-y py-10 text-muted-foreground">No reports in this review state within your authorized scope.</p>:<div className="divide-y border-y">{q.data.data.map(r=><Link key={r.issue_id} to={admin?'/admin/issues/$id':'/staff/issues/$id'} params={{id:r.issue_id}} className="flex flex-wrap items-center justify-between gap-3 py-5"><div><p className="font-mono text-xs text-muted-foreground">{r.issues.ref_code}{r.issues.demo_dataset_id?' · DEMO':''}</p><h2 className="mt-1 font-semibold">{r.issues.title}</h2><p className="mt-1 text-xs text-muted-foreground">{r.state.replaceAll('_',' ')} · {r.issues.category}</p></div><span className="text-sm">Risk signals {r.risk_score}/100 →</span></Link>)}</div>}
+    <div className="flex items-center gap-4"><Button variant="outline" disabled={page===0} onClick={()=>setPage(page-1)}>Previous</Button><span className="text-sm">Page {page+1} · {q.data?.count??0} reports</span><Button variant="outline" disabled={(page+1)*25>=(q.data?.count??0)} onClick={()=>setPage(page+1)}>Next</Button></div>
+  </main>;
+}

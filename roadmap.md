@@ -1,5 +1,11 @@
 # CivicFix roadmap
 
+## Current request — report integrity and abuse prevention
+- [ ] Server image decoding, upload reservations, atomic integrity persistence and retry fingerprints.
+- [ ] Approved configurable temporary limits, privacy-conscious identifiers and accessible risk-triggered bot challenge.
+- [ ] Scoped explainable review queue, audited decisions, private reporter correction/appeal, confirmation summary.
+- [ ] Direct-operation security tests, regression suite, browser checks and honest acceptance report.
+
 ## Current request — hackathon presentation research pack
 - [x] Delivered fifteen-slide content, notes, pitches, 23 judge answers, inspected screenshots and evidence register; freshly ran 260 tests and checked 2,100 synthetic plus 1 genuine report.
 - [ ] Exact organizer wording and institution/event identity require independent source confirmation; do not substitute implementation prompts.

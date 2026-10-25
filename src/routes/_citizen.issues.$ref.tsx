@@ -20,6 +20,7 @@ import { getReportPhoto } from '@/lib/report-media.functions';
 import { caseReport } from '@/lib/case-report';
 import { downloadText } from '@/lib/transparency';
 import { FeedbackSurvey } from '@/components/civic/FeedbackSurvey';
+import { CitizenIntegrity } from '@/components/civic/CitizenIntegrity';
 
 export const Route = createFileRoute("/_citizen/issues/$ref")({
   head: ({ params }) => ({
@@ -73,7 +74,8 @@ function IssuePage() {
     enabled: !!wardId,
     staleTime: 300000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('public_ward_snapshot', { _identifier: wardId! });
+      if(!wardId)return null;
+      const { data, error } = await supabase.rpc('public_ward_snapshot', { _identifier: wardId });
       if (error) throw error;
       return data as { name: string; ward_number: number | null; zone: string | null; corporation: string | null; assembly: string | null; mla: string | null; lok_sabha: string | null; mp: string | null; representative: string | null } | null;
     },
@@ -246,6 +248,7 @@ function IssuePage() {
             <div className="flex items-center justify-between p-4 text-sm"><span className="text-muted-foreground">Reported</span><span>{new Date(i.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</span></div>
           </div>
           <CivicInfo lat={i.lat} lng={i.lng} category={i.category} subcategory={i.subcategory} snapshot={i.routing_snapshot} />
+          {tokenValid&&token&&<CitizenIntegrity reference={ref} token={token}/>}
         </aside>
       </div>
     </div>
