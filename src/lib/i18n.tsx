@@ -130,6 +130,16 @@ const english: Partial<Record<LocaleKey, string>> = {
   submit: "Submit report",
   photo: "Photo",
   evidence: "Evidence",
+  locationMismatchTitle: "Check the problem location",
+  locationMismatchBody:
+    "Your photo's location appears different from the issue location selected on the map. Please check the pin to make sure this issue is reported in the correct place.",
+  locationUncertainBody:
+    "We could not reliably compare the photo location with the selected issue location. Please confirm the pin is where the problem is.",
+  reviewLocation: "Review & correct location",
+  confirmSelectedLocation: "The pin is correct",
+  replacePhoto: "Replace photo",
+  cancelSubmission: "Cancel report",
+  locationMatchNote: "Photo location matches the selected issue location.",
 };
 
 const Ctx = createContext<{
