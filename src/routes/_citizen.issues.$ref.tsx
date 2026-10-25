@@ -64,7 +64,7 @@ function IssuePage() {
   });
   const canonical = useQuery({ queryKey: ['canonical-issue', issue.data?.duplicate_of], enabled: !!issue.data?.duplicate_of, queryFn: async () => {
     if (!issue.data?.duplicate_of) return null;
-    return (await publicCases()).find(row=>row.id===issue.data?.duplicate_of) ?? null;
+    return (await publicCases(undefined, ref.startsWith('DEMO-'))).find(row=>row.id===issue.data?.duplicate_of) ?? null;
   }});
   const photo=useQuery({queryKey:['report-annotated-photo',issue.data?.id],enabled:!!issue.data?.id,queryFn:()=>{if(!issue.data?.id)return null;return getReportPhoto({data:{issueId:issue.data.id}});}});
   const wardId = (issue.data?.routing_snapshot as { ward?: { identifier?: string } } | null)?.ward?.identifier ?? null;
