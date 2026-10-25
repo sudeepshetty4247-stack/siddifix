@@ -358,6 +358,13 @@
       "when": 1792892700197,
       "tag": "0050_integrity_notifications_and_cleanup_safety",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1792893387918,
+      "tag": "0051_multi_service_area_foundation",
+      "breakpoints": true
     }
   ]
 }
