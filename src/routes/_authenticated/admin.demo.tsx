@@ -22,7 +22,7 @@ import {
   previewDemoPurge,
   resetDemoCredentials,
 } from "@/lib/demo.functions";
-import { useLocation } from "@/lib/location";
+import { getServiceAreas } from "@/lib/service-area.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/demo")({
   head: () => ({
@@ -57,8 +57,14 @@ type Cred = { email: string; password: string; department?: string; role?: strin
 type Sample = { ref: string; token: string; status: string };
 
 function DemoPage() {
-  const { areas, activeAreaId } = useLocation();
-  const [areaId, setAreaId] = useState(activeAreaId);
+  // Admin portal has no citizen LocationProvider; load service areas directly.
+  const areasQuery = useQuery({
+    queryKey: ["service-areas"],
+    queryFn: () => getServiceAreas(),
+    staleTime: 60000,
+  });
+  const areas = areasQuery.data ?? [];
+  const [areaId, setAreaId] = useState("bengaluru");
   const validateFn = useServerFn(getMasterDataValidation);
   const statusFn = useServerFn(getDemoDatasetStatus);
   const seedFn = useServerFn(seedDemoDataset);
