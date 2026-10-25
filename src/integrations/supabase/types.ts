@@ -1539,10 +1539,20 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_supervisor: { Args: { _user_id: string }; Returns: boolean }
-      nearby_case_summary: {
-        Args: { _lat: number; _lng: number; _radius_m?: number }
-        Returns: Json
-      }
+      nearby_case_summary:
+        | {
+            Args: { _lat: number; _lng: number; _radius_m?: number }
+            Returns: Json
+          }
+        | {
+            Args: {
+              _include_demo?: boolean
+              _lat: number
+              _lng: number
+              _radius_m?: number
+            }
+            Returns: Json
+          }
       nearby_issues: {
         Args: {
           _category: string
@@ -1577,9 +1587,14 @@ export type Database = {
       preview_demo_purge: { Args: { _dataset: string }; Returns: Json }
       process_deadline_reminders: { Args: never; Returns: number }
       public_case_events: { Args: { _id: string }; Returns: Json }
-      public_case_rows: { Args: { _ref?: string }; Returns: Json }
+      public_case_rows:
+        | { Args: { _ref?: string }; Returns: Json }
+        | { Args: { _include_demo?: boolean; _ref?: string }; Returns: Json }
       public_report_snapshot: { Args: { _filters?: Json }; Returns: Json }
-      public_transparency_metrics: { Args: { _days?: number }; Returns: Json }
+      public_transparency_metrics:
+        | { Args: { _days?: number }; Returns: Json }
+        | { Args: { _days?: number; _include_demo?: boolean }; Returns: Json }
+      public_ward_snapshot: { Args: { _identifier: string }; Returns: Json }
       purge_demo_dataset: { Args: { _dataset: string }; Returns: Json }
       review_directory_fetch: {
         Args: { _approve: boolean; _id: string }
@@ -1757,16 +1772,27 @@ export type Database = {
           zone: string
         }[]
       }
-      ward_case_counts: {
-        Args: never
-        Returns: {
-          reports: number
-          resolved: number
-          unique_issues: number
-          unresolved: number
-          ward_identifier: string
-        }[]
-      }
+      ward_case_counts:
+        | {
+            Args: never
+            Returns: {
+              reports: number
+              resolved: number
+              unique_issues: number
+              unresolved: number
+              ward_identifier: string
+            }[]
+          }
+        | {
+            Args: { _include_demo?: boolean }
+            Returns: {
+              reports: number
+              resolved: number
+              unique_issues: number
+              unresolved: number
+              ward_identifier: string
+            }[]
+          }
     }
     Enums: {
       app_role: "admin" | "staff" | "supervisor" | "field_worker"

@@ -330,6 +330,13 @@
       "when": 1792887448009,
       "tag": "0046_bounded_demo_seed_and_public_isolation",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1792890830925,
+      "tag": "0047_showcase_visibility_and_ward_snapshot",
+      "breakpoints": true
     }
   ]
 }
