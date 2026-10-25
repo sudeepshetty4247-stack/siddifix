@@ -21,12 +21,14 @@ import { publicCases } from '@/lib/public-cases';
 import { useShowcase } from '@/lib/showcase';
 import { wardPreviewPoint } from '@/lib/bengaluru-map';
 import type { WardCount } from '@/lib/wards';
+import { useI18n } from '@/lib/i18n';
 
 type MapIssue = IssueRow & { duplicate_of: string | null };
 type Fly = { lat: number; lng: number; zoom: number; nonce: number };
 const nearbySchema = z.object({ total: z.number(), active: z.number(), resolved: z.number(), overdue: z.number(), critical: z.number() });
 
 export function CitizenMap() {
+  const {tx,t}=useI18n();
   const { location, select, activeArea,activeAreaId } = useLocation();
   const { showcase } = useShowcase();
   const gps = useLiveGps(true);
@@ -169,10 +171,10 @@ export function CitizenMap() {
             {(Object.keys(SEVERITY_META) as Severity[]).map(s => <option key={s} value={s}>{SEVERITY_META[s].label}</option>)}
           </select>
           <select aria-label="Status" className={sel} value={status} onChange={e => setStatus(e.target.value)}>
-            <option value="open">Unresolved</option><option value="resolved">Resolved</option><option value="all">All Status</option>
+            <option value="open">{tx('active')}</option><option value="resolved">{tx('resolved')}</option><option value="all">{tx('anyStatus')}</option>
           </select>
           <select aria-label="Category" className={sel} value={category} onChange={e => setCategory(e.target.value)}>
-            <option value="all">All Categories</option>
+            <option value="all">{tx('allCategories')}</option>
             {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
@@ -247,13 +249,14 @@ export function CitizenMap() {
         {/* Count pill */}
         <div className="pointer-events-none absolute inset-x-0 top-3 z-[500] flex justify-center">
           <div className="pointer-events-auto flex items-center gap-4 rounded-full border bg-card px-5 py-2 shadow-lift">
-            <span className="text-sm"><b className="font-mono text-lg text-destructive tabular-nums">{activeTotal}</b> <span className="text-muted-foreground">Active</span></span>
+            <span className="text-sm"><b className="font-mono text-lg text-destructive tabular-nums">{activeTotal}</b> <span className="text-muted-foreground">{tx('active')}</span></span>
             <span className="h-5 w-px bg-border" />
-            <span className="text-sm"><b className="font-mono text-lg tabular-nums">{allCanonical.length}</b> <span className="text-muted-foreground">Reports</span></span>
+            <span className="text-sm"><b className="font-mono text-lg tabular-nums">{allCanonical.length}</b> <span className="text-muted-foreground">{tx('allReports')}</span></span>
           </div>
         </div>
 
         {mode === 'map' && <>
+          {activeArea && !activeArea.reporting_enabled && <p role="status" className="absolute inset-x-3 top-16 z-[500] mx-auto max-w-lg rounded-lg border bg-card px-4 py-3 text-sm text-warning-foreground shadow-soft">{tx('boundaryPending')}</p>}
           {/* Locate */}
           <button onClick={locate} aria-label="Show my location" className="absolute bottom-[10.5rem] right-[10px] z-[500] grid h-10 w-10 place-items-center rounded-xl border bg-card shadow-soft hover:bg-secondary">
             {gps.state === 'locating' && !gps.fix ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <LocateFixed className={`h-5 w-5 ${youPoint ? 'text-[color:var(--map-you)]' : 'text-muted-foreground'}`} />}
@@ -316,7 +319,7 @@ export function CitizenMap() {
           <Link to="/explore"><BarChart3 className="h-5 w-5" /></Link>
         </Button>
         <Button asChild className="h-12 flex-1 rounded-xl text-base font-semibold shadow-lift">
-          <Link to="/report"><Camera className="h-5 w-5" />Report a Problem</Link>
+          <Link to="/report"><Camera className="h-5 w-5" />{t('reportCta')}</Link>
         </Button>
       </div>
     </div>
