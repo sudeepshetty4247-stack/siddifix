@@ -1709,6 +1709,10 @@ export type Database = {
       }
       civic_case_metrics: { Args: never; Returns: Json }
       claim_owner_invitation: { Args: never; Returns: string }
+      complete_expired_report_upload: {
+        Args: { _key: string }
+        Returns: undefined
+      }
       complete_siddi_owner_setup: {
         Args: { _user: string }
         Returns: undefined
@@ -1764,6 +1768,13 @@ export type Database = {
       integrity_settings: { Args: never; Returns: Json }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_supervisor: { Args: { _user_id: string }; Returns: boolean }
+      list_expired_report_uploads: {
+        Args: never
+        Returns: {
+          key: string
+          original_path: string
+        }[]
+      }
       nearby_case_summary:
         | {
             Args: { _lat: number; _lng: number; _radius_m?: number }

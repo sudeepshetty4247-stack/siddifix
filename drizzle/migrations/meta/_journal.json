@@ -351,6 +351,13 @@
       "when": 1792892302844,
       "tag": "0049_integrity_nullable_identity_and_atomic_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1792892700197,
+      "tag": "0050_integrity_notifications_and_cleanup_safety",
+      "breakpoints": true
     }
   ]
 }
