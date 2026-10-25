@@ -1,8 +1,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { te } from './locales/te';
+import { preferredAreaLanguage } from './service-area';
 
-export type Lang = "en" | "hi" | "kn";
+export type Lang = "en" | "hi" | "kn" | "te";
 export const LANGS: { id: Lang; label: string }[] = [
   { id: "en", label: "English" },
+  { id: "te", label: "తెలుగు" },
   { id: "hi", label: "हिन्दी" },
   { id: "kn", label: "ಕನ್ನಡ" },
 ];
