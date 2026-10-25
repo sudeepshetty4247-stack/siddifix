@@ -58,6 +58,8 @@ function ReportPage(){
   const dirQ=useQuery({queryKey:['civic-directory'],queryFn:()=>getDirectory(),staleTime:300000});
   const currentRouting=point&&dirQ.data?resolveCivicRouting(dirQ.data,point.lat,point.lng):null;
   const supported=!!currentRouting?.ward&&!!currentRouting?.coverage;
+  const consistency=point&&confirmed&&image?evaluateLocationConsistency({photoGps:meta.gps,reportLat:point.lat,reportLng:point.lng,supported,areaScaleM:coverageScaleM(currentRouting?.coverage?.bounds)}):null;
+  const locationWarning=consistency&&(consistency.status==='mismatch'||consistency.status==='needs_review')&&!locationAcked;
   const ambiguous=currentRouting?.reviewReason?.startsWith('This pin touches');
   const lockWard=confirmed&&point&&dirQ.data?resolveCivicRouting(dirQ.data,point.lat,point.lng).ward:null;
   const live=useLiveGps(!done&&!image);const livePlace=describeLiveFix(dirQ.data,live.fix);
@@ -71,7 +73,7 @@ function ReportPage(){
   async function chooseFile(next?:File,source:'camera'|'gallery'='gallery'){
     if(!next)return;
     if(!['image/jpeg','image/png','image/webp'].includes(next.type)||next.size>25*1024*1024){toast.error('Choose a JPG, PNG or WebP photo up to 25 MB.');return;}
-    setPreparing(true);setOriginalPath(null);setConfirmed(false);setPoint(null);setAddress(null);setCandidate(null);setMatches([]);setAnalysis(fallback);
+    setPreparing(true);setOriginalPath(null);setConfirmed(false);setPoint(null);setAddress(null);setCandidate(null);setMatches([]);setAnalysis(fallback);setLocationAcked(false);
     const sequence=++run.current;
     try{
       const exifr=await import('exifr');let embedded:unknown=null;try{embedded=await exifr.parse(next);}catch{/* no metadata */}
