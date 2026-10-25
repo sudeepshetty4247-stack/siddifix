@@ -15,6 +15,7 @@
 
 ## Verified on 25 October 2026
 - 292 tests across 38 files passed. 27 new tests cover signals, upload content, configuration, anonymous text reporting, direct SQL review permissions, rejected reasons, stale reviews, private-token denial/appeal, temporary limits/concurrent requests, challenge nonce replay, inactive accounts, forged outside coordinates, reservations and retry conflicts.
+- Final unrestricted parallel run hit four existing database-fixture startup timeouts; rerunning the complete suite with two workers passed all 292 tests with no skips.
 - Preview harness reported build OK after the changes. No manual build was run (the managed harness builds automatically).
 - Browser: anonymous photo-free form, pin confirmation and report summary displayed; authorized labelled demo admin opened review/settings and saved verification on DEMO-DEMO-V1-00001. The saved decision was read back visually and from the database; no browser page errors.
 - Existing report totals remained 2,101: 2,100 labelled showcase + 1 genuine. No genuine report was changed or new live complaint created for acceptance testing. One labelled existing case received a verification audit event.
