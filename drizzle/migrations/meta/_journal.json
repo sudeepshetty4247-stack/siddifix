@@ -393,6 +393,13 @@
       "when": 1792895390986,
       "tag": "0055_exclusive_admin_area_permission_checks",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1792896599260,
+      "tag": "0056_anantapur_official_wards_and_routing",
+      "breakpoints": true
     }
   ]
 }
