@@ -42,8 +42,13 @@ export const getDemoDatasetStatus = createServerFn({ method: 'GET' })
   .handler(async ({ context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
-    const [issues, teams, profiles] = await Promise.all([
-      supabaseAdmin.from('issues').select('demo_dataset_id').not('demo_dataset_id', 'is', null),
+    const issueRows: {demo_dataset_id:string|null}[] = [];
+    for(let offset=0;offset<100000;offset+=1000) {
+      const page=await supabaseAdmin.from('issues').select('demo_dataset_id').not('demo_dataset_id','is',null).order('id').range(offset,offset+999);
+      if(page.error) throw new Error('Demo totals unavailable');
+      issueRows.push(...page.data); if(page.data.length<1000) break;
+    }
+    const [teams, profiles] = await Promise.all([
       supabaseAdmin.from('civic_teams').select('demo_dataset_id').not('demo_dataset_id', 'is', null),
       supabaseAdmin.from('staff_profiles').select('demo_dataset_id').not('demo_dataset_id', 'is', null),
     ]);
@@ -52,7 +57,7 @@ export const getDemoDatasetStatus = createServerFn({ method: 'GET' })
       for (const r of rows ?? []) { if (r.demo_dataset_id) m.set(r.demo_dataset_id, (m.get(r.demo_dataset_id) ?? 0) + 1); }
       return m;
     };
-    const ti = tally(issues.data), tt = tally(teams.data), tp = tally(profiles.data);
+    const ti = tally(issueRows), tt = tally(teams.data), tp = tally(profiles.data);
     const ids = [...new Set([...ti.keys(), ...tt.keys(), ...tp.keys()])];
     return {
       enabled: process.env['DEMO_SEED_ENABLED'] === 'true',
