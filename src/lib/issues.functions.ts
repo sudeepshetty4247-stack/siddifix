@@ -156,7 +156,7 @@ export const submitIssue = createServerFn({ method: "POST" })
         original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
         photo_source:data.photoMetadata?.source??'gallery',photo_metadata:data.photoMetadata ? JSON.parse(JSON.stringify(data.photoMetadata)) : null,
         integrity_fingerprint:fingerprint,integrity_image_hash:originalHash,integrity_session:identity.session,integrity_burst:identity.burst,
-        integrity_location_mismatch:!!(data.photoMetadata?.gps&&Math.hypot(data.photoMetadata.gps.lat-data.lat,data.photoMetadata.gps.lng-data.lng)>0.02)||!!(data.incidentLocation?.state&&!(routing.coverage?.id==='anantapur'?/andhra|ఆంధ్ర/i:/karnataka|ಕರ್ನಾಟಕ|कर्नाटक/i).test(data.incidentLocation.state)),
+        location_consistency:JSON.parse(JSON.stringify(locationConsistency)),
       },
     });
     if (error) {

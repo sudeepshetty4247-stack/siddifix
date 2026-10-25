@@ -21,6 +21,9 @@ export const reportInputSchema = z.object({
   duplicateOf: z.string().uuid().nullable().optional(),
   originalPath: z.string().max(300).optional(),
   photoMetadata: photoMetadataSchema.optional(),
+  // Reporter explicitly confirmed the pin after a location-mismatch warning. The server
+  // recomputes consistency itself; this flag only records the confirmation, never a status.
+  locationConfirmed: z.boolean().optional(),
   challenge:z.object({token:z.string().max(2000),answer:z.string().max(3)}).optional(),
 }).superRefine((input, context) => {
   if(!input.imageDataUrl&&(input.originalPath||input.photoMetadata))context.addIssue({code:'custom',path:['originalPath'],message:'Photo metadata must accompany a photo.'});
