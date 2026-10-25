@@ -1,9 +1,10 @@
 # CivicFix roadmap
 
 ## Current request — final Anantapur demonstration and verification
-- [ ] Obtain source-verified municipal geometry; align map, validation and demonstration coordinates.
-- [ ] Seed approximately 500 total linked, labelled Anantapur demonstration entities with category images and scoped staff.
-- [ ] Verify citizen, staff, notifications, administration, Bengaluru preservation and automated tests; record exact results and blockers.
+- [ ] Municipal geometry — blocked: official CDMA exposes encrypted Sachivalayam data, APSAC advertised municipal service returns 404; available OSM geometry is mandal, not municipality.
+- [ ] Approximately 500 Anantapur entities and hosted lifecycle — blocked by absent verified municipal geometry and authorized Anantapur staff session; reporting remains safely disabled.
+- [x] Fix area-specific seeding, atomic staff/admin geographic scopes, hidden passwords, published officer contacts, unresolved-location distinction and Kannada shared resources.
+- [x] Run 310 automated tests across 43 files, verify public area/language switching and mobile layout, preserve all 2,101 Bengaluru reports; detailed final acceptance records remaining blockers.
 
 ## Current request — Anantapur multi-area extension
 - [x] Audit location/localization/routing dependencies; preserved 2,101 Bengaluru reports.
