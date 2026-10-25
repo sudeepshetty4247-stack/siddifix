@@ -3,8 +3,8 @@ import type { Database } from '@/integrations/supabase/types';
 import type { EventRow } from '@/components/civic/Timeline';
 
 export type PublicCase = Pick<Database['public']['Tables']['issues']['Row'], 'id'|'ref_code'|'title'|'summary'|'description'|'category'|'subcategory'|'severity'|'status'|'safety_warning'|'lat'|'lng'|'landmark'|'photo_url'|'department'|'support_count'|'sla_due_at'|'resolved_at'|'created_at'|'updated_at'|'duplicate_of'|'duplicate_candidate_id'|'routing_snapshot'|'acknowledged_at'|'ack_message'|'eta_at'|'inspection_at'> & { acknowledged_by_label: string | null };
-export async function publicCases(ref?: string, includeDemo = false): Promise<PublicCase[]> {
-  const result = await supabase.rpc('public_case_rows', ref ? { _ref: ref, _include_demo: includeDemo } : { _include_demo: includeDemo });
+export async function publicCases(ref?: string, includeDemo = false, area?: string): Promise<PublicCase[]> {
+  const result = !ref && area ? await supabase.rpc('public_area_case_rows',{_area:area,_include_demo:includeDemo}) : await supabase.rpc('public_case_rows', ref ? { _ref: ref, _include_demo: includeDemo } : { _include_demo: includeDemo });
   if(result.error) throw result.error;
   return result.data as unknown as PublicCase[];
 }

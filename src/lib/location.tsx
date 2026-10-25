@@ -4,12 +4,17 @@ import { validateIncidentLocation } from './incident-location.functions';
 import { reverseGeocode } from './geocoding.functions';
 import { supabase } from '@/integrations/supabase/client';
 import { coverageFromWardMatches, type CoverageStatus } from './coverage';
+import { useQuery } from '@tanstack/react-query';
+import { getServiceAreas } from './service-area.functions';
+import { areaSettings, type ServiceArea } from './service-area';
+import { useI18n } from './i18n';
 export type SelectedLocation = { lat: number; lng: number; label: string; method: 'device' | 'manual'; accuracy?: number };
 type LocationContextValue = {
   location: SelectedLocation | null; select: (l: SelectedLocation) => void; open: boolean; setOpen: (v: boolean) => void;
   locating: boolean; detect: (quiet?: boolean) => void; notice: string; recent: SelectedLocation[];
   /** Coverage of the selected point: supported Bengaluru ward, shared boundary, outside, or still checking. */
   coverage: CoverageStatus | 'checking' | 'unknown';
+  areas: ServiceArea[]; activeArea: ServiceArea | null; activeAreaId: string; chooseArea: (id: string) => void; areasLoading: boolean; areasError: boolean;
 };
 const LocationContext = createContext<LocationContextValue | null>(null);
 const KEY = 'civicfix-location-v1';
@@ -18,6 +23,14 @@ function valid(v: unknown): v is SelectedLocation {
   return !!l && Number.isFinite(l.lat) && Number.isFinite(l.lng) && Math.abs(l.lat) <= 90 && Math.abs(l.lng) <= 180 && typeof l.label === 'string' && (l.method === 'manual' || l.method === 'device');
 }
 export function LocationProvider({ children }: { children: ReactNode }) {
+  const areasQuery=useQuery({queryKey:['service-areas'],queryFn:()=>getServiceAreas(),staleTime:60000});
+  const [activeAreaId,setActiveAreaId]=useState('bengaluru');
+  const {suggestLang}=useI18n();
+  const areas=areasQuery.data??[];
+  const activeArea=areas.find(a=>a.id===activeAreaId)??null;
+  function chooseArea(id:string){if(!areas.some(a=>a.id===id))return;setActiveAreaId(id);setOpen(false);try{localStorage.setItem('siddhi.service-area',id);}catch{/* optional */}}
+  useEffect(()=>{try{const saved=localStorage.getItem('siddhi.service-area');if(saved)setActiveAreaId(saved);}catch{/* optional */}},[]);
+  useEffect(()=>{if(activeArea)suggestLang(areaSettings(activeArea).default_language);},[activeArea?.id]);
   const [location, setLocation] = useState<SelectedLocation | null>(null);
   const [recent, setRecent] = useState<SelectedLocation[]>([]);
   const [open, setOpen] = useState(false);
@@ -62,6 +75,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     validateIncidentLocation({data:{lat:location.lat,lng:location.lng}}).then(r => {
       if (cancelled) return;
       setCoverage(r.status);
+      if(location.method==='device'&&r.coverageId){try{if(!localStorage.getItem('siddhi.service-area'))setActiveAreaId(r.coverageId);}catch{/* optional */}}
     }).catch(() => { if (!cancelled) setCoverage('unknown'); });
     return () => { cancelled = true; };
   }, [location?.lat, location?.lng]);
@@ -74,6 +88,6 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     }).catch(()=>{/* coordinates remain available */});
     return()=>{cancelled=true;};
   },[location?.lat,location?.lng,location?.label]);
-  return <LocationContext.Provider value={{ location, select, open, setOpen, locating, detect, notice, recent, coverage }}>{children}</LocationContext.Provider>;
+  return <LocationContext.Provider value={{ location, select, open, setOpen, locating, detect, notice, recent, coverage, areas,activeArea,activeAreaId,chooseArea,areasLoading:areasQuery.isPending,areasError:areasQuery.isError }}>{children}</LocationContext.Provider>;
 }
 export function useLocation() { const value = useContext(LocationContext); if (!value) throw new Error('LocationProvider required'); return value; }
