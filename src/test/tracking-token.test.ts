@@ -23,6 +23,11 @@ describe("tracking token validation", () => {
 });
 
 describe("case reference validation", () => {
+  it("accepts explicitly labelled demo references without weakening token checks", () => {
+    expect(isValidCaseRef("DEMO-DEMO-V1-00001")).toBe(true);
+    expect(isValidCaseRef("DEMO-../../-00001")).toBe(false);
+    expect(isValidTrackingToken("DEMO-DEMO-V1-00001")).toBe(false);
+  });
   it("accepts genuine references", () => {
     expect(isValidCaseRef("BLR-T5RV6E")).toBe(true);
     expect(isValidCaseRef("IND-ABC234")).toBe(true);
