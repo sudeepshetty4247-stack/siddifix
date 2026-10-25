@@ -57,8 +57,9 @@ export function CitizenMap() {
   const countByWard = useMemo(() => new Map((wardCounts.data ?? []).map(c => [c.ward_identifier, c])), [wardCounts.data]);
 
   // Where the device is right now, against the published ward boundaries.
-  const place = describeLiveFix(dir.data, gps.fix);
-  const savedFocus = citizenMapFocus(dir.data, location);
+  const areaDirectory=dir.data?{...dir.data,wards,coverage:dir.data.coverage.filter(c=>c.id===activeAreaId),routes:dir.data.routes.filter(r=>r.coverage_id===activeAreaId),authorities:dir.data.authorities.filter(a=>a.coverage_id===activeAreaId)}:undefined;
+  const place = describeLiveFix(areaDirectory, gps.fix);
+  const savedFocus = citizenMapFocus(areaDirectory, location);
   const savedWard = savedFocus ? wards.find(w => w.active && pointInGeometry(savedFocus.lat, savedFocus.lng, w.boundary)) ?? null : null;
   const yourWard = place?.kind === 'ward' ? place.ward : null;
   const youPoint = gps.fix && place && place.kind !== 'outside' ? gps.fix : null;
