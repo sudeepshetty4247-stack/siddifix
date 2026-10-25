@@ -9,7 +9,7 @@ export function validateReportImage(bytes:Uint8Array,format:string,maxBytes=25*1
   const size=imageSize(bytes);
   if(!size.width||!size.height||size.width*size.height>20_000_000||size.width>12000||size.height>12000)throw new Error('Photo dimensions exceed the safe processing limit (20 megapixels).');
   const expected=format==='jpg'?'jpeg':format;
-  if(size.type!==expected)throw new Error('Photo type does not match its contents.');
+  if((size.type==='jpg'?'jpeg':size.type)!==expected)throw new Error('Photo type does not match its contents.');
   try {
     if(expected==='jpeg')jpeg.decode(bytes,{useTArray:true,tolerantDecoding:false,maxResolutionInMP:20,maxMemoryUsageInMB:128});
     else if(expected==='png')decodePng(bytes,{checkCrc:true});
