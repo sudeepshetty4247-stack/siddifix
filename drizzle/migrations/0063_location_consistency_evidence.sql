@@ -1,0 +1,10 @@
+ALTER TABLE public.report_integrity ADD COLUMN IF NOT EXISTS location_consistency jsonb;
+COMMENT ON COLUMN public.report_integrity.location_consistency IS 'Server-computed photo/issue location consistency: status, distance_m, tolerance_m, evidence_source, user_confirmed. Never client-supplied.';
+DO $lc$ DECLARE s text; BEGIN
+s:=pg_get_functiondef('public.create_civic_report(jsonb,text)'::regprocedure);
+s:=replace(s,'score:=least(score,100);',$patch$IF (_report->'location_consistency'->>'status')='mismatch' THEN IF coalesce((_report->'location_consistency'->>'user_confirmed')::boolean,false) THEN score:=score+10;signals:=signals||jsonb_build_array(jsonb_build_object('code','location_mismatch_confirmed','points',10,'detail','Photo location evidence differed from the selected issue location; the reporter confirmed the pin is correct.')); ELSE score:=score+20;signals:=signals||jsonb_build_array(jsonb_build_object('code','location_mismatch','points',20,'detail','Available photo location evidence differs from the selected issue location.')); END IF;
+ELSIF (_report->'location_consistency'->>'status')='needs_review' THEN score:=score+10;signals:=signals||jsonb_build_array(jsonb_build_object('code','location_uncertain','points',10,'detail','Location evidence is too imprecise to compare reliably; staff may verify on site.')); END IF;
+score:=least(score,100);$patch$);
+s:=replace(s,'INSERT INTO public.report_integrity(issue_id,state,risk_score,signals,request_fingerprint,image_hash,session_hash) VALUES(i.id,nextstate,score,signals,fingerprint,imagehash,reservation.session_hash);','INSERT INTO public.report_integrity(issue_id,state,risk_score,signals,request_fingerprint,image_hash,session_hash,location_consistency) VALUES(i.id,nextstate,score,signals,fingerprint,imagehash,reservation.session_hash,_report->''location_consistency'');');
+IF s NOT LIKE '%location_consistency%' THEN RAISE EXCEPTION 'location consistency patch failed'; END IF;
+EXECUTE s; END $lc$;

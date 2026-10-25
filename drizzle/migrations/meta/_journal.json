@@ -442,6 +442,20 @@
       "when": 1792903191732,
       "tag": "0062_ward_snapshot_case_counts",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1792904973027,
+      "tag": "0063_location_consistency_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1792905108421,
+      "tag": "0064_location_consistency_confirmed_key",
+      "breakpoints": true
     }
   ]
 }

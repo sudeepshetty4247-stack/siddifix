@@ -129,6 +129,20 @@ export const submitIssue = createServerFn({ method: "POST" })
 
     const severity = data.severity as Severity;
     const routing = resolveCivicRouting(directory, data.lat, data.lng, data.category, data.subcategory ?? undefined);
+    // Location consistency is computed here, never trusted from the client. The reporter's
+    // confirmation flag is recorded as evidence; it cannot mark a report as verified.
+    const { evaluateLocationConsistency, coverageScaleM } = await import('./location-consistency');
+    const locationConsistency = evaluateLocationConsistency({
+      photoGps: data.photoMetadata?.gps ?? null,
+      reportLat: data.lat, reportLng: data.lng,
+      supported: true, // service-area support was enforced above
+      areaScaleM: coverageScaleM(routing.coverage?.bounds),
+      userConfirmed: data.locationConfirmed === true,
+    });
+    if (data.incidentLocation?.state && !(routing.coverage?.id === 'anantapur' ? /andhra|ఆంధ్ర/i : /karnataka|ಕರ್ನಾಟಕ|कर्नाटक/i).test(data.incidentLocation.state)
+        && (locationConsistency.status === 'consistent' || locationConsistency.status === 'insufficient_evidence')) {
+      locationConsistency.status = 'needs_review';
+    }
     const { coverageFromWardMatches, canAcceptReport } = await import('./coverage');
     const coverage = coverageFromWardMatches(routing.ward ? 1 : routing.reviewReason?.startsWith('This pin touches') ? 2 : 0);
     if (!routing.coverage || !canAcceptReport(coverage)) {
@@ -156,7 +170,7 @@ export const submitIssue = createServerFn({ method: "POST" })
         original_path:data.originalPath??null,display_path:path,original_sha256:originalHash,
         photo_source:data.photoMetadata?.source??'gallery',photo_metadata:data.photoMetadata ? JSON.parse(JSON.stringify(data.photoMetadata)) : null,
         integrity_fingerprint:fingerprint,integrity_image_hash:originalHash,integrity_session:identity.session,integrity_burst:identity.burst,
-        integrity_location_mismatch:!!(data.photoMetadata?.gps&&Math.hypot(data.photoMetadata.gps.lat-data.lat,data.photoMetadata.gps.lng-data.lng)>0.02)||!!(data.incidentLocation?.state&&!(routing.coverage?.id==='anantapur'?/andhra|ఆంధ్ర/i:/karnataka|ಕರ್ನಾಟಕ|कर्नाटक/i).test(data.incidentLocation.state)),
+        location_consistency:JSON.parse(JSON.stringify(locationConsistency)),
       },
     });
     if (error) {
