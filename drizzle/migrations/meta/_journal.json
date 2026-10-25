@@ -323,6 +323,13 @@
       "when": 1792886995481,
       "tag": "0045_demo_isolation_and_atomic_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1792887448009,
+      "tag": "0046_bounded_demo_seed_and_public_isolation",
+      "breakpoints": true
     }
   ]
 }
