@@ -1203,6 +1203,208 @@ export type Database = {
           },
         ]
       }
+      report_abuse_windows: {
+        Row: {
+          expires_at: string
+          hits: number
+          key: string
+        }
+        Insert: {
+          expires_at: string
+          hits?: number
+          key: string
+        }
+        Update: {
+          expires_at?: string
+          hits?: number
+          key?: string
+        }
+        Relationships: []
+      }
+      report_challenge_uses: {
+        Row: {
+          expires_at: string
+          nonce: string
+        }
+        Insert: {
+          expires_at: string
+          nonce: string
+        }
+        Update: {
+          expires_at?: string
+          nonce?: string
+        }
+        Relationships: []
+      }
+      report_integrity: {
+        Row: {
+          image_hash: string | null
+          issue_id: string
+          request_fingerprint: string | null
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_score: number
+          session_hash: string | null
+          signals: Json
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          image_hash?: string | null
+          issue_id: string
+          request_fingerprint?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_score?: number
+          session_hash?: string | null
+          signals?: Json
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          image_hash?: string | null
+          issue_id?: string
+          request_fingerprint?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_score?: number
+          session_hash?: string | null
+          signals?: Json
+          state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_integrity_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: true
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_integrity_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_label: string
+          created_at: string
+          from_state: string | null
+          from_status: Database["public"]["Enums"]["issue_status"] | null
+          id: string
+          issue_id: string | null
+          reason: string
+          to_state: string | null
+          to_status: Database["public"]["Enums"]["issue_status"] | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_label: string
+          created_at?: string
+          from_state?: string | null
+          from_status?: Database["public"]["Enums"]["issue_status"] | null
+          id?: string
+          issue_id?: string | null
+          reason: string
+          to_state?: string | null
+          to_status?: Database["public"]["Enums"]["issue_status"] | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_label?: string
+          created_at?: string
+          from_state?: string | null
+          from_status?: Database["public"]["Enums"]["issue_status"] | null
+          id?: string
+          issue_id?: string | null
+          reason?: string
+          to_state?: string | null
+          to_status?: Database["public"]["Enums"]["issue_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_integrity_audit_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_integrity_settings: {
+        Row: {
+          challenge_after: number
+          id: boolean
+          network_limit: number
+          review_threshold: number
+          session_limit: number
+          updated_at: string
+          updated_by: string | null
+          user_limit: number
+          window_minutes: number
+        }
+        Insert: {
+          challenge_after?: number
+          id?: boolean
+          network_limit?: number
+          review_threshold?: number
+          session_limit?: number
+          updated_at?: string
+          updated_by?: string | null
+          user_limit?: number
+          window_minutes?: number
+        }
+        Update: {
+          challenge_after?: number
+          id?: boolean
+          network_limit?: number
+          review_threshold?: number
+          session_limit?: number
+          updated_at?: string
+          updated_by?: string | null
+          user_limit?: number
+          window_minutes?: number
+        }
+        Relationships: []
+      }
+      report_upload_reservations: {
+        Row: {
+          consumed: boolean
+          expected_mime: string | null
+          expected_size: number | null
+          expires_at: string
+          key: string
+          original_path: string | null
+          request_fingerprint: string | null
+          session_hash: string
+        }
+        Insert: {
+          consumed?: boolean
+          expected_mime?: string | null
+          expected_size?: number | null
+          expires_at?: string
+          key: string
+          original_path?: string | null
+          request_fingerprint?: string | null
+          session_hash: string
+        }
+        Update: {
+          consumed?: boolean
+          expected_mime?: string | null
+          expected_size?: number | null
+          expires_at?: string
+          key?: string
+          original_path?: string | null
+          request_fingerprint?: string | null
+          session_hash?: string
+        }
+        Relationships: []
+      }
       service_targets: {
         Row: {
           ack_hours: number
@@ -1382,6 +1584,10 @@ export type Database = {
         Returns: undefined
       }
       admin_feedback_summary: { Args: never; Returns: Json }
+      admin_integrity_settings: {
+        Args: { _settings: Json }
+        Returns: undefined
+      }
       admin_provision_account: {
         Args: { _actor: string; _profile: Json; _role: string; _user: string }
         Returns: undefined
@@ -1486,6 +1692,10 @@ export type Database = {
         Args: { _ref: string; _token: string }
         Returns: Json
       }
+      citizen_integrity_response: {
+        Args: { _note: string; _ref: string; _token: string }
+        Returns: undefined
+      }
       citizen_submit_feedback: {
         Args: {
           _comment: string
@@ -1507,7 +1717,21 @@ export type Database = {
         Args: { _key: string; _limit: number }
         Returns: boolean
       }
+      consume_report_limits: {
+        Args: {
+          _network: string
+          _nonce?: string
+          _phase: string
+          _session: string
+          _user: string
+        }
+        Returns: Json
+      }
       create_civic_report: {
+        Args: { _report: Json; _token: string }
+        Returns: Json
+      }
+      create_civic_report_core: {
         Args: { _report: Json; _token: string }
         Returns: Json
       }
@@ -1537,6 +1761,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      integrity_settings: { Args: never; Returns: Json }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_supervisor: { Args: { _user_id: string }; Returns: boolean }
       nearby_case_summary:
@@ -1596,6 +1821,10 @@ export type Database = {
         | { Args: { _days?: number; _include_demo?: boolean }; Returns: Json }
       public_ward_snapshot: { Args: { _identifier: string }; Returns: Json }
       purge_demo_dataset: { Args: { _dataset: string }; Returns: Json }
+      report_integrity_status: {
+        Args: { _ref: string; _token: string }
+        Returns: Json
+      }
       review_directory_fetch: {
         Args: { _approve: boolean; _id: string }
         Returns: undefined
@@ -1606,6 +1835,15 @@ export type Database = {
           _decision: string
           _reason: string
           _report: string
+        }
+        Returns: undefined
+      }
+      review_report_integrity: {
+        Args: {
+          _decision: string
+          _expected: string
+          _issue: string
+          _reason: string
         }
         Returns: undefined
       }
