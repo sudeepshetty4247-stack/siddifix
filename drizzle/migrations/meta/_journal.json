@@ -421,6 +421,13 @@
       "when": 1792896708808,
       "tag": "0059_anantapur_fix_roads_drainage_water_routes",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1792898149496,
+      "tag": "0060_optimize_scoped_case_metrics",
+      "breakpoints": true
     }
   ]
 }
