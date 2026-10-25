@@ -13,6 +13,7 @@ import { analyzeIssue, submitIssue } from '@/lib/issues.functions';
 import { prepareOriginalUpload, saveAnnotatedPhoto } from '@/lib/report-media.functions';
 import { reverseGeocode, searchAddress } from '@/lib/geocoding.functions';
 import { annotationLines, annotatedPhoto, embeddedPhotoMetadata, processedPhoto, type PhotoMetadata } from '@/lib/report-photo';
+import { coverageScaleM, evaluateLocationConsistency } from '@/lib/location-consistency';
 import { BENGALURU, CATEGORIES, isInIndia, categoryById } from '@/lib/civic';
 import { saveTracked } from '@/lib/tracking';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,6 +50,7 @@ function ReportPage(){
   const [matches,setMatches]=useState<{id:string;title:string;ref_code:string;distance_m:number}[]>([]);const [candidate,setCandidate]=useState<string|null>(null);
   const [originalPath,setOriginalPath]=useState<string|null>(null);const [done,setDone]=useState<{ref:string;token:string|null;annotated:boolean}|null>(null);
   const [textOnly,setTextOnly]=useState(false);const [reviewing,setReviewing]=useState(false);
+  const [locationAcked,setLocationAcked]=useState(false);
   const [challenge,setChallenge]=useState<{question:string;token:string}|null>(null);const [answer,setAnswer]=useState('');
   const getChallenge=useServerFn(reportChallenge);
   const analyze=useServerFn(analyzeIssue);const submit=useServerFn(submitIssue);const prepare=useServerFn(prepareOriginalUpload);const annotate=useServerFn(saveAnnotatedPhoto);
