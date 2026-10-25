@@ -1,10 +1,11 @@
 # CivicFix roadmap
 
 ## Current request — report integrity and abuse prevention
-- [ ] Server image decoding, upload reservations, atomic integrity persistence and retry fingerprints.
-- [ ] Approved configurable temporary limits, privacy-conscious identifiers and accessible risk-triggered bot challenge.
-- [ ] Scoped explainable review queue, audited decisions, private reporter correction/appeal, confirmation summary.
-- [ ] Direct-operation security tests, regression suite, browser checks and honest acceptance report.
+- [x] JPEG/PNG decoding, bounded WebP checks, upload reservations, atomic integrity persistence and retry fingerprints.
+- [x] Approved configurable temporary limits, keyed identities and accessible signed one-use challenge.
+- [x] Scoped explainable review queue, audited decisions, private clarification/appeal, confirmation summary and photo-free reporting.
+- [x] 292 tests passed; browser confirmation/admin demo verification and harness build OK; docs/REPORT_INTEGRITY_ACCEPTANCE.md records evidence and limits.
+- [ ] Strong managed CAPTCHA/edge traffic controls, full WebP pixel decoder, independent abuse/load/physical-device acceptance and retention policy need provider configuration or owner-approved policy; lightweight controls are not perfect detection.
 
 ## Current request — hackathon presentation research pack
 - [x] Delivered fifteen-slide content, notes, pitches, 23 judge answers, inspected screenshots and evidence register; freshly ran 260 tests and checked 2,100 synthetic plus 1 genuine report.
