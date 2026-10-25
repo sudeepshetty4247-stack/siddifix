@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowLeft, Building2, CalendarClock, Copy, Download, Eye, EyeOff, MapPin, ShieldAlert, ThumbsDown, ThumbsUp, Users } from "lucide-react";
+import { ArrowLeft, Building2, CalendarClock, Copy, Download, Eye, EyeOff, Landmark, MapPin, ShieldAlert, ThumbsDown, ThumbsUp, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { categoryById, isOverdue, SEVERITY_META, type Severity } from "@/lib/civic";
 import { StatusBadge, SeverityTag } from "@/components/civic/StatusBadge";
@@ -67,6 +67,17 @@ function IssuePage() {
     return (await publicCases()).find(row=>row.id===issue.data?.duplicate_of) ?? null;
   }});
   const photo=useQuery({queryKey:['report-annotated-photo',issue.data?.id],enabled:!!issue.data?.id,queryFn:()=>{if(!issue.data?.id)return null;return getReportPhoto({data:{issueId:issue.data.id}});}});
+  const wardId = (issue.data?.routing_snapshot as { ward?: { identifier?: string } } | null)?.ward?.identifier ?? null;
+  const wardInfo = useQuery({
+    queryKey: ['ward-snapshot', wardId],
+    enabled: !!wardId,
+    staleTime: 300000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('public_ward_snapshot', { _identifier: wardId! });
+      if (error) throw error;
+      return data as { name: string; ward_number: number | null; zone: string | null; corporation: string | null; assembly: string | null; mla: string | null; lok_sabha: string | null; mp: string | null; representative: string | null } | null;
+    },
+  });
 
   useEffect(() => {
     const hash = new URLSearchParams(window.location.hash.slice(1)).get("t");
@@ -184,6 +195,11 @@ function IssuePage() {
               <div className="divide-y rounded-2xl border">
                 <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-success/10 text-success"><MapPin className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Ward details</p><p className="truncate text-sm font-semibold">{ward?.name ? `${ward.ward_number ? `Ward ${ward.ward_number} – ` : ''}${ward.name}` : 'Ward under staff review'}</p>{ward?.zone && <p className="text-[11px] text-muted-foreground">{ward.zone} zone</p>}</div></div>
                 <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary"><Users className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Assigned team</p><p className="truncate text-sm font-semibold">{i.department ?? 'Ownership review pending'}</p><p className="text-[11px] text-muted-foreground">Internal Siddhi record — not an official referral</p></div></div>
+                {wardInfo.data && <>
+                  <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary"><Landmark className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">MLA · {wardInfo.data.assembly ?? 'Assembly constituency'}</p><p className="truncate text-sm font-semibold">{wardInfo.data.mla ?? 'Verification in progress'}</p></div></div>
+                  <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary"><Landmark className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">MP · {wardInfo.data.lok_sabha ?? 'Lok Sabha constituency'}</p><p className="truncate text-sm font-semibold">{wardInfo.data.mp ?? 'Verification in progress'}</p></div></div>
+                  <div className="flex items-center gap-3 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-soft text-primary"><Users className="h-4 w-4" /></span><div className="min-w-0"><p className="text-[11px] text-muted-foreground">Corporator · {wardInfo.data.corporation ?? 'City corporation'}</p><p className="truncate text-sm font-semibold">{wardInfo.data.representative ?? 'Council elections pending — seat vacant'}</p></div></div>
+                </>}
               </div>
             </div>
           </article>
