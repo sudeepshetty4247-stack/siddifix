@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLocation } from '@/lib/location';
 import { MAX_SUGGESTED_ACCURACY_METRES } from '@/lib/report-location';
 import { NEARBY_RADIUS_METRES } from '@/lib/nearby-cases';
+import { useShowcase } from '@/lib/showcase';
 import { Button } from '@/components/ui/button';
 
 const summarySchema = z.object({total:z.number(),active:z.number(),resolved:z.number(),overdue:z.number(),critical:z.number(),radius_m:z.number()});
@@ -15,9 +16,10 @@ export function NearbyCaseSummary() {
   const point = location ? { lat: location.lat, lng: location.lng } : null;
   const supported = coverage === 'supported' || coverage === 'boundary_review';
   const approximate = location?.method === 'device' && (location.accuracy ?? 0) > MAX_SUGGESTED_ACCURACY_METRES;
-  const counts = useQuery({queryKey:['nearby-case-summary',point?.lat,point?.lng],enabled:!!point&&supported,refetchInterval:30000,queryFn:async()=>{
+  const { showcase } = useShowcase();
+  const counts = useQuery({queryKey:['nearby-case-summary',point?.lat,point?.lng,showcase],enabled:!!point&&supported,refetchInterval:30000,queryFn:async()=>{
     if (!point) throw new Error('Select a location');
-    const result = await supabase.rpc('nearby_case_summary',{_lat:point.lat,_lng:point.lng,_radius_m:NEARBY_RADIUS_METRES});
+    const result = await supabase.rpc('nearby_case_summary',{_lat:point.lat,_lng:point.lng,_radius_m:NEARBY_RADIUS_METRES,_include_demo:showcase});
     if(result.error) throw result.error;
     return summarySchema.parse(result.data);
   }});
